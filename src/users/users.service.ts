@@ -1,41 +1,18 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dtos/createUserDto';
-import { Model, Types } from 'mongoose';
-import { User, UserDocument } from './schemas/users.schema';
-import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from "bcryptjs"
 import { UserResponseDto } from './dtos/userResponseDto';
+import { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {
-    constructor(
-        @InjectModel(User.name) private userModel: Model<UserDocument>
-      ) {}
+  constructor(private readonly usersRepository: UsersRepository) {}
     
-    async findOne(username:string): Promise <any>{
-        return await this.userModel.findOne({ username })
-    }
-
-    async fetchSingleUserById(userId: Types.ObjectId | string): Promise<User | null> {
-      try {
-        const objectId = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
-  
-        const user = await this.userModel.findById(objectId).exec();
-        
-        if (!user) {
-          throw new NotFoundException(`User with ID ${objectId} not found`);
-        }
-        return user;
-      } catch (error) {
-        throw new NotFoundException(`Error fetching user: ${error.message}`);
-      }
-    }
-
     async createUser(createUserDto: CreateUserDto): Promise <UserResponseDto> {
      const { username, password, role } = createUserDto
 
      //check if the user already exists
-     const existingUser = await this.findOne(username)
+     const existingUser = await this.usersRepository.findUserByUserName(username)
      if(existingUser){
         throw new BadRequestException('username already exist')
      }
@@ -44,18 +21,16 @@ export class UsersService {
      const password_hash = await bcrypt.hash(password, 10)
 
      //create a newUser document
-     const newUser = new this.userModel({
-        username, 
+     const newUser = {
+        ...createUserDto, 
         password_hash,
-        role
-    })
+    }
     
     // save a newUser document
-    const savedUser = await newUser.save()
+    const savedUser = await this.usersRepository.createUser(newUser)
 
     //return userResponse without password
      return {
-        id: savedUser.id,
         username: savedUser.username,
         role:savedUser.role,
         created_at: savedUser.created_at.toISOString(),
@@ -68,7 +43,7 @@ export class UsersService {
   async validate(username:string, password:any): Promise<{ access_token: string }> {
 
     // Find user by username
-    const user = await this.findOne(username );
+    const user = await this.usersRepository.findUserByUserName(username );
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }

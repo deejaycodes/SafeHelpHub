@@ -13,6 +13,7 @@ import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './users/strategy/local-strategy';
 import { JwtStrategy } from './users/strategy/jwtStrategy';
 import { ReportsModule } from './reports/reports.module';
+import { UsersRepository } from './users/users.repository';
 
 @Module({
   imports:  [
@@ -29,6 +30,6 @@ import { ReportsModule } from './reports/reports.module';
     
   ],
   controllers: [AppController, UsersController],
-  providers: [AppService, UsersService, JwtService, LocalStrategy, JwtStrategy],
+  providers: [UsersRepository, AppService, UsersService, JwtService, LocalStrategy, JwtStrategy],
 })
 export class AppModule {}
