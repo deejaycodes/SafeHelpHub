@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dtos/createUserDto';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './schemas/users.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from "bcryptjs"
@@ -14,6 +14,21 @@ export class UsersService {
     
     async findOne(username:string): Promise <any>{
         return await this.userModel.findOne({ username })
+    }
+
+    async fetchSingleUserById(userId: Types.ObjectId | string): Promise<User | null> {
+      try {
+        const objectId = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
+  
+        const user = await this.userModel.findById(objectId).exec();
+        
+        if (!user) {
+          throw new NotFoundException(`User with ID ${objectId} not found`);
+        }
+        return user;
+      } catch (error) {
+        throw new NotFoundException(`Error fetching user: ${error.message}`);
+      }
     }
 
     async createUser(createUserDto: CreateUserDto): Promise <UserResponseDto> {
