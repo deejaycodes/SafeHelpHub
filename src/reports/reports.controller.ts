@@ -26,7 +26,7 @@ export class ReportsController {
   @UseInterceptors(FileInterceptor('file'))
   uploadVerifications(
     @Param('reportId') reportId: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: any,
   ) {
     return this.reportsService.uploadReportFile(reportId, file);
   }
