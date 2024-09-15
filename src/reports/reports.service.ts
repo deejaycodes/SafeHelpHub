@@ -39,7 +39,7 @@ export class ReportsService {
 
   async uploadReportFile(
     reportId: Types.ObjectId | string,
-    file: Express.Multer.File,
+    file: any,
   ): Promise<Report> {
     const { originalname, buffer } = file;
     const idFileType = originalname.slice(originalname.lastIndexOf('.'));
