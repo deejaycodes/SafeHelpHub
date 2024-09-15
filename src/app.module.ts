@@ -12,6 +12,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './users/strategy/local-strategy';
 import { JwtStrategy } from './users/strategy/jwtStrategy';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports:  [
@@ -24,6 +25,7 @@ import { JwtStrategy } from './users/strategy/jwtStrategy';
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forRoot(process.env.MONGO_URI),
+    ReportsModule,
     
   ],
   controllers: [AppController, UsersController],
