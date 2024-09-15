@@ -4,18 +4,22 @@ import { CreateUserDto } from './dtos/createUserDto';
 import { UserResponseDto } from './dtos/userResponseDto';
 import { LocalAuthGuard } from './strategy/local-auth-strategy';
 import { JwtService } from '@nestjs/jwt';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('users')
 @Controller('users')
 export class UsersController {
     constructor(private readonly userService: UsersService,
       private jwtService: JwtService
     ) {}
-
+    
     @Post('register')
+    @ApiOperation({summary :'signup endpoint'})
     async createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.userService.createUser(createUserDto);
    }
-
+   
+   @ApiOperation({summary :'login endpoint'})
    @UseGuards(LocalAuthGuard)
    @Post('login')
    async login(@Request() req, @Res({ passthrough: true }) response?: Response) {

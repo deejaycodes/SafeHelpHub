@@ -5,12 +5,15 @@ import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from 'src/users/strategy/jwt-guard';
 import * as _ from 'lodash';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('reports')
 @Controller('reports')
 export class ReportsController {
     constructor(private readonly reportsService: ReportsService) {}
 
   @Post()
+  @ApiOperation({summary :'submit a report'})
   @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
     async createIncident(@Body() createIncidentDto: CreateIncidentDto, @Request() req: any): Promise<Report> {
@@ -23,6 +26,7 @@ export class ReportsController {
   }
 
   @Put('upload_file/:reportId')
+  @ApiOperation({summary :'upload file'})
   @UseInterceptors(FileInterceptor('file'))
   uploadVerifications(
     @Param('reportId') reportId: string,
