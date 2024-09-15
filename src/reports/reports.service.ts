@@ -1,7 +1,6 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Report, ReportDocument } from './schemas/reports.schemas';
-import { Model, Types } from 'mongoose';
+import { Report } from './schemas/reports.schemas';
+import {Types } from 'mongoose';
 import { CreateIncidentDto } from './dtos/reports.dto';
 import { uploadObject } from 'src/utils/upload';
 import { UsersRepository } from 'src/users/users.repository';

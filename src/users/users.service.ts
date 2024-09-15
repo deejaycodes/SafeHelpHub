@@ -38,7 +38,6 @@ export class UsersService {
     }
  }
 
-   
   // validate user
   async validate(username:string, password:any): Promise<{ access_token: string }> {
 

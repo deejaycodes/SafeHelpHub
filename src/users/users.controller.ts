@@ -2,7 +2,6 @@ import { Body, Controller, Post, Res, UseGuards,  Request, } from '@nestjs/commo
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/createUserDto';
 import { UserResponseDto } from './dtos/userResponseDto';
-import { LoginDto } from './dtos/loginDto';
 import { LocalAuthGuard } from './strategy/local-auth-strategy';
 import { JwtService } from '@nestjs/jwt';
 
