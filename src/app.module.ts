@@ -14,11 +14,13 @@ import { LocalStrategy } from './users/strategy/local-strategy';
 import { JwtStrategy } from './users/strategy/jwtStrategy';
 import { ReportsModule } from './reports/reports.module';
 import { UsersRepository } from './users/users.repository';
+import { ChatsModule } from './chats/chats.module';
 
 @Module({
   imports:  [
     UsersModule,
     PassportModule,
+    ChatsModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'defaultSecretKey',
       signOptions: { expiresIn: '1h' },
