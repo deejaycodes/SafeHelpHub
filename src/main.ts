@@ -9,21 +9,21 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       errorHttpStatusCode: 400,
-      whitelist: true, 
-      forbidNonWhitelisted: true, 
-      transform: true, 
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
     }),
   );
 
   const options = new DocumentBuilder()
-  .setTitle('ANONYMOUS REPORTING AND SUPPORT PLATFORM API COLLECTIONS')
-  .setDescription('Anonymous Reporting and Support Platform Server')
-  .setVersion('1.0')
-  .build();
+    .setTitle('ANONYMOUS REPORTING AND SUPPORT PLATFORM API COLLECTIONS')
+    .setDescription('Anonymous Reporting and Support Platform Server')
+    .setVersion('1.0')
+    .build();
 
   const swaggerDocument = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('/support', app, swaggerDocument, {
-     customCss:
+    customCss:
       '.swagger-ui .opblock .opblock-summary-path-description-wrapper { align-items: center; display: flex; flex-wrap: wrap; gap: 0 10px; padding: 0 10px; width: 100%; }',
     customCssUrl:
       'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
