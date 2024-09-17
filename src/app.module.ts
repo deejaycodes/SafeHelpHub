@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
+import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -15,9 +16,11 @@ import { JwtStrategy } from './cores/authentication/strategy/jwtStrategy';
 import { ReportsModule } from './cores/reports/reports.module';
 import { UsersRepository } from './cores/users/users.repository';
 import { ChatsModule } from './basics/chats/chats.module';
+import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     UsersModule,
     PassportModule,
     ChatsModule,
@@ -38,6 +41,14 @@ import { ChatsModule } from './basics/chats/chats.module';
     JwtService,
     LocalStrategy,
     JwtStrategy,
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
+    },
   ],
 })
 export class AppModule {}

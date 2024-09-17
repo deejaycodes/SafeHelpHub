@@ -1,9 +1,23 @@
+import * as Sentry from "@sentry/nestjs"
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
 async function bootstrap() {
+
+  Sentry.init({
+    dsn: "https://2d9e3cdeb9e5125d595804a66b8ea621@o4507968990609408.ingest.de.sentry.io/4507968998342736",
+    integrations: [
+      nodeProfilingIntegration(),
+    ],
+    // Tracing
+    tracesSampleRate: 1.0, //  Capture 100% of the transactions
+  
+    // Set sampling rate for profiling - this is relative to tracesSampleRate
+    profilesSampleRate: 1.0,
+  });
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(
