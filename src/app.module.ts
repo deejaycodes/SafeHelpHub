@@ -4,20 +4,20 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { UsersController } from './users/users.controller';
-import { UsersService } from './users/users.service';
-import { UsersModule } from './users/users.module';
-import { User, UserSchema } from './users/schemas/users.schema';
+import { UsersController } from './cores/authentication/auths.controller';
+import { UsersService } from './cores/users/users.service';
+import { UsersModule } from './cores/users/users.module';
+import { User, UserSchema } from './common/schemas/users.schema';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './users/strategy/local-strategy';
-import { JwtStrategy } from './users/strategy/jwtStrategy';
-import { ReportsModule } from './reports/reports.module';
-import { UsersRepository } from './users/users.repository';
-import { ChatsModule } from './chats/chats.module';
+import { LocalStrategy } from './cores/authentication/strategy/local-strategy';
+import { JwtStrategy } from './cores/authentication/strategy/jwtStrategy';
+import { ReportsModule } from './cores/reports/reports.module';
+import { UsersRepository } from './cores/users/users.repository';
+import { ChatsModule } from './basics/chats/chats.module';
 
 @Module({
-  imports:  [
+  imports: [
     UsersModule,
     PassportModule,
     ChatsModule,
@@ -29,9 +29,15 @@ import { ChatsModule } from './chats/chats.module';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forRoot(process.env.MONGO_URI),
     ReportsModule,
-    
   ],
   controllers: [AppController, UsersController],
-  providers: [UsersRepository, AppService, UsersService, JwtService, LocalStrategy, JwtStrategy],
+  providers: [
+    UsersRepository,
+    AppService,
+    UsersService,
+    JwtService,
+    LocalStrategy,
+    JwtStrategy,
+  ],
 })
 export class AppModule {}

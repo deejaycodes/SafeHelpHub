@@ -1,0 +1,43 @@
+import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
+import { CreateUserDto } from '../../common/dtos/createUserDto';
+import { UserResponseDto } from '../../common/dtos/userResponseDto';
+import { LocalAuthGuard } from './strategy/local-auth-strategy';
+import { JwtService } from '@nestjs/jwt';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+
+@ApiTags('authentication')
+@Controller('users/auth')
+export class UsersController {
+  constructor(
+    private readonly userService: UsersService,
+    private jwtService: JwtService,
+  ) {}
+
+  @Post('register')
+  @ApiOperation({ summary: 'signup endpoint' })
+  async createUser(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<UserResponseDto> {
+    return this.userService.createUser(createUserDto);
+  }
+
+  @ApiOperation({ summary: 'login endpoint' })
+  @UseGuards(LocalAuthGuard)
+  @Post('login')
+  async login(@Request() req) {
+    const payload = {
+      id: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
+      created_at: req.user.created_at,
+      updated_at: req.user.updated_at,
+    };
+    return {
+      ...payload,
+      token: this.jwtService.sign(payload, {
+        secret: process.env.JWT_KEY,
+      }),
+    };
+  }
+}
