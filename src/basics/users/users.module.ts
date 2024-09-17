@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { UsersController } from '../authentication/auths.controller';
+import { AuthsController } from '../../cores/authentication/auths.controller';
 import { UsersService } from './users.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../../common/schemas/users.schema';
-import { LocalStrategy } from '../authentication/strategy/local-strategy';
+import { LocalStrategy } from '../../cores/authentication/strategy/local-strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { jwtConstants } from '../authentication/strategy/constants';
+import { jwtConstants } from '../../cores/authentication/strategy/constants';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersRepository } from './users.repository';
 
@@ -26,7 +26,7 @@ import { UsersRepository } from './users.repository';
       }),
     }),
   ],
-  controllers: [UsersController],
+  controllers: [AuthsController],
   providers: [UsersRepository, UsersService, LocalStrategy],
 })
 export class UsersModule {}

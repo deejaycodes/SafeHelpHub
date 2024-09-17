@@ -17,6 +17,9 @@ export class UsersRepository {
     return await this.userModel.findOne({ username });
   }
 
+  async findUserByCriteria(criteria: Record<string, any>): Promise<any> {
+    return await this.userModel.findOne(criteria);
+  }
   async fetchSingleUserById(
     userId: Types.ObjectId | string,
   ): Promise<User | null> {

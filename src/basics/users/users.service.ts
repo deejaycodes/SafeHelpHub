@@ -13,13 +13,17 @@ export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const { username, password } = createUserDto;
+    let { username,email, password } = createUserDto;
+
+    const lowerCaseUsername = username.toLowerCase();
+    const lowerCaseEmail = email.toLowerCase();
 
     //check if the user already exists
     const existingUser =
-      await this.usersRepository.findUserByUserName(username);
+      await this.usersRepository.
+      findUserByCriteria({ $or: [{ username: lowerCaseUsername }, { email:lowerCaseEmail }] });
     if (existingUser) {
-      throw new BadRequestException('username already exist');
+      throw new BadRequestException('username or email already exist');
     }
 
     // Hash the password before saving

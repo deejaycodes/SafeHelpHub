@@ -16,6 +16,14 @@ export class User {
   username: string;
 
   @ApiProperty({
+    description: 'Unique email for the user',
+    example: 'john_doe@example.com',
+  })
+  @IsString()
+  @Prop({ required: true, unique: true })
+  email: string;
+
+  @ApiProperty({
     description: 'Hashed password for the user',
     example: 'hashedpassword123',
   })
@@ -47,4 +55,16 @@ export class User {
   updated_at: Date;
 }
 
+
 export const UserSchema = SchemaFactory.createForClass(User);
+
+// Pre-save middleware to convert username and email to lowercase
+UserSchema.pre<UserDocument>('save', function (next) {
+  this.username = this.username.toLowerCase();
+  this.email = this.email.toLowerCase();
+  next();
+});
+
+// Ensure case-insensitive unique indexes for username and email
+UserSchema.index({ username: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
+UserSchema.index({ email: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });

@@ -1,5 +1,5 @@
 import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { UsersService } from '../../basics/users/users.service';
 import { CreateUserDto } from '../../common/dtos/createUserDto';
 import { UserResponseDto } from '../../common/dtos/userResponseDto';
 import { LocalAuthGuard } from './strategy/local-auth-strategy';
@@ -8,7 +8,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('authentication')
 @Controller('users/auth')
-export class UsersController {
+export class AuthsController {
   constructor(
     private readonly userService: UsersService,
     private jwtService: JwtService,
