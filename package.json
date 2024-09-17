@@ -33,6 +33,8 @@
     "@nestjs/platform-socket.io": "^10.4.1",
     "@nestjs/swagger": "^7.4.0",
     "@nestjs/websockets": "^10.4.1",
+    "@sentry/nestjs": "^8.30.0",
+    "@sentry/profiling-node": "^8.30.0",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "express": "^4.21.0",
