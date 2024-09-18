@@ -15,8 +15,8 @@ export class EmailService {
       port: 465,
       secure: true,
       auth: {
-        user: 'support@sportycredit.com',
-        pass: 'avaU#yhcbSm7ht!',
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
