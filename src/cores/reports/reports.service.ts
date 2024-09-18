@@ -9,7 +9,7 @@ import { Report } from './schemas/reports.schemas';
 import { Types } from 'mongoose';
 import { CreateIncidentDto } from '../../common/dtos/reports.dto';
 import { uploadObject } from 'src/common/utils/upload';
-import { UsersRepository } from 'src/cores/users/users.repository';
+import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
 
 @Injectable()

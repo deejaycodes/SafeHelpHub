@@ -13,10 +13,9 @@ export class UsersRepository {
     return await createdUser.save();
   }
 
-  async findUserByUserName(username: string): Promise<any> {
-    return await this.userModel.findOne({ username });
+  async findUserByCriteria(criteria: Record<string, any>): Promise<any> {
+    return await this.userModel.findOne(criteria);
   }
-
   async fetchSingleUserById(
     userId: Types.ObjectId | string,
   ): Promise<User | null> {
@@ -32,6 +31,17 @@ export class UsersRepository {
       return user;
     } catch (error) {
       throw new NotFoundException(`Error fetching user: ${error.message}`);
+    }
+  }
+  async verifyUserEmail(email: string): Promise<void> {
+    const user = await this.userModel.findOneAndUpdate(
+      { email },
+      { isVerified: true },
+      { new: true },
+    );
+
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
   }
 }

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEnum } from 'class-validator';
+import { IsString, IsEnum, IsBoolean } from 'class-validator';
 
 export type UserDocument = User & Document;
 
@@ -14,6 +14,14 @@ export class User {
   @IsString()
   @Prop({ required: true, unique: true })
   username: string;
+
+  @ApiProperty({
+    description: 'Unique email for the user',
+    example: 'john_doe@example.com',
+  })
+  @IsString()
+  @Prop({ required: true, unique: true })
+  email: string;
 
   @ApiProperty({
     description: 'Hashed password for the user',
@@ -33,6 +41,14 @@ export class User {
   role: string;
 
   @ApiProperty({
+    description: 'Whether the user has verified their email',
+    example: false,
+  })
+  @IsBoolean()
+  @Prop({ default: false })
+  isVerified: boolean;
+
+  @ApiProperty({
     description: 'Date when the user was created',
     example: '2024-09-16T10:15:00.000Z',
   })
@@ -48,3 +64,20 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+// Pre-save middleware to convert username and email to lowercase
+UserSchema.pre<UserDocument>('save', function (next) {
+  this.username = this.username.toLowerCase();
+  this.email = this.email.toLowerCase();
+  next();
+});
+
+// Ensure case-insensitive unique indexes for username and email
+UserSchema.index(
+  { username: 1 },
+  { unique: true, collation: { locale: 'en', strength: 2 } },
+);
+UserSchema.index(
+  { email: 1 },
+  { unique: true, collation: { locale: 'en', strength: 2 } },
+);

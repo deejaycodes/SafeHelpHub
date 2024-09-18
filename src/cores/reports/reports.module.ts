@@ -4,7 +4,7 @@ import { ReportsController } from './reports.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ReportSchema, Report } from './schemas/reports.schemas';
 import { User, UserSchema } from 'src/common/schemas/users.schema';
-import { UsersRepository } from 'src/cores/users/users.repository';
+import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
 
 @Module({
