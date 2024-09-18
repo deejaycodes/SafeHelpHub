@@ -20,8 +20,9 @@ export class AuthenticationService {
 
   async register(createUserDto: CreateUserDto): Promise<RegisterResponseDto> {
     const { email } = createUserDto;
+    let token;
     await this.usersService.createUser({ ...createUserDto });
-   // await this.emailService.sendVerificationEmail(email, token);
+   await this.emailService.sendVerificationEmail(email, token);
     return {
       message: 'Registration successful. Please verify your email.',
       token: this.jwtService.sign(email, {

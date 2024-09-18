@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv';
+import HTML_TEMPLATE from 'src/common/utils/mail-template';
 dotenv.config();
 
 @Injectable()
@@ -11,7 +12,8 @@ export class EmailService {
 
   constructor(private readonly configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.titan.email',
+      host: 'smtp.gmail.email',
+      service: "gmail",
       port: 465,
       secure: true,
       auth: {
@@ -32,15 +34,13 @@ export class EmailService {
 
   async sendVerificationEmail(email: string, token: string): Promise<void> {
     const verificationUrl = `http://localhost:3000/verify-email?token=${token}`;
-
+    const htmlMessage = HTML_TEMPLATE(verificationUrl);
     const mailOptions = {
       to: email,
       from: this.configService.get<string>('EMAIL_USER'),
       subject: 'Email Verification',
-      html: `
-        <p>Please click the link below to verify your email address:</p>
-        <a href="${verificationUrl}">Verify Email</a>
-      `,
+      text:'Please click the link below to verify your email address:\n' + verificationUrl, 
+      html: htmlMessage
     };
 
     try {
