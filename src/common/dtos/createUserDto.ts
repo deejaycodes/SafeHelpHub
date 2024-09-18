@@ -19,7 +19,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   username: string;
 
-
   @ApiProperty({
     description: 'User email address',
     example: 'user@example.com',
@@ -27,7 +26,7 @@ export class CreateUserDto {
   @IsEmail({}, { message: 'Invalid email format' })
   @IsNotEmpty({ message: 'Email is required' })
   email: string;
-  
+
   @ApiProperty({
     description:
       'Password for the user, must be 8-20 characters long and contain at least one letter, one number, and one special character',

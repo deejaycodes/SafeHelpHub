@@ -1,16 +1,16 @@
 import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
-import { UsersService } from '../../basics/users/users.service';
 import { CreateUserDto } from '../../common/dtos/createUserDto';
-import { UserResponseDto } from '../../common/dtos/userResponseDto';
 import { LocalAuthGuard } from './strategy/local-auth-strategy';
 import { JwtService } from '@nestjs/jwt';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthenticationService } from './authentication.service';
+import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto.dto';
 
 @ApiTags('authentication')
 @Controller('users/auth')
 export class AuthsController {
   constructor(
-    private readonly userService: UsersService,
+    private readonly authService: AuthenticationService,
     private jwtService: JwtService,
   ) {}
 
@@ -18,8 +18,8 @@ export class AuthsController {
   @ApiOperation({ summary: 'signup endpoint' })
   async createUser(
     @Body() createUserDto: CreateUserDto,
-  ): Promise<UserResponseDto> {
-    return this.userService.createUser(createUserDto);
+  ): Promise<RegisterResponseDto> {
+    return this.authService.register(createUserDto);
   }
 
   @ApiOperation({ summary: 'login endpoint' })
