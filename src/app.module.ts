@@ -30,7 +30,7 @@ import { EmailService } from './basics/email/email.service';
       signOptions: { expiresIn: jwtConstants.LOGIN_EXPIRY },
     }),
     SentryModule.forRoot(),
-    EmailModule,
+    //EmailModule,
     UsersModule,
     PassportModule,
     ChatsModule,
