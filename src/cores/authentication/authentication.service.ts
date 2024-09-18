@@ -7,6 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import { VerifyEmailDto } from 'src/common/dtos/verify.dto';
 import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto.dto';
 import { EmailService } from 'src/basics/email/email.service';
+import { LoginDto } from 'src/common/dtos/loginDto';
 
 @Injectable()
 export class AuthenticationService {
@@ -31,9 +32,10 @@ export class AuthenticationService {
 
   // validate user
   async validate(
-    username: string,
-    password: any,
+   username:string, password:string
   ): Promise<{ access_token: string }> {
+
+  //  const { username, password } = loginDto
     // Find user by username
     const user = await this.usersRepository.findUserByCriteria({ username });
     if (!user) {
