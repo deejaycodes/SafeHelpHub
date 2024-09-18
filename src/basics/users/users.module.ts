@@ -17,17 +17,6 @@ import { EmailService } from '../email/email.service';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     PassportModule,
     UsersModule,
-    JwtModule.register({
-      secret: jwtConstants.secret || 'secret',
-      signOptions: { expiresIn: jwtConstants.LOGIN_EXPIRY },
-    }),
-    // JwtModule.registerAsync({
-    //   imports: [ConfigModule],
-    //   inject: [ConfigService],
-    //   useFactory: (configService: ConfigService) => ({
-    //     secret: configService.get('JWT_KEY'),
-    //   }),
-    // }),
   ],
   controllers: [AuthsController],
   providers: [

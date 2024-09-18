@@ -13,18 +13,7 @@ import { EmailModule } from 'src/basics/email/email.module';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: jwtConstants.secret || 'secret',
-      signOptions: { expiresIn: jwtConstants.LOGIN_EXPIRY },
-    }),
     EmailModule,
-    // JwtModule.registerAsync({
-    //   imports: [ConfigModule],
-    //   inject: [ConfigService],
-    //   useFactory: (configService: ConfigService) => ({
-    //     secret: configService.get('JWT_KEY'),
-    //   }),
-    // }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   providers: [
