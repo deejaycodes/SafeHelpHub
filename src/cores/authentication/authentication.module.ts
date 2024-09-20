@@ -13,7 +13,7 @@ import { EmailModule } from 'src/basics/email/email.module';
 
 @Module({
   imports: [
-    EmailModule,
+    //EmailModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   providers: [

@@ -8,76 +8,192 @@ export type UserDocument = User & Document;
 @Schema({ timestamps: true })
 export class User {
   @ApiProperty({
-    description: 'Unique username for the user',
+    description: 'Name of the NGO',
+    example: 'Safe Home Foundation',
+  })
+  @Prop({ type: String })
+  ngo_name: string;
+
+  @ApiProperty({
+    description: 'Registration number of the NGO',
+    example: 'NGO-123456',
+  })
+  @Prop({ type: String })
+  registration_number: string;
+
+  @ApiProperty({
+    description: 'Primary location of the NGO',
+    example: {
+      address: '123 Charity Lane, Lagos, Nigeria',
+      city: 'Lagos',
+      state: 'Lagos State',
+      country: 'Nigeria',
+      latitude: 6.5244,
+      longitude: 3.3792,
+    },
+  })
+  @Prop({
+    type: {
+      address: { type: String },
+      city: { type: String },
+      state: { type: String},
+      country: { type: String},
+      latitude: { type: Number },
+      longitude: { type: Number },
+    },
+
+  })
+  primary_location: {
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    latitude: number;
+    longitude: number;
+  };
+
+  @ApiProperty({
+    description: 'Incident types supported by the NGO',
+    example: ['domestic_violence', 'child_abuse', 'FGM', 'sexual_assault', 'trafficking'],
+  })
+  @Prop({
+    type: [String],
+    enum: ['domestic_violence', 'child_abuse', 'FGM', 'sexual_assault', 'trafficking'],
+  
+  })
+  incident_types_supported: string[];
+
+  @ApiProperty({
+    description: 'Services provided by the NGO',
+    example: ['counselling', 'legal_aid', 'medical_support', 'emergency_shelter', 'financial_assistance'],
+  })
+  @Prop({
+    type: [String],
+    enum: ['counselling', 'legal_aid', 'medical_support', 'emergency_shelter', 'financial_assistance'],
+  })
+  services_provided: string[];
+
+  @ApiProperty({
+    description: 'Contact information for the NGO',
+    example: {
+      primary_contact: {
+        name: 'John Doe',
+        email: 'john.doe@ngoemail.com',
+        phone: '+2348000000000',
+      },
+      secondary_contact: {
+        name: 'Jane Doe',
+        email: 'jane.doe@ngoemail.com',
+        phone: '+2348012345678',
+      },
+    },
+  })
+  @Prop({
+    type: {
+      primary_contact: {
+        name: { type: String, required: true },
+        email: { type: String, required: true },
+        phone: { type: String, required: true },
+      },
+      secondary_contact: {
+        name: { type: String },
+        email: { type: String },
+        phone: { type: String },
+      },
+    },
+  })
+  contact_info: {
+    primary_contact: {
+      name: string;
+      email: string;
+      phone: string;
+    };
+    secondary_contact?: {
+      name?: string;
+      email?: string;
+      phone?: string;
+    };
+  };
+
+  // User-related fields
+  @ApiProperty({
+    description: 'Unique username for the user creating the NGO',
     example: 'john_doe',
   })
-  @IsString()
-  @Prop({ required: true, unique: true })
+  @Prop({ type: String })
   username: string;
 
   @ApiProperty({
-    description: 'Unique email for the user',
+    description: 'Unique email for the user creating the NGO',
     example: 'john_doe@example.com',
   })
-  @IsString()
-  @Prop({ required: true, unique: true })
+  @Prop({  unique: true })
   email: string;
 
   @ApiProperty({
     description: 'Hashed password for the user',
     example: 'hashedpassword123',
   })
-  @IsString()
   @Prop({ required: true })
   password_hash: string;
 
   @ApiProperty({
-    description: 'Role of the user, can be user, support, or admin',
+    description: 'Role of the user',
     enum: ['user', 'support', 'admin'],
-    example: 'user',
+    example: 'admin',
   })
-  @IsEnum(['user', 'support', 'admin'])
-  @Prop({ required: true, enum: ['user', 'support', 'admin'], default: 'user' })
+  @Prop({
+    type: String,
+    enum: ['user', 'ngo'],
+    default: 'user',
+  })
   role: string;
 
   @ApiProperty({
     description: 'Whether the user has verified their email',
     example: false,
   })
-  @IsBoolean()
   @Prop({ default: false })
   isVerified: boolean;
 
   @ApiProperty({
-    description: 'Date when the user was created',
+    description: 'Date when the record was created',
     example: '2024-09-16T10:15:00.000Z',
   })
   @Prop({ type: Date, default: Date.now })
   created_at: Date;
 
   @ApiProperty({
-    description: 'Date when the user was last updated',
+    description: 'Date when the record was last updated',
     example: '2024-09-16T10:15:00.000Z',
   })
   @Prop({ type: Date, default: Date.now })
   updated_at: Date;
 }
-
 export const UserSchema = SchemaFactory.createForClass(User);
 
-// Pre-save middleware to convert username and email to lowercase
+// Pre-save hook to lowercase user email and NGO primary contact email
 UserSchema.pre<UserDocument>('save', function (next) {
-  this.username = this.username.toLowerCase();
-  this.email = this.email.toLowerCase();
+  if (this.email) {
+    this.email = this.email.toLowerCase();
+  }
+  
+  if (this.contact_info && this.contact_info.primary_contact.email) {
+    this.contact_info.primary_contact.email = this.contact_info.primary_contact.email.toLowerCase();
+  }
+
   next();
 });
 
-// Ensure case-insensitive unique indexes for username and email
-UserSchema.index(
-  { username: 1 },
-  { unique: true, collation: { locale: 'en', strength: 2 } },
-);
+// Ensure case-insensitive unique indexes for user email
 UserSchema.index(
   { email: 1 },
   { unique: true, collation: { locale: 'en', strength: 2 } },
 );
+
+// Ensure case-insensitive unique indexes for NGO primary contact email
+UserSchema.index(
+  { 'contact_info.primary_contact.email': 1 },
+  { unique: true, sparse: true, collation: { locale: 'en', strength: 2 } },
+);
+
