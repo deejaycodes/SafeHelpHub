@@ -142,7 +142,7 @@ export class UsersService {
       throw new NotFoundException('User not found.');
     }
 
-    if (!user.verificationCode || user.resetCode !== verificationCode) {
+    if (!user.verificationCode || user.verificationCode !== verificationCode) {
       throw new BadRequestException('Invalid reset code.');
     }
     await this.usersRepository.updateUser(email, {
