@@ -24,6 +24,7 @@ import { EmailModule } from './basics/email/email.module';
 import { EmailService } from './basics/email/email.service';
 import { NgoModule } from './cores/ngo/ngo.module';
 import { NgoService } from './cores/ngo/ngo.service';
+import { UsersController } from './basics/users/users.controller';
 
 @Module({
   imports: [
@@ -44,7 +45,7 @@ import { NgoService } from './cores/ngo/ngo.service';
     AuthenticationModule,
     EmailModule,
   ],
-  controllers: [AppController, AuthsController],
+  controllers: [AppController, AuthsController, UsersController],
   providers: [
     UsersRepository,
     AppService,

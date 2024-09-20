@@ -1,5 +1,5 @@
 const HTML_TEMPLATE = (verificationLink) => {
-    return `
+  return `
       <!DOCTYPE html>
       <html>
         <head>
@@ -55,8 +55,8 @@ const HTML_TEMPLATE = (verificationLink) => {
                 <h1>Welcome to SAFEHELPHUB</h1>
               </div>
               <div class="email-body">
-                <p>Thank you for signing up! To complete your registration, please verify your email address by clicking the button below:</p>
-                <p><a href="${verificationLink}" class="button">Verify Email</a></p>
+                <p>Thank you for signing up! To complete your registration, please verify your email address using the digits below:</p>
+                 <p style="font-size: 24px; font-weight: bold; text-align: center;">${verificationLink}</p>
                 <p>If you did not create an account, please disregard this email.</p>
               </div>
               <div class="email-footer">
@@ -67,6 +67,6 @@ const HTML_TEMPLATE = (verificationLink) => {
         </body>
       </html>
     `;
-}
+};
 
 export default HTML_TEMPLATE;

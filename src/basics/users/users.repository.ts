@@ -5,21 +5,32 @@ import { User, UserDocument } from '../../common/schemas/users.schema';
 import { Model, Types } from 'mongoose';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 
-
 @Injectable()
 export class UsersRepository {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async createUser(createUserDto: CreateUserDto|CreateNgoDto): Promise<User> {
+  async onModuleInit() {
+    await this.cleanupUnverifiedUsers();
+    // Set an interval to run cleanup every 30 minutes
+    setInterval(() => this.cleanupUnverifiedUsers(), 30 * 60 * 1000);
+  }
 
+  private async cleanupUnverifiedUsers() {
+    const cutoffDate = new Date(Date.now() - 30 * 60 * 1000);
+    await this.userModel.deleteMany({
+      isVerified: false,
+      created_at: { $lt: cutoffDate },
+    });
+  }
+
+  async createUser(createUserDto: CreateUserDto | CreateNgoDto): Promise<User> {
     const createdUser = new this.userModel(createUserDto);
     return await createdUser.save();
   }
 
-  async createNgo(createNgoDto: CreateNgoDto): Promise<User>{
-    const createNgo = new this.userModel(createNgoDto)
-    return await createNgo.save()
-
+  async createNgo(createNgoDto: CreateNgoDto): Promise<User> {
+    const createNgo = new this.userModel(createNgoDto);
+    return await createNgo.save();
   }
 
   async findUserByCriteria(criteria: Record<string, any>): Promise<any> {
@@ -52,5 +63,11 @@ export class UsersRepository {
     if (!user) {
       throw new NotFoundException('User not found');
     }
+  }
+
+  async updateUser(email: string, updateData: any): Promise<User> {
+    return this.userModel.findOneAndUpdate({ email }, updateData, {
+      new: true,
+    });
   }
 }

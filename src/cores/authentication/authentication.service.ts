@@ -7,6 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import { VerifyEmailDto } from 'src/common/dtos/verify.dto';
 import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto.dto';
 import { EmailService } from 'src/basics/email/email.service';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class AuthenticationService {
@@ -19,9 +20,14 @@ export class AuthenticationService {
 
   async register(createUserDto: CreateUserDto): Promise<RegisterResponseDto> {
     const { email } = createUserDto;
-    let token;
-    await this.usersService.createUser({ ...createUserDto });
-    await this.emailService.sendVerificationEmail(email, token);
+    const verificationCode = randomInt(100000, 999999).toString();
+    const verificationCodeExpiresAt = new Date(Date.now() + 30 * 1000);
+    await this.usersService.createUser({
+      ...createUserDto,
+      verificationCode: verificationCode,
+      verificationCodeExpiresAt: verificationCodeExpiresAt,
+    });
+    await this.emailService.sendVerificationEmail(email, verificationCode);
     return {
       message: 'Registration successful. Please verify your email.',
       token: this.jwtService.sign(email, {
@@ -51,6 +57,8 @@ export class AuthenticationService {
   }
 
   async verifyEmail(verifyEmailDto: VerifyEmailDto): Promise<void> {
+    const resetCode = randomInt(100000, 999999).toString();
+    const resetCodeExpiresAt = new Date(Date.now() + 60 * 1000);
     const { token } = verifyEmailDto;
     const decoded = this.jwtService.verify(token);
     await this.usersRepository.verifyUserEmail(decoded.email);
