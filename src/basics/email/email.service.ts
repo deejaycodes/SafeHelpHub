@@ -2,7 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv';
-import HTML_TEMPLATE from 'src/common/utils/mail-template';
+import HTML_TEMPLATE from 'src/common/utils/template/mail-template';
+import FORGOT_PASSWORD_TEMPLATE from 'src/common/utils/template/forgotpassword-emailtemplate';
+
 dotenv.config();
 
 @Injectable()
@@ -52,5 +54,28 @@ export class EmailService {
       );
       throw new Error('Could not send verification email');
     }
+  }
+
+  async sendForgotPasswordEmail(email:string, code) {
+    const verificationUrl = `${code}`;
+    const htmlMessage = FORGOT_PASSWORD_TEMPLATE(verificationUrl);
+
+    const mailOptions = {
+        to: email,
+        from: this.configService.get<string>('EMAIL_USER'),
+        subject: 'Forgot Password',
+        text:`${code}. use the digit code provided to reset your password`, 
+        html: htmlMessage
+      };
+  
+      try {
+        await this.transporter.sendMail(mailOptions);
+        this.logger.log(`Forgotpassword email sent to ${email}`);
+      } catch (error) {
+        this.logger.error(
+          `Failed to send forgotpassword email to ${email}: ${error.message}`,
+        );
+        throw new Error('Could not send forgotpassword email');
+      }
   }
 }

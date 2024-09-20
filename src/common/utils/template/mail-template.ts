@@ -1,5 +1,5 @@
 const HTML_TEMPLATE = (verificationLink) => {
-    return `
+  return `
       <!DOCTYPE html>
       <html>
         <head>
@@ -67,6 +67,6 @@ const HTML_TEMPLATE = (verificationLink) => {
         </body>
       </html>
     `;
-}
+};
 
 export default HTML_TEMPLATE;

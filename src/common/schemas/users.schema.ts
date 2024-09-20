@@ -36,12 +36,11 @@ export class User {
     type: {
       address: { type: String },
       city: { type: String },
-      state: { type: String},
-      country: { type: String},
+      state: { type: String },
+      country: { type: String },
       latitude: { type: Number },
       longitude: { type: Number },
     },
-
   })
   primary_location: {
     address: string;
@@ -54,22 +53,45 @@ export class User {
 
   @ApiProperty({
     description: 'Incident types supported by the NGO',
-    example: ['domestic_violence', 'child_abuse', 'FGM', 'sexual_assault', 'trafficking'],
+    example: [
+      'domestic_violence',
+      'child_abuse',
+      'FGM',
+      'sexual_assault',
+      'trafficking',
+    ],
   })
   @Prop({
     type: [String],
-    enum: ['domestic_violence', 'child_abuse', 'FGM', 'sexual_assault', 'trafficking'],
-  
+    enum: [
+      'domestic_violence',
+      'child_abuse',
+      'FGM',
+      'sexual_assault',
+      'trafficking',
+    ],
   })
   incident_types_supported: string[];
 
   @ApiProperty({
     description: 'Services provided by the NGO',
-    example: ['counselling', 'legal_aid', 'medical_support', 'emergency_shelter', 'financial_assistance'],
+    example: [
+      'counselling',
+      'legal_aid',
+      'medical_support',
+      'emergency_shelter',
+      'financial_assistance',
+    ],
   })
   @Prop({
     type: [String],
-    enum: ['counselling', 'legal_aid', 'medical_support', 'emergency_shelter', 'financial_assistance'],
+    enum: [
+      'counselling',
+      'legal_aid',
+      'medical_support',
+      'emergency_shelter',
+      'financial_assistance',
+    ],
   })
   services_provided: string[];
 
@@ -127,7 +149,7 @@ export class User {
     description: 'Unique email for the user creating the NGO',
     example: 'john_doe@example.com',
   })
-  @Prop({  unique: true })
+  @Prop({ unique: true })
   email: string;
 
   @ApiProperty({
@@ -136,6 +158,19 @@ export class User {
   })
   @Prop({ required: true })
   password_hash: string;
+
+  @ApiProperty({
+    description: 'code to reset a password, it will be drop on user email',
+    example: '1234',
+  })
+  @Prop({ type: String })
+  resetCode: string;
+
+  @ApiProperty({
+    description: 'resetcode expiry time',
+  })
+  @Prop({ type: Date, default: null })
+  resetCodeExpiresAt: Date;
 
   @ApiProperty({
     description: 'Role of the user',
@@ -177,9 +212,10 @@ UserSchema.pre<UserDocument>('save', function (next) {
   if (this.email) {
     this.email = this.email.toLowerCase();
   }
-  
+
   if (this.contact_info && this.contact_info.primary_contact.email) {
-    this.contact_info.primary_contact.email = this.contact_info.primary_contact.email.toLowerCase();
+    this.contact_info.primary_contact.email =
+      this.contact_info.primary_contact.email.toLowerCase();
   }
 
   next();
@@ -196,4 +232,3 @@ UserSchema.index(
   { 'contact_info.primary_contact.email': 1 },
   { unique: true, sparse: true, collation: { locale: 'en', strength: 2 } },
 );
-
