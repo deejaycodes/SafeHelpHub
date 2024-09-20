@@ -24,15 +24,15 @@ export class AuthsController {
   }
 
   @ApiOperation({ summary: 'login endpoint' })
-  @ApiBody({ type: LoginDto })
+  @ApiBody({ type: LoginDto }) 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Body() loginDto: LoginDto, @Request() req) {
+  async login(@Body() loginDto: any, @Request() req) {
     const payload = {
       id: req.user.id,
       username: req.user.username,
       role: req.user.role,
-      email: req.user.email,
+      email:req.user.email,
       created_at: req.user.created_at,
       updated_at: req.user.updated_at,
     };

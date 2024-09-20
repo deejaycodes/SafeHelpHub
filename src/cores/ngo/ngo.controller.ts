@@ -5,8 +5,8 @@ import { NgoService } from './ngo.service';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { JwtService } from '@nestjs/jwt';
 
-@ApiTags('ngo_authentication')
-@Controller('ngo/register')
+@ApiTags('Ngo')
+@Controller('ngo')
 export class NgoController {
   constructor(
     private readonly ngoService: NgoService,

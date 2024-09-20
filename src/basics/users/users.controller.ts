@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { JwtService } from '@nestjs/jwt';
 
@@ -9,11 +9,13 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('forgot-password')
+  @ApiOperation({ summary: 'forgotpassword endpoint' })
   async forgotPassword(@Body('email') email: string): Promise<any> {
     return this.usersService.sendForgotPasswordCode(email);
   }
 
   @Post('reset-password')
+  @ApiOperation({ summary: 'reset-password endpoint' })
   async resetPassword(
     @Body('email') email: string,
     @Body('resetCode') resetCode: string,
