@@ -29,6 +29,7 @@ export class UsersController {
   }
 
   @Post('verify')
+  @ApiOperation({ summary: 'account verification' })
   async verifyAccount(
     @Body('email') email: string,
     @Body('verification-code') code: string,
