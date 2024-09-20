@@ -3,6 +3,7 @@ import { CreateUserDto } from '../../common/dtos/createUserDto';
 import * as bcrypt from 'bcryptjs';
 import { UserResponseDto } from '../../common/dtos/userResponseDto';
 import { UsersRepository } from './users.repository';
+import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 
 @Injectable()
 export class UsersService {
@@ -42,4 +43,32 @@ export class UsersService {
       updated_at: savedUser.updated_at.toISOString(),
     };
   }
+
+  async createNgo(createNgoDto: CreateNgoDto): Promise<any> {
+    const email= createNgoDto.contact_info.primary_contact.email.toLowerCase()
+   
+    // Check if the NGO user already exists
+    const existingUser = await this.usersRepository.findUserByCriteria({email});
+    if (existingUser) {
+      throw new BadRequestException('Email already exists');
+    }
+  
+    // Hash the password
+    const password_hash= await bcrypt.hash(createNgoDto.password, 10);
+
+    const savedUser =  {
+      ...createNgoDto,
+      password_hash,
+      contact_info: {
+        primary_contact: {
+          ...createNgoDto.contact_info.primary_contact,
+        },
+        secondary_contact: createNgoDto.contact_info.secondary_contact || {},
+      },
+      email
+    };
+  
+    return  await this.usersRepository.createNgo(savedUser)
+  }
+  
 }

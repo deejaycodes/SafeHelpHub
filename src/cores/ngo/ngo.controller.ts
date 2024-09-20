@@ -1,0 +1,23 @@
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto.dto';
+import { NgoService } from './ngo.service';
+import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
+import { JwtService } from '@nestjs/jwt';
+
+@ApiTags('ngo_authentication')
+@Controller('ngo/register')
+export class NgoController {
+  constructor(
+    private readonly ngoService: NgoService,
+    private jwtService: JwtService,
+  ) {}
+
+  @Post('register')
+  @ApiOperation({ summary: 'signup endpoint' })
+  async createUser(
+    @Body() createNgoDto: CreateNgoDto,
+  ): Promise<RegisterResponseDto> {
+    return this.ngoService.registerNgo(createNgoDto);
+  }
+}

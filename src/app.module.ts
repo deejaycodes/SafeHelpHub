@@ -22,6 +22,8 @@ import { AuthenticationModule } from './cores/authentication/authentication.modu
 import { jwtConstants } from './cores/authentication/strategy/constants';
 import { EmailModule } from './basics/email/email.module';
 import { EmailService } from './basics/email/email.service';
+import { NgoModule } from './cores/ngo/ngo.module';
+import { NgoService } from './cores/ngo/ngo.service';
 
 @Module({
   imports: [
@@ -34,7 +36,7 @@ import { EmailService } from './basics/email/email.service';
     UsersModule,
     PassportModule,
     ChatsModule,
-
+    NgoModule,
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forRoot(process.env.MONGO_URI),
@@ -52,6 +54,7 @@ import { EmailService } from './basics/email/email.service';
     EmailService,
     LocalStrategy,
     JwtStrategy,
+    NgoService,
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,
