@@ -5,6 +5,7 @@ import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto.dto';
 import { UsersService } from 'src/basics/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from 'src/basics/email/email.service';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class NgoService {
@@ -17,10 +18,15 @@ export class NgoService {
 
   async registerNgo(createNgoDto: CreateNgoDto): Promise<RegisterResponseDto> {
     const email = createNgoDto.contact_info.primary_contact.email;
-    let token;
-    const role = createNgoDto.role;
-    await this.usersService.createNgo({ ...createNgoDto, role: 'ngo' });
-    await this.emailService.sendVerificationEmail(email, token);
+    const verificationCode = randomInt(100000, 999999).toString();
+    const verificationCodeExpiresAt = new Date(Date.now() + 30 * 1000);
+    await this.usersService.createNgo({
+      ...createNgoDto,
+      role: 'ngo',
+      verificationCode: verificationCode,
+      verificationCodeExpiresAt: verificationCodeExpiresAt,
+    });
+    await this.emailService.sendVerificationEmail(email, verificationCode);
     return {
       message: 'Registration successful. Please verify your email.',
       token: this.jwtService.sign(email, {

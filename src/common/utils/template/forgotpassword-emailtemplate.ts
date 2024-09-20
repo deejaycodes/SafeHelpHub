@@ -1,5 +1,5 @@
 const FORGOT_PASSWORD_TEMPLATE = (resetCode) => {
-    return `
+  return `
         <!DOCTYPE html>
         <html>
           <head>
@@ -67,7 +67,6 @@ const FORGOT_PASSWORD_TEMPLATE = (resetCode) => {
           </body>
         </html>
       `;
-  };
-  
-  export default FORGOT_PASSWORD_TEMPLATE;
-  
+};
+
+export default FORGOT_PASSWORD_TEMPLATE;

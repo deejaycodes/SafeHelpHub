@@ -9,6 +9,20 @@ import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 export class UsersRepository {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
+  async onModuleInit() {
+    await this.cleanupUnverifiedUsers();
+    // Set an interval to run cleanup every 30 minutes
+    setInterval(() => this.cleanupUnverifiedUsers(), 30 * 60 * 1000);
+  }
+
+  private async cleanupUnverifiedUsers() {
+    const cutoffDate = new Date(Date.now() - 30 * 60 * 1000);
+    await this.userModel.deleteMany({
+      isVerified: false,
+      created_at: { $lt: cutoffDate },
+    });
+  }
+
   async createUser(createUserDto: CreateUserDto | CreateNgoDto): Promise<User> {
     const createdUser = new this.userModel(createUserDto);
     return await createdUser.save();

@@ -10,12 +10,15 @@ import { UserResponseDto } from '../../common/dtos/userResponseDto';
 import { UsersRepository } from './users.repository';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { EmailService } from '../email/email.service';
+import { VerifyEmailDto } from 'src/common/dtos/verify.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
@@ -128,5 +131,26 @@ export class UsersService {
     });
 
     return { message: 'Password reset successfully' };
+  }
+
+  async verifyAccount(
+    email: string,
+    verificationCode,
+  ): Promise<{ message: string }> {
+    const user = await this.usersRepository.findUserByCriteria({ email });
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+
+    if (!user.verificationCode || user.resetCode !== verificationCode) {
+      throw new BadRequestException('Invalid reset code.');
+    }
+    await this.usersRepository.updateUser(email, {
+      isVerified: true,
+      verificationCode: null,
+      verificationCodeExpiresAt: null,
+    });
+
+    return { message: 'Account verified successfully' };
   }
 }

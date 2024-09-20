@@ -34,8 +34,8 @@ export class EmailService {
     });
   }
 
-  async sendVerificationEmail(email: string, token: string): Promise<void> {
-    const verificationUrl = `http://localhost:3000/verify-email?token=${token}`;
+  async sendVerificationEmail(email: string, code: string): Promise<void> {
+    const verificationUrl = `${code}`;
     const htmlMessage = HTML_TEMPLATE(verificationUrl);
     const mailOptions = {
       to: email,

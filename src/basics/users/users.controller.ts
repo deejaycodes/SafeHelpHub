@@ -25,4 +25,12 @@ export class UsersController {
       newPassword,
     );
   }
+
+  @Post('verify')
+  async verifyAccount(
+    @Body('email') email: string,
+    @Body('verification-code') code: string,
+  ): Promise<any> {
+    return this.usersService.verifyAccount(email, code);
+  }
 }

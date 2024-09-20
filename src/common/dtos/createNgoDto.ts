@@ -12,6 +12,7 @@ import {
   ValidateNested,
   IsArray,
   ArrayMinSize,
+  IsDateString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -173,8 +174,20 @@ export class CreateNgoDto {
   })
   @IsOptional()
   @IsString()
-  @IsIn(['user', 'ngo'], {
-    message: 'Role must be either user, support, or admin',
+  @IsIn(['ngo'], {
+    message: 'Role must be either ngo',
   })
   role: string;
+
+  @IsOptional()
+  @IsString()
+  verificationCode?: string;
+
+  @ApiProperty({
+    description: 'Reset code expiry time',
+    example: '2024-09-20T10:00:00Z',
+  })
+  @IsDateString()
+  @IsOptional() //
+  verificationCodeExpiresAt?: Date;
 }

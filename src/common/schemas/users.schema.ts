@@ -192,6 +192,19 @@ export class User {
   isVerified: boolean;
 
   @ApiProperty({
+    description: 'code to reset a password, it will be drop on user email',
+    example: '1234',
+  })
+  @Prop({ type: String })
+  verificationCode: string;
+
+  @ApiProperty({
+    description: 'resetcode expiry time',
+  })
+  @Prop({ type: Date, default: null })
+  verificationCodeExpiresAt: Date;
+
+  @ApiProperty({
     description: 'Date when the record was created',
     example: '2024-09-16T10:15:00.000Z',
   })

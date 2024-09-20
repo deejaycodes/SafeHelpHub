@@ -7,6 +7,7 @@ import {
   MinLength,
   IsOptional,
   IsEmail,
+  IsDateString,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -51,4 +52,20 @@ export class CreateUserDto {
   @IsString()
   @IsIn(['user', 'support', 'admin'])
   role: string;
+
+  @ApiProperty({
+    description: 'Code to reset a password, it will be sent to the user email',
+    example: '1234',
+  })
+  @IsOptional()
+  @IsString()
+  verificationCode?: string;
+
+  @ApiProperty({
+    description: 'Reset code expiry time',
+    example: '2024-09-20T10:00:00Z',
+  })
+  @IsDateString()
+  @IsOptional() //
+  verificationCodeExpiresAt?: Date;
 }
