@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreateIncidentDto } from '../../common/dtos/reports.dto';
+import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report, ReportDocument } from './schemas/reports.schemas';
 import { Model, Types } from 'mongoose';
 

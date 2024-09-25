@@ -10,7 +10,7 @@ import { UserResponseDto } from '../../common/dtos/userResponseDto';
 import { UsersRepository } from './users.repository';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { EmailService } from '../email/email.service';
-import { VerifyEmailDto } from 'src/common/dtos/verify.dto';
+import { VerifyEmailDto } from 'src/common/dtos/verifyDto';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()

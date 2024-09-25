@@ -12,7 +12,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { CreateIncidentDto } from '../../common/dtos/reports.dto';
+import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report } from './schemas/reports.schemas';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from 'src/cores/authentication/strategy/jwt-guard';

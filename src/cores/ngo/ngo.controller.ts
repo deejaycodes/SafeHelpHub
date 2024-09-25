@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto.dto';
+import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
 import { NgoService } from './ngo.service';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { JwtService } from '@nestjs/jwt';
