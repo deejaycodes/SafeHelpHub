@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report, ReportDocument } from './schemas/reports.schemas';
-import { Model, Types } from 'mongoose';
+import { Model, Types, isValidObjectId } from 'mongoose';
 
 @Injectable()
 export class ReportsRepository {
@@ -19,6 +19,10 @@ export class ReportsRepository {
     reportId: Types.ObjectId | string,
   ): Promise<Report | null> {
     try {
+
+      if (!isValidObjectId(reportId)) {
+        throw new BadRequestException('Invalid ID format. Must be a 24-character hex string.');
+      }
       const objectId =
         typeof reportId === 'string' ? new Types.ObjectId(reportId) : reportId;
 
@@ -37,6 +41,10 @@ export class ReportsRepository {
     reportId: Types.ObjectId | string,
     filePath: string,
   ): Promise<Report> {
+
+    if (!isValidObjectId(reportId)) {
+      throw new BadRequestException('Invalid ID format. Must be a 24-character hex string.');
+    }
     const objectId =
       typeof reportId === 'string' ? new Types.ObjectId(reportId) : reportId;
 

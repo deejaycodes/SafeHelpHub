@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserDto } from '../../common/dtos/createUserDto';
 import { User, UserDocument } from '../../common/schemas/users.schema';
-import { Model, Types } from 'mongoose';
+import { Model,isValidObjectId, Types } from 'mongoose';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 
 @Injectable()
@@ -40,6 +40,9 @@ export class UsersRepository {
     userId: Types.ObjectId | string,
   ): Promise<User | null> {
     try {
+      if (!isValidObjectId(userId)) {
+        throw new BadRequestException('Invalid ID format. Must be a 24-character hex string.');
+      }
       const objectId =
         typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
 
