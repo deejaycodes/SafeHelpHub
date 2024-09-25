@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Report } from './schemas/reports.schemas';
 import { Types } from 'mongoose';
-import { CreateIncidentDto } from '../../common/dtos/reports.dto';
+import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { uploadObject } from 'src/common/utils/upload';
 import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';

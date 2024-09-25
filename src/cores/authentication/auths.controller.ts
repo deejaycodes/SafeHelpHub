@@ -4,7 +4,7 @@ import { LocalAuthGuard } from './strategy/local-auth-strategy';
 import { JwtService } from '@nestjs/jwt';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthenticationService } from './authentication.service';
-import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto.dto';
+import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
 import { LoginDto } from 'src/common/dtos/loginDto';
 
 @ApiTags('authentication')
