@@ -37,7 +37,6 @@ export class AuthenticationService {
     email: string,
     password: string,
   ): Promise<{ access_token: string }> {
-    // Find user by username
     const user = await this.usersRepository.findUserByCriteria({ email });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
