@@ -91,4 +91,12 @@ export class ReportsService {
       HttpStatus.BAD_REQUEST,
     );
   }
+
+  async fetchReportStatus(reportId: Types.ObjectId | string,) {
+
+    const report = await this.reportsRepository.fetchSingleReportById(reportId)
+
+    return {status: report.status}
+  }
+   
 }
