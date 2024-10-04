@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Param,
   Post,
   Put,
@@ -42,6 +43,12 @@ export class ReportsController {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+  }
+
+  @Get('/:reportId')
+  @ApiOperation({ summary: 'get status of a report' })
+  reportStatus(@Param('reportId') reportId: string,){
+    return this.reportsService.fetchReportStatus(reportId)
   }
 
   @Put('upload_file/:reportId')
