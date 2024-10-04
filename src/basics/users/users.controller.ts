@@ -1,7 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { JwtService } from '@nestjs/jwt';
+import { VerifyAccountDto } from 'src/common/dtos/verifyDto';
 
 @ApiTags('users')
 @Controller('users')
@@ -27,13 +28,24 @@ export class UsersController {
       newPassword,
     );
   }
-
+ 
   @Post('verify')
-  @ApiOperation({ summary: 'account verification' })
+  @ApiOperation({ summary: 'Account verification' })
+  @ApiResponse({
+    status: 200,
+    description: 'Account verified successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid verification code or email',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
   async verifyAccount(
-    @Body('email') email: string,
-    @Body('verification-code') code: string,
-  ): Promise<any> {
-    return this.usersService.verifyAccount(email, code);
+    @Body() verifyAccountDto: VerifyAccountDto,
+  ): Promise<{ message: string }> {
+    return this.usersService.verifyAccount(verifyAccountDto);
   }
 }

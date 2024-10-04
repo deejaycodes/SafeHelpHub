@@ -4,7 +4,6 @@ import { UsersRepository } from 'src/basics/users/users.repository';
 import { UsersService } from 'src/basics/users/users.service';
 import { CreateUserDto } from 'src/common/dtos/createUserDto';
 import * as bcrypt from 'bcryptjs';
-import { VerifyEmailDto } from 'src/common/dtos/verifyDto';
 import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
 import { EmailService } from 'src/basics/email/email.service';
 import { randomInt } from 'crypto';
