@@ -12,6 +12,8 @@ import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { EmailService } from '../email/email.service';
 import { JwtService } from '@nestjs/jwt';
 import { VerifyAccountDto } from 'src/common/dtos/verifyDto';
+import { SendForgotPasswordCodeDto } from 'src/common/dtos/sendForgotPasswordDto';
+import { ValidateResetCodeAndResetPasswordDto } from 'src/common/dtos/validateResetPasswordDto';
 
 @Injectable()
 export class UsersService {
@@ -85,53 +87,55 @@ export class UsersService {
     return await this.usersRepository.createNgo(savedUser);
   }
 
-  async sendForgotPasswordCode(email: string): Promise<{ message: string }> {
+  async sendForgotPasswordCode(
+    sendForgotPasswordCodeDto: SendForgotPasswordCodeDto,
+  ): Promise<{ message: string }> {
+    const { email } = sendForgotPasswordCodeDto;
+  
     const user = await this.usersRepository.findUserByCriteria({ email });
     if (!user) {
       throw new NotFoundException('User with this email does not exist.');
     }
-
+  
     const resetCode = randomInt(1000, 9999).toString();
-
     const resetCodeExpiresAt = new Date(Date.now() + 60 * 1000);
-
-    await this.usersRepository.updateUser(email, {
-      resetCode,
-      resetCodeExpiresAt,
-    });
-
+  
+    await this.usersRepository.updateUser(email, { resetCode, resetCodeExpiresAt });
+  
     await this.emailService.sendForgotPasswordEmail(email, resetCode);
-    return { message: 'forgot password email sent successfully' };
+    return { message: 'Forgot password email sent successfully' };
   }
+  
 
   async validateResetCodeAndResetPassword(
-    email: string,
-    resetCode: string,
-    newPassword: string,
+    validateResetCodeAndResetPasswordDto: ValidateResetCodeAndResetPasswordDto,
   ): Promise<{ message: string }> {
+    const { email, resetCode, newPassword } = validateResetCodeAndResetPasswordDto;
+  
     const user = await this.usersRepository.findUserByCriteria({ email });
     if (!user) {
       throw new NotFoundException('User not found.');
     }
-
+  
     if (!user.resetCode || user.resetCode !== resetCode) {
       throw new BadRequestException('Invalid reset code.');
     }
-
+  
     if (new Date() > new Date(user.resetCodeExpiresAt)) {
       throw new BadRequestException('Reset code has expired.');
     }
-
+  
     const password_hash = await bcrypt.hash(newPassword, 10);
-
+  
     await this.usersRepository.updateUser(email, {
       password_hash,
       resetCode: null,
       resetCodeExpiresAt: null,
     });
-
+  
     return { message: 'Password reset successfully' };
   }
+  
 
   async verifyAccount(
     verifyAccountDto: VerifyAccountDto,

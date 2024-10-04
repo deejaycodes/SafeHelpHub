@@ -1,8 +1,10 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { JwtService } from '@nestjs/jwt';
 import { VerifyAccountDto } from 'src/common/dtos/verifyDto';
+import { SendForgotPasswordCodeDto } from 'src/common/dtos/sendForgotPasswordDto';
+import { ValidateResetCodeAndResetPasswordDto } from 'src/common/dtos/validateResetPasswordDto';
 
 @ApiTags('users')
 @Controller('users')
@@ -10,37 +12,98 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('forgot-password')
-  @ApiOperation({ summary: 'forgotpassword endpoint' })
-  async forgotPassword(@Body('email') email: string): Promise<any> {
-    return this.usersService.sendForgotPasswordCode(email);
+  @ApiOperation({ summary: 'Send forgot password code to user' })
+  @ApiBody({
+    description: 'Request body for sending a forgot password code',
+    type: SendForgotPasswordCodeDto,
+    examples: {
+      example1: {
+        summary: 'Valid Request Example',
+        description: 'Example of a valid request to send a forgot password code',
+        value: {
+          email: 'user@example.com',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Forgot password email sent successfully',
+    schema: {
+      example: { message: 'Forgot password email sent successfully' },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User with this email does not exist',
+    schema: {
+      example: { statusCode: 404, message: 'User with this email does not exist.' },
+    },
+  })
+  async sendForgotPasswordCode(
+    @Body() sendForgotPasswordCodeDto: SendForgotPasswordCodeDto,
+  ): Promise<{ message: string }> {
+    return this.usersService.sendForgotPasswordCode(sendForgotPasswordCodeDto);
   }
 
   @Post('reset-password')
-  @ApiOperation({ summary: 'reset-password endpoint' })
-  async resetPassword(
-    @Body('email') email: string,
-    @Body('resetCode') resetCode: string,
-    @Body('newPassword') newPassword: string,
-  ): Promise<any> {
+  @ApiOperation({ summary: 'Validate reset code and reset password' })
+  @ApiBody({
+    description: 'Request body for validating reset code and resetting the password',
+    type: ValidateResetCodeAndResetPasswordDto,
+    examples: {
+      example1: {
+        summary: 'Valid Reset Request Example',
+        description: 'Example of a valid reset code and password reset request',
+        value: {
+          email: 'user@example.com',
+          resetCode: '1234',
+          newPassword: 'NewSecurePassword123',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password reset successfully',
+    schema: {
+      example: { message: 'Password reset successfully' },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid reset code or reset code has expired',
+    schema: {
+      example: { statusCode: 400, message: 'Invalid reset code.' },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found',
+    schema: {
+      example: { statusCode: 404, message: 'User not found.' },
+    },
+  })
+  async validateResetCodeAndResetPassword(
+    @Body() validateResetCodeAndResetPasswordDto: ValidateResetCodeAndResetPasswordDto,
+  ): Promise<{ message: string }> {
     return this.usersService.validateResetCodeAndResetPassword(
-      email,
-      resetCode,
-      newPassword,
+      validateResetCodeAndResetPasswordDto,
     );
   }
  
   @Post('verify')
   @ApiOperation({ summary: 'Account verification' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'Account verified successfully',
   })
   @ApiResponse({
-    status: 400,
+    status: HttpStatus.BAD_REQUEST,
     description: 'Invalid verification code or email',
   })
   @ApiResponse({
-    status: 404,
+    status: HttpStatus.NOT_FOUND,
     description: 'User not found',
   })
   async verifyAccount(
