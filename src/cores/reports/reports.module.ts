@@ -6,6 +6,9 @@ import { ReportSchema, Report } from './schemas/reports.schemas';
 import { User, UserSchema } from 'src/common/schemas/users.schema';
 import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
+import { ReportAssignmentService } from './reports-assignment';
+import { ScheduleModule } from '@nestjs/schedule';
+
 
 @Module({
   imports: [
@@ -13,8 +16,9 @@ import { ReportsRepository } from './reports.repository';
       { name: Report.name, schema: ReportSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    ScheduleModule.forRoot(),
   ],
-  providers: [UsersRepository, ReportsRepository, ReportsService],
+  providers: [UsersRepository, ReportsRepository,ReportAssignmentService, ReportsService],
   controllers: [ReportsController],
 })
 export class ReportsModule {}

@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report, ReportDocument } from './schemas/reports.schemas';
 import { Model, Types, isValidObjectId } from 'mongoose';
+import { ReportStatus } from 'src/common/enums/report-status.enum';
 
 @Injectable()
 export class ReportsRepository {
@@ -61,5 +62,30 @@ export class ReportsRepository {
     }
 
     return updatedReport;
+  }
+
+  async handleReport(report: ReportDocument, ngoId: any, action: 'accept' | 'reject'): Promise<ReportDocument> {
+    if (report.status !== ReportStatus.SUBMITTED) {
+        throw new ConflictException('Report cannot be modified in its current state.');
+    }
+
+    if (action === 'accept') {
+        report.status = ReportStatus.ACCEPTED;
+        report.acceptedBy = ngoId;
+
+        report.ngo_dashboard_ids = report.ngo_dashboard_ids.filter(id => id !== ngoId);
+    } else if (action === 'reject') {
+        report.status = ReportStatus.REJECTED;
+    } else {
+        throw new BadRequestException('Invalid action specified.');
+    }
+
+    await report.save();
+    return report;
+}
+
+  
+  async save(report: ReportDocument): Promise<ReportDocument> {
+    return report.save();
   }
 }

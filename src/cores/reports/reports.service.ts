@@ -1,16 +1,19 @@
 import {
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Report } from './schemas/reports.schemas';
+import { Report, ReportDocument } from './schemas/reports.schemas';
 import { Types } from 'mongoose';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { uploadObject } from 'src/common/utils/upload';
 import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
+import { ReportStatus } from 'src/common/enums/report-status.enum';
 
 @Injectable()
 export class ReportsService {
@@ -97,6 +100,47 @@ export class ReportsService {
     const report = await this.reportsRepository.fetchSingleReportById(reportId)
 
     return {status: report.status}
+  }
+
+  public async acceptOrRejectReport(
+    reportId: string,
+    ngoId: any,
+    action: 'accept' | 'reject',
+): Promise<ReportDocument> {
+    // Fetch the report using the repository
+    const report = await this.reportsRepository.fetchSingleReportById(reportId);
+
+    if (!report) {
+        throw new NotFoundException('Report not found.');
+    }
+
+    // Ensure the NGO has access to this report
+    if (!report.ngo_dashboard_ids || !report.ngo_dashboard_ids.includes(ngoId)) {
+        throw new ForbiddenException('You do not have access to this report.');
+    }
+
+    // Call the handleReport method to accept or reject
+    return this.reportsRepository.handleReport(report as any, ngoId, action);
+}
+
+
+  async updateReport(reportId: string, ngoId: string, updateData: Partial<ReportDocument>): Promise<ReportDocument> {
+    const report = await this.reportsRepository.fetchSingleReportById(reportId);
+    
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+
+    if (report.status === ReportStatus.ACCEPTED && report.user_id as unknown as any !== ngoId) {
+      throw new ForbiddenException('Only the accepting NGO can update this report.');
+    }
+
+    if (report.status === ReportStatus.REJECTED) {
+      throw new ConflictException('This report has been rejected and cannot be updated.');
+    }
+    Object.assign(report, updateData);
+
+    return this.reportsRepository.save(report as ReportDocument);
   }
    
 }

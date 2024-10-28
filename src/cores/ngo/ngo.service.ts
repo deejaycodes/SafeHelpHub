@@ -13,7 +13,6 @@ export class NgoService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
-    private readonly usersRepository: UsersRepository,
   ) {}
 
   async registerNgo(createNgoDto: CreateNgoDto): Promise<RegisterResponseDto> {
