@@ -3,6 +3,7 @@ import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsEnum, IsOptional, IsArray } from 'class-validator';
 import { encrypt, decrypt } from 'src/common/utils/encryption';
+import { ReportStatus } from 'src/common/enums/report-status.enum';
 
 export type ReportDocument = Report & Document;
 
@@ -101,12 +102,12 @@ export class Report {
 
   @ApiProperty({
     description: 'Status of the report',
-    enum: ['submitted', 'in review', 'resolved'],
-    default: 'submitted',
+    enum: ReportStatus,
+    default: ReportStatus.SUBMITTED,
   })
-  @IsEnum(['submitted', 'in review', 'resolved'])
-  @Prop({ enum: ['submitted', 'in review', 'resolved'], default: 'submitted' })
-  status: string;
+  @IsEnum(ReportStatus) // Use the enum for validation
+  @Prop({ enum: ReportStatus, default: ReportStatus.SUBMITTED }) // Use the enum in the Mongoose schema
+  status: ReportStatus; // Change the type to the enum
 
   @ApiProperty({
     description: 'Date when the report was created',
@@ -121,6 +122,12 @@ export class Report {
   })
   @Prop({ type: Date, default: Date.now })
   updated_at: Date;
+
+  @Prop({ type: String, ref: 'User' })
+  acceptedBy?: string; 
+
+  @Prop({ type: [String], default: [] }) 
+  ngo_dashboard_ids?: string[];
 }
 
 export const ReportSchema = SchemaFactory.createForClass(Report);

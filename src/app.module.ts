@@ -24,9 +24,12 @@ import { NgoModule } from './cores/ngo/ngo.module';
 import { NgoService } from './cores/ngo/ngo.service';
 import { UsersController } from './basics/users/users.controller';
 import { QuestionsModule } from './basics/chats/questions.module';
+import { ReportAssignmentService } from './cores/reports/reports-assignment';
+import { ReportSchema, Report } from './cores/reports/schemas/reports.schemas';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [
+  imports: [ ScheduleModule.forRoot(),
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: jwtConstants.LOGIN_EXPIRY },
@@ -36,9 +39,11 @@ import { QuestionsModule } from './basics/chats/questions.module';
     UsersModule,
     PassportModule,
     QuestionsModule,
+    ReportsModule,
     NgoModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }, {name: Report.name, schema:ReportSchema}]),
+   
     MongooseModule.forRoot(process.env.MONGO_URI),
     ReportsModule,
     AuthenticationModule,
@@ -48,6 +53,7 @@ import { QuestionsModule } from './basics/chats/questions.module';
   providers: [
     UsersRepository,
     AppService,
+    ReportAssignmentService,
     AuthenticationService,
     UsersService,
     JwtService,
