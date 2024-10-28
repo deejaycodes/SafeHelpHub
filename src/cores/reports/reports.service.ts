@@ -124,7 +124,7 @@ export class ReportsService {
 }
 
 
-  async updateReport(reportId: string, ngoId: string, updateData: Partial<ReportDocument>): Promise<ReportDocument> {
+  async updateReport(reportId: string, ngoId: any, updateData: Partial<ReportDocument>): Promise<ReportDocument> {
     const report = await this.reportsRepository.fetchSingleReportById(reportId);
     
     if (!report) {

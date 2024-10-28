@@ -23,7 +23,7 @@ import { Report, ReportDocument } from './schemas/reports.schemas';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from 'src/cores/authentication/strategy/jwt-guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import * as _ from 'lodash';
 import { User } from '@sentry/nestjs';
 import { AcceptOrRejectReportDto } from 'src/common/dtos/rejectOrAcceptDto';
@@ -128,6 +128,8 @@ export class ReportsController {
     return this.reportsService.uploadReportFile(reportId, file);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth() 
   @Patch(':reportId')
   @ApiOperation({ summary: 'Update a report' })
   @ApiParam({ name: 'reportId', description: 'ID of the report to update' })
@@ -137,13 +139,15 @@ export class ReportsController {
   @ApiResponse({ status: 409, description: 'Conflict: This report has been rejected and cannot be updated.' })
   async updateReport(
     @Param('reportId') reportId: string,
-    @Body('ngoId') ngoId: string,
     @Body() updateData: Partial<ReportDocument>,
+    @Req() req
   ): Promise<ReportDocument> {
-    return this.reportsService.updateReport(reportId, ngoId, updateData);
+    const userFromJwt = req.user as User
+    return this.reportsService.updateReport(reportId, userFromJwt.id, updateData);
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth() 
   @Patch(':reportId/decision')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Accept or reject a report' })
