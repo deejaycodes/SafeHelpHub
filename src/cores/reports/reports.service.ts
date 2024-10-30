@@ -149,4 +149,8 @@ export class ReportsService {
 
     return this.reportsRepository.save(report as ReportDocument);
   }
+
+  async findAll(){
+    return this.reportsRepository.findAll()
+  }
 }

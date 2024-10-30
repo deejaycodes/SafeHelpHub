@@ -213,4 +213,5 @@ export class UsersService {
   async findNgoByLocationOrName(state?: string, ngoName?: string) {
     return this.usersRepository.findNgoByLocationOrName(state, ngoName);
   }
+  
 }

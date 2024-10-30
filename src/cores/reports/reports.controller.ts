@@ -156,4 +156,16 @@ export class ReportsController {
       updateData,
     );
   }
+
+  @Get()
+  @ApiOperation({ summary: 'Retrieve all reports' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved all reports. Returns an empty array if no reports exist.',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async findAll(): Promise<ReportDocument[]> {
+    const reports = await this.reportsService.findAll();
+    return reports.length > 0 ? reports : [];
+  }
 }

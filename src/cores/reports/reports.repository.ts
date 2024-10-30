@@ -99,4 +99,9 @@ export class ReportsRepository {
   async save(report: ReportDocument): Promise<ReportDocument> {
     return report.save();
   }
+
+  async findAll(): Promise<ReportDocument[]> {
+    const reports = await this.reportModel.find().exec();
+    return reports || [];  
+  }
 }
