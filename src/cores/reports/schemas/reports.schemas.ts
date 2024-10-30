@@ -32,6 +32,7 @@ export class Report {
   @IsString()
   @Prop({ required: true })
   location: string;
+  
 
   @ApiProperty({
     description: 'Encrypted contact info of the reporter',

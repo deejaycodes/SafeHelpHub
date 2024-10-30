@@ -107,11 +107,7 @@ export class ReportsService {
     if (!report) {
       throw new NotFoundException('Report not found');
     }
-  
-    if (report.status === ReportStatus.REJECTED) {
-      throw new ConflictException('This report has been rejected and cannot be updated.');
-    }
-  
+    
     if (updateData.status === ReportStatus.RESOLVED && report.status !== ReportStatus.ACCEPTED) {
       throw new ConflictException('Only reports with status "accepted" can be marked as resolved.');
     } else if (updateData.status === ReportStatus.ACCEPTED) {

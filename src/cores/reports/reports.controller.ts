@@ -24,6 +24,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import * as _ from 'lodash';
 import { User } from '@sentry/nestjs';
+import { UpdateReportDto } from 'src/common/dtos/updateUserReportDto';
 
 @ApiTags('reports')
 @Controller('reports')
@@ -130,7 +131,7 @@ export class ReportsController {
   @ApiResponse({ status: 409, description: 'Conflict: This report has been rejected and cannot be updated.' })
   async updateReport(
     @Param('reportId') reportId: string,
-    @Body() updateData: Partial<ReportDocument>,
+    @Body() updateData: UpdateReportDto,
     @Req() req
   ): Promise<ReportDocument> {
     const userFromJwt = req.user as User
