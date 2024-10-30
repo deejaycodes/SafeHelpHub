@@ -32,7 +32,6 @@ export class Report {
   @IsString()
   @Prop({ required: true })
   location: string;
-  
 
   @ApiProperty({
     description: 'Encrypted contact info of the reporter',
@@ -106,8 +105,8 @@ export class Report {
     enum: ReportStatus,
     default: ReportStatus.SUBMITTED,
   })
-  @IsEnum(ReportStatus) 
-  @Prop({ enum: ReportStatus, default: ReportStatus.SUBMITTED }) 
+  @IsEnum(ReportStatus)
+  @Prop({ enum: ReportStatus, default: ReportStatus.SUBMITTED })
   status: ReportStatus;
   @ApiProperty({
     description: 'Date when the report was created',
@@ -123,7 +122,7 @@ export class Report {
   @Prop({ type: Date, default: Date.now })
   updated_at: Date;
 
-  @Prop({type: [String], ref: 'User' })
+  @Prop({ type: [String], ref: 'User' })
   rejected_by?: string[];
 
   @ApiProperty({
@@ -154,7 +153,7 @@ export class Report {
     rejected_at: Date;
   }>;
 
-  @Prop({ type: [String], default: [] }) 
+  @Prop({ type: [String], default: [] })
   ngo_dashboard_ids?: string[];
 }
 

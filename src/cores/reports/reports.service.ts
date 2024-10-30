@@ -93,46 +93,60 @@ export class ReportsService {
     );
   }
 
-  async fetchReportStatus(reportId: Types.ObjectId | string,) {
+  async fetchReportStatus(reportId: Types.ObjectId | string) {
+    const report = await this.reportsRepository.fetchSingleReportById(reportId);
 
-    const report = await this.reportsRepository.fetchSingleReportById(reportId)
-
-    return report
+    return report;
   }
 
- 
-  async updateReport(reportId: string, ngoId: any, updateData: Partial<ReportDocument> & { rejection_reason?: string }): Promise<ReportDocument> {
+  async updateReport(
+    reportId: string,
+    ngoId: any,
+    updateData: Partial<ReportDocument> & { rejection_reason?: string },
+  ): Promise<ReportDocument> {
     const report = await this.reportsRepository.fetchSingleReportById(reportId);
-    
+
     if (!report) {
       throw new NotFoundException('Report not found');
     }
-    
-    if (updateData.status === ReportStatus.RESOLVED && report.status !== ReportStatus.ACCEPTED) {
-      throw new ConflictException('Only reports with status "accepted" can be marked as resolved.');
+
+    if (
+      updateData.status === ReportStatus.RESOLVED &&
+      report.status !== ReportStatus.ACCEPTED
+    ) {
+      throw new ConflictException(
+        'Only reports with status "accepted" can be marked as resolved.',
+      );
     } else if (updateData.status === ReportStatus.ACCEPTED) {
       report.status = ReportStatus.ACCEPTED;
-      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, { $inc: { resolvedAcceptCount: 1 } })
+      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, {
+        $inc: { resolvedAcceptCount: 1 },
+      });
     } else if (updateData.status === ReportStatus.RESOLVED) {
       report.status = ReportStatus.RESOLVED;
-      
-      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, { $inc: { resolvedReportsCount: 1 } });
+
+      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, {
+        $inc: { resolvedReportsCount: 1 },
+      });
     } else if (updateData.status === ReportStatus.REJECTED) {
       report.status = ReportStatus.REJECTED;
-      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, { $inc: { rejectedReportsCount: 1 },isHandlingReport:false  });
-      
+      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, {
+        $inc: { rejectedReportsCount: 1 },
+        isHandlingReport: false,
+      });
+
       report.rejected_by = report.rejected_by || [];
       report.rejected_by.push(ngoId);
 
       report.rejection_reasons = report.rejection_reasons || [];
       report.rejection_reasons.push({
-        reason: updateData.rejection_reason|| 'No reason provided',
+        reason: updateData.rejection_reason || 'No reason provided',
         rejected_by: ngoId,
         rejected_at: new Date(),
       });
     }
     Object.assign(report, updateData);
-  
+
     return this.reportsRepository.save(report as ReportDocument);
   }
-}  
+}

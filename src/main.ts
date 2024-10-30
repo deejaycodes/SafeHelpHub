@@ -9,7 +9,7 @@ async function bootstrap() {
   Sentry.init({
     dsn: 'https://2d9e3cdeb9e5125d595804a66b8ea621@o4507968990609408.ingest.de.sentry.io/4507968998342736',
     integrations: [nodeProfilingIntegration()],
-    tracesSampleRate: 1.0, 
+    tracesSampleRate: 1.0,
     profilesSampleRate: 1.0,
   });
   const app = await NestFactory.create(AppModule);

@@ -1,8 +1,12 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserDto } from '../../common/dtos/createUserDto';
 import { User, UserDocument } from '../../common/schemas/users.schema';
-import { Model,isValidObjectId, Types } from 'mongoose';
+import { Model, isValidObjectId, Types } from 'mongoose';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 
 @Injectable()
@@ -41,7 +45,9 @@ export class UsersRepository {
   ): Promise<User | null> {
     try {
       if (!isValidObjectId(userId)) {
-        throw new BadRequestException('Invalid ID format. Must be a 24-character hex string.');
+        throw new BadRequestException(
+          'Invalid ID format. Must be a 24-character hex string.',
+        );
       }
       const objectId =
         typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
@@ -78,9 +84,10 @@ export class UsersRepository {
     userId: Types.ObjectId | string,
     filePath: string,
   ): Promise<User> {
-
     if (!isValidObjectId(userId)) {
-      throw new BadRequestException('Invalid ID format. Must be a 24-character hex string.');
+      throw new BadRequestException(
+        'Invalid ID format. Must be a 24-character hex string.',
+      );
     }
     const objectId =
       typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
@@ -88,7 +95,11 @@ export class UsersRepository {
     const updatedUser = await this.userModel
       .findByIdAndUpdate(
         objectId,
-        { $push: { profilePicture: { file_path: filePath, uploaded_at: new Date() } } },
+        {
+          $push: {
+            profilePicture: { file_path: filePath, uploaded_at: new Date() },
+          },
+        },
         { new: true },
       )
       .exec();
@@ -100,7 +111,10 @@ export class UsersRepository {
     return updatedUser;
   }
 
-  async findNgoByLocationOrName(state?: string, ngoName?: string): Promise<User[]> {
+  async findNgoByLocationOrName(
+    state?: string,
+    ngoName?: string,
+  ): Promise<User[]> {
     const query: any = { role: 'ngo' };
 
     if (state) {
@@ -113,12 +127,17 @@ export class UsersRepository {
 
     return this.userModel.find(query).exec();
   }
-  async findUserByIdAndUpdate(userId: Types.ObjectId | string, updateData: any): Promise<User> {
+  async findUserByIdAndUpdate(
+    userId: Types.ObjectId | string,
+    updateData: any,
+  ): Promise<User> {
     const objectId =
       typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
 
-    return this.userModel.findOneAndUpdate( objectId, updateData, {
-      new: true,
-    }).exec();
+    return this.userModel
+      .findOneAndUpdate(objectId, updateData, {
+        new: true,
+      })
+      .exec();
   }
 }

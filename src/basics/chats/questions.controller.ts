@@ -2,7 +2,7 @@ import { Controller, Get, Param, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { QuestionsService } from './questions.service';
 
-@ApiTags('Questions')  
+@ApiTags('Questions')
 @Controller('questions')
 export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
@@ -69,4 +69,3 @@ export class QuestionsController {
     return this.questionsService.getAnswerForQuestion(id);
   }
 }
-

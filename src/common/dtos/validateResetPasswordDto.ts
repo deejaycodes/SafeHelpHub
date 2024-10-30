@@ -3,7 +3,8 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ValidateResetCodeAndResetPasswordDto {
   @ApiProperty({
-    description: 'Email address of the user to validate the reset code and reset the password',
+    description:
+      'Email address of the user to validate the reset code and reset the password',
     example: 'user@example.com',
   })
   @IsEmail({}, { message: 'Invalid email address' })

@@ -8,8 +8,9 @@ import { UsersService } from 'src/basics/users/users.service';
 @ApiTags('Ngo')
 @Controller('ngo')
 export class NgoController {
-  constructor(private readonly ngoService: NgoService,
-    private readonly usersService: UsersService
+  constructor(
+    private readonly ngoService: NgoService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Post('register')
@@ -60,8 +61,16 @@ export class NgoController {
 
   @Get('search')
   @ApiOperation({ summary: 'Find NGOs by state or name' })
-  @ApiQuery({ name: 'state', required: false, description: 'State of the NGO primary location' })
-  @ApiQuery({ name: 'ngo_name', required: false, description: 'Name of the NGO' })
+  @ApiQuery({
+    name: 'state',
+    required: false,
+    description: 'State of the NGO primary location',
+  })
+  @ApiQuery({
+    name: 'ngo_name',
+    required: false,
+    description: 'Name of the NGO',
+  })
   async findNgoByLocationOrName(
     @Query('state') state?: string,
     @Query('ngo_name') ngoName?: string,

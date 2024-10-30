@@ -9,7 +9,6 @@ import { ReportsRepository } from './reports.repository';
 import { ReportAssignmentService } from './reports-assignment';
 import { ScheduleModule } from '@nestjs/schedule';
 
-
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -18,7 +17,12 @@ import { ScheduleModule } from '@nestjs/schedule';
     ]),
     ScheduleModule.forRoot(),
   ],
-  providers: [UsersRepository, ReportsRepository,ReportAssignmentService, ReportsService],
+  providers: [
+    UsersRepository,
+    ReportsRepository,
+    ReportAssignmentService,
+    ReportsService,
+  ],
   controllers: [ReportsController],
 })
 export class ReportsModule {}

@@ -191,7 +191,6 @@ export class User {
   @Prop({ default: false })
   isVerified: boolean;
 
-
   @ApiProperty({
     description: 'Profile picture file path',
     type: String,
@@ -200,7 +199,6 @@ export class User {
   @IsString()
   @Prop({ type: String })
   profilePicture: string;
-  
 
   @ApiProperty({
     description: 'Rank of the user',
@@ -224,7 +222,7 @@ export class User {
   rejectedReportsCount: number;
 
   @Prop({ type: Number, default: 0 })
-  acceptReportsCount:number
+  acceptReportsCount: number;
 
   @ApiProperty({
     description: 'code to reset a password, it will be drop on user email',

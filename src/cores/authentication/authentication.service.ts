@@ -21,8 +21,12 @@ export class AuthenticationService {
     const { email } = createUserDto;
     const verificationCode = randomInt(100000, 999999).toString();
     const verificationCodeExpiresAt = new Date(Date.now() + 30 * 1000);
-    await this.usersService.createUser({ ...createUserDto, verificationCode:verificationCode,  verificationCodeExpiresAt: verificationCodeExpiresAt  });
-    await this.emailService.sendVerificationEmail(email,verificationCode );
+    await this.usersService.createUser({
+      ...createUserDto,
+      verificationCode: verificationCode,
+      verificationCodeExpiresAt: verificationCodeExpiresAt,
+    });
+    await this.emailService.sendVerificationEmail(email, verificationCode);
     return {
       message: 'Registration successful. Please verify your email.',
       token: this.jwtService.sign(email, {
@@ -49,6 +53,4 @@ export class AuthenticationService {
 
     return user;
   }
-
- 
 }

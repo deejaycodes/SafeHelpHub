@@ -5,10 +5,11 @@ import { QuestionsService } from './questions.service';
 import { Question, QuestionSchema } from './shemas/questions.schema';
 import { QuestionsController } from './questions.controller';
 
-
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Question.name, schema: QuestionSchema }]),
+    MongooseModule.forFeature([
+      { name: Question.name, schema: QuestionSchema },
+    ]),
   ],
   providers: [QuestionsService],
   controllers: [QuestionsController],

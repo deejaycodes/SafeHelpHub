@@ -28,4 +28,5 @@ export class SpecialistRequest extends Document {
   requestedAt: Date;
 }
 
-export const SpecialistRequestSchema = SchemaFactory.createForClass(SpecialistRequest);
+export const SpecialistRequestSchema =
+  SchemaFactory.createForClass(SpecialistRequest);

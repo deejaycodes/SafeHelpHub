@@ -1,5 +1,22 @@
-import { Body, Controller, HttpStatus, Param, Post, Put, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { User } from '@sentry/nestjs';
 import { VerifyAccountDto } from 'src/common/dtos/verifyDto';
@@ -7,7 +24,6 @@ import { SendForgotPasswordCodeDto } from 'src/common/dtos/sendForgotPasswordDto
 import { ValidateResetCodeAndResetPasswordDto } from 'src/common/dtos/validateResetPasswordDto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/cores/authentication/strategy/jwt-guard';
-
 
 @ApiTags('users')
 @Controller('users')
@@ -22,7 +38,8 @@ export class UsersController {
     examples: {
       example1: {
         summary: 'Valid Request Example',
-        description: 'Example of a valid request to send a forgot password code',
+        description:
+          'Example of a valid request to send a forgot password code',
         value: {
           email: 'user@example.com',
         },
@@ -40,7 +57,10 @@ export class UsersController {
     status: HttpStatus.NOT_FOUND,
     description: 'User with this email does not exist',
     schema: {
-      example: { statusCode: 404, message: 'User with this email does not exist.' },
+      example: {
+        statusCode: 404,
+        message: 'User with this email does not exist.',
+      },
     },
   })
   async sendForgotPasswordCode(
@@ -52,7 +72,8 @@ export class UsersController {
   @Post('reset-password')
   @ApiOperation({ summary: 'Validate reset code and reset password' })
   @ApiBody({
-    description: 'Request body for validating reset code and resetting the password',
+    description:
+      'Request body for validating reset code and resetting the password',
     type: ValidateResetCodeAndResetPasswordDto,
     examples: {
       example1: {
@@ -88,13 +109,14 @@ export class UsersController {
     },
   })
   async validateResetCodeAndResetPassword(
-    @Body() validateResetCodeAndResetPasswordDto: ValidateResetCodeAndResetPasswordDto,
+    @Body()
+    validateResetCodeAndResetPasswordDto: ValidateResetCodeAndResetPasswordDto,
   ): Promise<{ message: string }> {
     return this.usersService.validateResetCodeAndResetPassword(
       validateResetCodeAndResetPasswordDto,
     );
   }
- 
+
   @Post('verify')
   @ApiOperation({ summary: 'Account verification' })
   @ApiResponse({
@@ -116,7 +138,7 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth() 
+  @ApiBearerAuth()
   @Put('profile_picture/:userId')
   @ApiOperation({ summary: 'Upload profile picture' })
   @ApiResponse({
@@ -139,11 +161,8 @@ export class UsersController {
     },
   })
   @UseInterceptors(FileInterceptor('file'))
-  uploadVerifications(
-    @Req() req,
-    @UploadedFile() file: any,
-  ) {
-    const userFromJwt = req.user as User
+  uploadVerifications(@Req() req, @UploadedFile() file: any) {
+    const userFromJwt = req.user as User;
     return this.usersService.uploadUserFile(userFromJwt.id, file);
   }
 }

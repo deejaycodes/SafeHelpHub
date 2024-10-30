@@ -29,7 +29,8 @@ import { ReportSchema, Report } from './cores/reports/schemas/reports.schemas';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [ ScheduleModule.forRoot(),
+  imports: [
+    ScheduleModule.forRoot(),
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: jwtConstants.LOGIN_EXPIRY },
@@ -42,8 +43,11 @@ import { ScheduleModule } from '@nestjs/schedule';
     ReportsModule,
     NgoModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }, {name: Report.name, schema:ReportSchema}]),
-   
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: Report.name, schema: ReportSchema },
+    ]),
+
     MongooseModule.forRoot(process.env.MONGO_URI),
     ReportsModule,
     AuthenticationModule,

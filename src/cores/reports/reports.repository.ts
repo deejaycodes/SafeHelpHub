@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report, ReportDocument } from './schemas/reports.schemas';
@@ -20,9 +25,10 @@ export class ReportsRepository {
     reportId: Types.ObjectId | string,
   ): Promise<Report | null> {
     try {
-
       if (!isValidObjectId(reportId)) {
-        throw new BadRequestException('Invalid ID format. Must be a 24-character hex string.');
+        throw new BadRequestException(
+          'Invalid ID format. Must be a 24-character hex string.',
+        );
       }
       const objectId =
         typeof reportId === 'string' ? new Types.ObjectId(reportId) : reportId;
@@ -42,9 +48,10 @@ export class ReportsRepository {
     reportId: Types.ObjectId | string,
     filePath: string,
   ): Promise<Report> {
-
     if (!isValidObjectId(reportId)) {
-      throw new BadRequestException('Invalid ID format. Must be a 24-character hex string.');
+      throw new BadRequestException(
+        'Invalid ID format. Must be a 24-character hex string.',
+      );
     }
     const objectId =
       typeof reportId === 'string' ? new Types.ObjectId(reportId) : reportId;
@@ -64,26 +71,32 @@ export class ReportsRepository {
     return updatedReport;
   }
 
-  async handleReport(report: ReportDocument, ngoId: any, action: 'accept' | 'reject'): Promise<ReportDocument> {
+  async handleReport(
+    report: ReportDocument,
+    ngoId: any,
+    action: 'accept' | 'reject',
+  ): Promise<ReportDocument> {
     if (report.status !== ReportStatus.SUBMITTED) {
-        throw new ConflictException('Report cannot be modified in its current state.');
+      throw new ConflictException(
+        'Report cannot be modified in its current state.',
+      );
     }
 
     if (action === 'accept') {
-        report.status = ReportStatus.ACCEPTED;
+      report.status = ReportStatus.ACCEPTED;
 
-        report.ngo_dashboard_ids = report.ngo_dashboard_ids.filter(id => id !== ngoId);
+      report.ngo_dashboard_ids = report.ngo_dashboard_ids.filter(
+        (id) => id !== ngoId,
+      );
     } else if (action === 'reject') {
-        report.status = ReportStatus.REJECTED;
+      report.status = ReportStatus.REJECTED;
     } else {
-        throw new BadRequestException('Invalid action specified.');
+      throw new BadRequestException('Invalid action specified.');
     }
 
     return await report.save();
-   
-}
+  }
   async save(report: ReportDocument): Promise<ReportDocument> {
     return report.save();
   }
-  
 }

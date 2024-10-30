@@ -15,7 +15,7 @@ export class EmailService {
   constructor(private readonly configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
       host: 'smtp.gmail.email',
-      service: "gmail",
+      service: 'gmail',
       port: 465,
       secure: true,
       auth: {
@@ -41,8 +41,10 @@ export class EmailService {
       to: email,
       from: this.configService.get<string>('EMAIL_USER'),
       subject: 'Email Verification',
-      text:'Please click the link below to verify your email address:\n' + verificationUrl, 
-      html: htmlMessage
+      text:
+        'Please click the link below to verify your email address:\n' +
+        verificationUrl,
+      html: htmlMessage,
     };
 
     try {
@@ -56,26 +58,26 @@ export class EmailService {
     }
   }
 
-  async sendForgotPasswordEmail(email:string, code) {
+  async sendForgotPasswordEmail(email: string, code) {
     const verificationUrl = `${code}`;
     const htmlMessage = FORGOT_PASSWORD_TEMPLATE(verificationUrl);
 
     const mailOptions = {
-        to: email,
-        from: this.configService.get<string>('EMAIL_USER'),
-        subject: 'Forgot Password',
-        text:`${code}. use the digit code provided to reset your password`, 
-        html: htmlMessage
-      };
-  
-      try {
-        await this.transporter.sendMail(mailOptions);
-        this.logger.log(`Forgotpassword email sent to ${email}`);
-      } catch (error) {
-        this.logger.error(
-          `Failed to send forgotpassword email to ${email}: ${error.message}`,
-        );
-        throw new Error('Could not send forgotpassword email');
-      }
+      to: email,
+      from: this.configService.get<string>('EMAIL_USER'),
+      subject: 'Forgot Password',
+      text: `${code}. use the digit code provided to reset your password`,
+      html: htmlMessage,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(`Forgotpassword email sent to ${email}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to send forgotpassword email to ${email}: ${error.message}`,
+      );
+      throw new Error('Could not send forgotpassword email');
+    }
   }
 }

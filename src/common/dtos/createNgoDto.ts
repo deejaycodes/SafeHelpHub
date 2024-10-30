@@ -186,8 +186,7 @@ export class CreateNgoDto {
   })
   @IsOptional()
   @IsString()
-  rank:number
-
+  rank: number;
 
   @IsOptional()
   @IsString()

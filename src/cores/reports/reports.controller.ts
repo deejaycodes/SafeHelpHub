@@ -21,7 +21,13 @@ import { Report, ReportDocument } from './schemas/reports.schemas';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from 'src/cores/authentication/strategy/jwt-guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import * as _ from 'lodash';
 import { User } from '@sentry/nestjs';
 import { UpdateReportDto } from 'src/common/dtos/updateUserReportDto';
@@ -64,7 +70,10 @@ export class ReportsController {
   ): Promise<Report> {
     try {
       const userId = _.get(req, 'user.id', null);
-      return await this.reportsService.createIncident(createIncidentDto, userId);
+      return await this.reportsService.createIncident(
+        createIncidentDto,
+        userId,
+      );
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -75,7 +84,6 @@ export class ReportsController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Report  retrieved successfully',
-   
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -121,22 +129,31 @@ export class ReportsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth() 
+  @ApiBearerAuth()
   @Patch(':reportId')
   @ApiOperation({ summary: 'Update a report' })
   @ApiParam({ name: 'reportId', description: 'ID of the report to update' })
   @ApiResponse({ status: 200, description: 'The updated report' })
   @ApiResponse({ status: 404, description: 'Report not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden: Only the accepting NGO can update this report.' })
-  @ApiResponse({ status: 409, description: 'Conflict: This report has been rejected and cannot be updated.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden: Only the accepting NGO can update this report.',
+  })
+  @ApiResponse({
+    status: 409,
+    description:
+      'Conflict: This report has been rejected and cannot be updated.',
+  })
   async updateReport(
     @Param('reportId') reportId: string,
     @Body() updateData: UpdateReportDto,
-    @Req() req
+    @Req() req,
   ): Promise<ReportDocument> {
-    const userFromJwt = req.user as User
-    return this.reportsService.updateReport(reportId, userFromJwt.id, updateData);
+    const userFromJwt = req.user as User;
+    return this.reportsService.updateReport(
+      reportId,
+      userFromJwt.id,
+      updateData,
+    );
   }
 }
-
-

@@ -96,51 +96,53 @@ export class UsersService {
     sendForgotPasswordCodeDto: SendForgotPasswordCodeDto,
   ): Promise<{ message: string }> {
     const { email } = sendForgotPasswordCodeDto;
-  
+
     const user = await this.usersRepository.findUserByCriteria({ email });
     if (!user) {
       throw new NotFoundException('User with this email does not exist.');
     }
-  
+
     const resetCode = randomInt(1000, 9999).toString();
     const resetCodeExpiresAt = new Date(Date.now() + 60 * 1000);
-  
-    await this.usersRepository.updateUser(email, { resetCode, resetCodeExpiresAt });
-  
+
+    await this.usersRepository.updateUser(email, {
+      resetCode,
+      resetCodeExpiresAt,
+    });
+
     await this.emailService.sendForgotPasswordEmail(email, resetCode);
     return { message: 'Forgot password email sent successfully' };
   }
-  
 
   async validateResetCodeAndResetPassword(
     validateResetCodeAndResetPasswordDto: ValidateResetCodeAndResetPasswordDto,
   ): Promise<{ message: string }> {
-    const { email, resetCode, newPassword } = validateResetCodeAndResetPasswordDto;
-  
+    const { email, resetCode, newPassword } =
+      validateResetCodeAndResetPasswordDto;
+
     const user = await this.usersRepository.findUserByCriteria({ email });
     if (!user) {
       throw new NotFoundException('User not found.');
     }
-  
+
     if (!user.resetCode || user.resetCode !== resetCode) {
       throw new BadRequestException('Invalid reset code.');
     }
-  
+
     if (new Date() > new Date(user.resetCodeExpiresAt)) {
       throw new BadRequestException('Reset code has expired.');
     }
-  
+
     const password_hash = await bcrypt.hash(newPassword, 10);
-  
+
     await this.usersRepository.updateUser(email, {
       password_hash,
       resetCode: null,
       resetCodeExpiresAt: null,
     });
-  
+
     return { message: 'Password reset successfully' };
   }
-  
 
   async verifyAccount(
     verifyAccountDto: VerifyAccountDto,
@@ -165,10 +167,7 @@ export class UsersService {
     return { message: 'Account verified successfully' };
   }
 
-  async uploadUserFile(
-    userId: Types.ObjectId | any,
-    file: any,
-  ): Promise<User> {
+  async uploadUserFile(userId: Types.ObjectId | any, file: any): Promise<User> {
     const { originalname, buffer } = file;
     const idFileType = originalname.slice(originalname.lastIndexOf('.'));
     const objectId =
@@ -206,12 +205,12 @@ export class UsersService {
       HttpStatus.BAD_REQUEST,
     );
   }
-  
-  async findByIdAndUpdate(id:any, updateData: any){
-    return this.usersRepository.findUserByIdAndUpdate(id, updateData)
+
+  async findByIdAndUpdate(id: any, updateData: any) {
+    return this.usersRepository.findUserByIdAndUpdate(id, updateData);
   }
 
   async findNgoByLocationOrName(state?: string, ngoName?: string) {
-    return this.usersRepository.findNgoByLocationOrName(state, ngoName)
+    return this.usersRepository.findNgoByLocationOrName(state, ngoName);
   }
 }

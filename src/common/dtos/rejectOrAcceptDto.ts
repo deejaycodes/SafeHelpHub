@@ -7,6 +7,8 @@ export class AcceptOrRejectReportDto {
     enum: ['accept', 'reject'],
     example: 'accept',
   })
-  @IsEnum(['accept', 'reject'], { message: 'Action must be either "accept" or "reject"' })
+  @IsEnum(['accept', 'reject'], {
+    message: 'Action must be either "accept" or "reject"',
+  })
   action: 'accept' | 'reject';
 }
