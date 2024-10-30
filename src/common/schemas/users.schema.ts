@@ -191,6 +191,41 @@ export class User {
   @Prop({ default: false })
   isVerified: boolean;
 
+
+  @ApiProperty({
+    description: 'Profile picture file path',
+    type: String,
+    example: 'uploads/profile_picture123.jpg',
+  })
+  @IsString()
+  @Prop({ type: String })
+  profilePicture: string;
+  
+
+  @ApiProperty({
+    description: 'Rank of the user',
+    enum: [1, 2, 3],
+    example: 1,
+  })
+  @Prop({
+    type: Number,
+    enum: [1, 2, 3],
+    default: 1,
+  })
+  rank: number;
+
+  @Prop({ type: Boolean, default: false })
+  isHandlingReport: boolean;
+
+  @Prop({ type: Number, default: 0 })
+  resolvedReportsCount: number;
+
+  @Prop({ type: Number, default: 0 })
+  rejectedReportsCount: number;
+
+  @Prop({ type: Number, default: 0 })
+  acceptReportsCount:number
+
   @ApiProperty({
     description: 'code to reset a password, it will be drop on user email',
     example: '1234',

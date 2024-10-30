@@ -14,8 +14,6 @@ import {
   ValidationPipe,
   HttpStatus,
   Patch,
-  HttpCode,
-  NotFoundException,
   Req,
 } from '@nestjs/common';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
@@ -23,10 +21,9 @@ import { Report, ReportDocument } from './schemas/reports.schemas';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from 'src/cores/authentication/strategy/jwt-guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import * as _ from 'lodash';
 import { User } from '@sentry/nestjs';
-import { AcceptOrRejectReportDto } from 'src/common/dtos/rejectOrAcceptDto';
 
 @ApiTags('reports')
 @Controller('reports')
@@ -73,17 +70,11 @@ export class ReportsController {
   }
 
   @Get('/:reportId')
-  @ApiOperation({ summary: 'Get status of a report' })
+  @ApiOperation({ summary: 'Get report' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Report status retrieved successfully',
-    schema: {
-      example: {
-        id: 'report123',
-        status: 'Pending',
-        description: 'Report description',
-      },
-    },
+    description: 'Report  retrieved successfully',
+   
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -144,43 +135,6 @@ export class ReportsController {
   ): Promise<ReportDocument> {
     const userFromJwt = req.user as User
     return this.reportsService.updateReport(reportId, userFromJwt.id, updateData);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth() 
-  @Patch(':reportId/decision')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Accept or reject a report' })
-  @ApiParam({ name: 'reportId', description: 'ID of the report to accept or reject' })
-  @ApiBody({ type: AcceptOrRejectReportDto, description: 'Accept or reject action for the report' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Successfully accepted or rejected the report',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Report not found',
-  })
-  @ApiResponse({
-    status: HttpStatus.FORBIDDEN,
-    description: 'Only the accepting NGO can modify the accepted report',
-  })
-  @ApiResponse({
-    status: HttpStatus.CONFLICT,
-    description: 'Report cannot be modified in its current state',
-  })
-  async acceptOrRejectReport(
-    @Param('reportId') reportId: string,
-    @Body() acceptOrRejectDto: AcceptOrRejectReportDto,
-    @Req() req
-  ): Promise<ReportDocument> {
-    const action = acceptOrRejectDto.action; 
-    const userFromJwt = req.user as User;
-    const report = await this.reportsService.acceptOrRejectReport(reportId, userFromJwt.id, action);
-    if (!report) {
-      throw new NotFoundException('Report not found.');
-    }
-    return report;
   }
 }
 

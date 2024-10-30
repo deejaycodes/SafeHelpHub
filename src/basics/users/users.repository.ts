@@ -73,4 +73,52 @@ export class UsersRepository {
       new: true,
     });
   }
+
+  async updateUserFiles(
+    userId: Types.ObjectId | string,
+    filePath: string,
+  ): Promise<User> {
+
+    if (!isValidObjectId(userId)) {
+      throw new BadRequestException('Invalid ID format. Must be a 24-character hex string.');
+    }
+    const objectId =
+      typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
+
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(
+        objectId,
+        { $push: { profilePicture: { file_path: filePath, uploaded_at: new Date() } } },
+        { new: true },
+      )
+      .exec();
+
+    if (!updatedUser) {
+      throw new NotFoundException(`report ${userId} not found`);
+    }
+
+    return updatedUser;
+  }
+
+  async findNgoByLocationOrName(state?: string, ngoName?: string): Promise<User[]> {
+    const query: any = { role: 'ngo' };
+
+    if (state) {
+      query['primary_location.state'] = state;
+    }
+
+    if (ngoName) {
+      query.ngo_name = ngoName;
+    }
+
+    return this.userModel.find(query).exec();
+  }
+  async findUserByIdAndUpdate(userId: Types.ObjectId | string, updateData: any): Promise<User> {
+    const objectId =
+      typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
+
+    return this.userModel.findOneAndUpdate( objectId, updateData, {
+      new: true,
+    }).exec();
+  }
 }

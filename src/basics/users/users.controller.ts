@@ -1,10 +1,13 @@
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, HttpStatus, Param, Post, Put, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { JwtService } from '@nestjs/jwt';
+import { User } from '@sentry/nestjs';
 import { VerifyAccountDto } from 'src/common/dtos/verifyDto';
 import { SendForgotPasswordCodeDto } from 'src/common/dtos/sendForgotPasswordDto';
 import { ValidateResetCodeAndResetPasswordDto } from 'src/common/dtos/validateResetPasswordDto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/cores/authentication/strategy/jwt-guard';
+
 
 @ApiTags('users')
 @Controller('users')
@@ -110,5 +113,37 @@ export class UsersController {
     @Body() verifyAccountDto: VerifyAccountDto,
   ): Promise<{ message: string }> {
     return this.usersService.verifyAccount(verifyAccountDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth() 
+  @Put('profile_picture/:userId')
+  @ApiOperation({ summary: 'Upload profile picture' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Picture uploaded successfully',
+    schema: {
+      example: {
+        message: 'Picture uploaded successfully',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid file or upload error',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'File format not supported',
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  uploadVerifications(
+    @Req() req,
+    @UploadedFile() file: any,
+  ) {
+    const userFromJwt = req.user as User
+    return this.usersService.uploadUserFile(userFromJwt.id, file);
   }
 }

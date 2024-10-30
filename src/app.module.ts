@@ -35,7 +35,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       signOptions: { expiresIn: jwtConstants.LOGIN_EXPIRY },
     }),
     SentryModule.forRoot(),
-    //EmailModule,
+    EmailModule,
     UsersModule,
     PassportModule,
     QuestionsModule,

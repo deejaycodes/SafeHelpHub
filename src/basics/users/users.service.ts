@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -7,6 +9,7 @@ import { CreateUserDto } from '../../common/dtos/createUserDto';
 import * as bcrypt from 'bcryptjs';
 import { randomInt } from 'crypto';
 import { UserResponseDto } from '../../common/dtos/userResponseDto';
+import { Model, Types, isValidObjectId } from 'mongoose';
 import { UsersRepository } from './users.repository';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { EmailService } from '../email/email.service';
@@ -14,6 +17,8 @@ import { JwtService } from '@nestjs/jwt';
 import { VerifyAccountDto } from 'src/common/dtos/verifyDto';
 import { SendForgotPasswordCodeDto } from 'src/common/dtos/sendForgotPasswordDto';
 import { ValidateResetCodeAndResetPasswordDto } from 'src/common/dtos/validateResetPasswordDto';
+import { uploadObject } from 'src/common/utils/upload';
+import { User } from 'src/common/schemas/users.schema';
 
 @Injectable()
 export class UsersService {
@@ -158,5 +163,55 @@ export class UsersService {
     });
 
     return { message: 'Account verified successfully' };
+  }
+
+  async uploadUserFile(
+    userId: Types.ObjectId | any,
+    file: any,
+  ): Promise<User> {
+    const { originalname, buffer } = file;
+    const idFileType = originalname.slice(originalname.lastIndexOf('.'));
+    const objectId =
+      typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
+
+    // Ensure the report exists
+    const report = await this.usersRepository.fetchSingleUserById(objectId);
+    if (!report) {
+      throw new NotFoundException(`User ${userId} not found`);
+    }
+
+    // Create the document path for the file
+    const documentPath = `file-identification/${userId}${idFileType}`;
+
+    // Upload the file to the storage bucket
+    const uploadResponse = await uploadObject({
+      Bucket: 'sportycredit',
+      Key: documentPath,
+      Body: buffer,
+      ACL: 'public-read',
+    });
+
+    if (uploadResponse?.$metadata?.httpStatusCode === 200) {
+      const fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
+
+      return await this.usersRepository.updateUserFiles(objectId, fileUrl);
+    }
+
+    // Throw error if file upload failed
+    throw new HttpException(
+      {
+        status: HttpStatus.BAD_REQUEST,
+        error: 'File upload failed',
+      },
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+  
+  async findByIdAndUpdate(id:any, updateData: any){
+    return this.usersRepository.findUserByIdAndUpdate(id, updateData)
+  }
+
+  async findNgoByLocationOrName(state?: string, ngoName?: string) {
+    return this.usersRepository.findNgoByLocationOrName(state, ngoName)
   }
 }

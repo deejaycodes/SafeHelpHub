@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -85,7 +84,6 @@ export class ReportsService {
       return await this.reportsRepository.updateReportFiles(objectId, fileUrl);
     }
 
-    // Throw error if file upload failed
     throw new HttpException(
       {
         status: HttpStatus.BAD_REQUEST,
@@ -99,48 +97,46 @@ export class ReportsService {
 
     const report = await this.reportsRepository.fetchSingleReportById(reportId)
 
-    return {status: report.status}
+    return report
   }
 
-  public async acceptOrRejectReport(
-    reportId: string,
-    ngoId: any,
-    action: 'accept' | 'reject',
-): Promise<ReportDocument> {
-    // Fetch the report using the repository
-    const report = await this.reportsRepository.fetchSingleReportById(reportId);
-
-    if (!report) {
-        throw new NotFoundException('Report not found.');
-    }
-
-    // Ensure the NGO has access to this report
-    if (!report.ngo_dashboard_ids || !report.ngo_dashboard_ids.includes(ngoId)) {
-        throw new ForbiddenException('You do not have access to this report.');
-    }
-
-    // Call the handleReport method to accept or reject
-    return this.reportsRepository.handleReport(report as any, ngoId, action);
-}
-
-
-  async updateReport(reportId: string, ngoId: any, updateData: Partial<ReportDocument>): Promise<ReportDocument> {
+ 
+  async updateReport(reportId: string, ngoId: any, updateData: Partial<ReportDocument> & { rejection_reason?: string }): Promise<ReportDocument> {
     const report = await this.reportsRepository.fetchSingleReportById(reportId);
     
     if (!report) {
       throw new NotFoundException('Report not found');
     }
-
-    if (report.status === ReportStatus.ACCEPTED && report.user_id as unknown as any !== ngoId) {
-      throw new ForbiddenException('Only the accepting NGO can update this report.');
-    }
-
+  
     if (report.status === ReportStatus.REJECTED) {
       throw new ConflictException('This report has been rejected and cannot be updated.');
     }
-    Object.assign(report, updateData);
+  
+    if (updateData.status === ReportStatus.RESOLVED && report.status !== ReportStatus.ACCEPTED) {
+      throw new ConflictException('Only reports with status "accepted" can be marked as resolved.');
+    } else if (updateData.status === ReportStatus.ACCEPTED) {
+      report.status = ReportStatus.ACCEPTED;
+      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, { $inc: { resolvedAcceptCount: 1 } })
+    } else if (updateData.status === ReportStatus.RESOLVED) {
+      report.status = ReportStatus.RESOLVED;
+      
+      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, { $inc: { resolvedReportsCount: 1 } });
+    } else if (updateData.status === ReportStatus.REJECTED) {
+      report.status = ReportStatus.REJECTED;
+      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, { $inc: { rejectedReportsCount: 1 },isHandlingReport:false  });
+      
+      report.rejected_by = report.rejected_by || [];
+      report.rejected_by.push(ngoId);
 
+      report.rejection_reasons = report.rejection_reasons || [];
+      report.rejection_reasons.push({
+        reason: updateData.rejection_reason|| 'No reason provided',
+        rejected_by: ngoId,
+        rejected_at: new Date(),
+      });
+    }
+    Object.assign(report, updateData);
+  
     return this.reportsRepository.save(report as ReportDocument);
   }
-   
-}
+}  

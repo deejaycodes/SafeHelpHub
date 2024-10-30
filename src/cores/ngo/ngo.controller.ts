@@ -1,13 +1,16 @@
-import { Body, Controller, Post, HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Post, HttpStatus, Get, Query } from '@nestjs/common';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NgoService } from './ngo.service';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
+import { UsersService } from 'src/basics/users/users.service';
 
 @ApiTags('Ngo')
 @Controller('ngo')
 export class NgoController {
-  constructor(private readonly ngoService: NgoService) {}
+  constructor(private readonly ngoService: NgoService,
+    private readonly usersService: UsersService
+  ) {}
 
   @Post('register')
   @ApiOperation({ summary: 'Signup endpoint for registering an NGO' })
@@ -53,5 +56,16 @@ export class NgoController {
     @Body() createNgoDto: CreateNgoDto,
   ): Promise<RegisterResponseDto> {
     return this.ngoService.registerNgo(createNgoDto);
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Find NGOs by state or name' })
+  @ApiQuery({ name: 'state', required: false, description: 'State of the NGO primary location' })
+  @ApiQuery({ name: 'ngo_name', required: false, description: 'Name of the NGO' })
+  async findNgoByLocationOrName(
+    @Query('state') state?: string,
+    @Query('ngo_name') ngoName?: string,
+  ) {
+    return this.usersService.findNgoByLocationOrName(state, ngoName);
   }
 }

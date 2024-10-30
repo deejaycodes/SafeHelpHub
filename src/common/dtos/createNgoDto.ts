@@ -179,6 +179,16 @@ export class CreateNgoDto {
   })
   role: string;
 
+  @ApiPropertyOptional({
+    description: 'Rank of the user, can be either 1, 2, or 3',
+    enum: [1, 2, 3],
+    example: 1,
+  })
+  @IsOptional()
+  @IsString()
+  rank:number
+
+
   @IsOptional()
   @IsString()
   verificationCode?: string;

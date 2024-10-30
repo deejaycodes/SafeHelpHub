@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report, ReportDocument } from './schemas/reports.schemas';
@@ -71,7 +71,6 @@ export class ReportsRepository {
 
     if (action === 'accept') {
         report.status = ReportStatus.ACCEPTED;
-        report.acceptedBy = ngoId;
 
         report.ngo_dashboard_ids = report.ngo_dashboard_ids.filter(id => id !== ngoId);
     } else if (action === 'reject') {
@@ -80,12 +79,11 @@ export class ReportsRepository {
         throw new BadRequestException('Invalid action specified.');
     }
 
-    await report.save();
-    return report;
+    return await report.save();
+   
 }
-
-  
   async save(report: ReportDocument): Promise<ReportDocument> {
     return report.save();
   }
+  
 }

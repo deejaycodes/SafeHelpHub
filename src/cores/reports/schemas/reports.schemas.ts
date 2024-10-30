@@ -105,10 +105,9 @@ export class Report {
     enum: ReportStatus,
     default: ReportStatus.SUBMITTED,
   })
-  @IsEnum(ReportStatus) // Use the enum for validation
-  @Prop({ enum: ReportStatus, default: ReportStatus.SUBMITTED }) // Use the enum in the Mongoose schema
-  status: ReportStatus; // Change the type to the enum
-
+  @IsEnum(ReportStatus) 
+  @Prop({ enum: ReportStatus, default: ReportStatus.SUBMITTED }) 
+  status: ReportStatus;
   @ApiProperty({
     description: 'Date when the report was created',
     example: '2024-09-16T10:15:00.000Z',
@@ -123,8 +122,36 @@ export class Report {
   @Prop({ type: Date, default: Date.now })
   updated_at: Date;
 
-  @Prop({ type: String, ref: 'User' })
-  acceptedBy?: string; 
+  @Prop({type: [String], ref: 'User' })
+  rejected_by?: string[];
+
+  @ApiProperty({
+    description: 'Rejection reasons for the report, if any',
+    type: Array,
+    example: [
+      {
+        reason: 'Insufficient details',
+        rejected_by: '60f6b3eaf6477d49f87e9c7f',
+        rejected_at: '2024-10-01T12:00:00.000Z',
+      },
+    ],
+  })
+  @IsArray()
+  @Prop({
+    type: [
+      {
+        reason: { type: String, required: true },
+        rejected_by: { type: Types.ObjectId, ref: 'User', required: true },
+        rejected_at: { type: Date, default: Date.now },
+      },
+    ],
+    default: [],
+  })
+  rejection_reasons: Array<{
+    reason: string;
+    rejected_by: Types.ObjectId;
+    rejected_at: Date;
+  }>;
 
   @Prop({ type: [String], default: [] }) 
   ngo_dashboard_ids?: string[];
