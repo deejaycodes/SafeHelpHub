@@ -179,7 +179,7 @@ export class User {
   })
   @Prop({
     type: String,
-    enum: ['user', 'ngo'],
+    enum: ['user', 'ngo', 'admin'],
     default: 'user',
   })
   role: string;
