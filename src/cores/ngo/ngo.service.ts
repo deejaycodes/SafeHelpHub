@@ -25,7 +25,7 @@ export class NgoService {
       verificationCode: verificationCode,
       verificationCodeExpiresAt: verificationCodeExpiresAt,
     });
-    await this.emailService.sendVerificationEmail(email, verificationCode);
+   // await this.emailService.sendVerificationEmail(email, verificationCode);
     return {
       message: 'Registration successful. Please verify your email.',
       token: this.jwtService.sign(email, {
