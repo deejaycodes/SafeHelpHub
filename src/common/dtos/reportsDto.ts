@@ -6,9 +6,11 @@ import {
   IsIn,
   ValidateNested,
   IsEmail,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { NigerianStates } from '../enums/nigeria-states.enum';
 
 class FileDto {
   @ApiProperty({
@@ -46,11 +48,12 @@ export class CreateIncidentDto {
 
   @ApiProperty({
     description: 'Location where the incident occurred',
-    example: 'Lagos, Nigeria',
+    example: 'Lagos',
+    enum: NigerianStates  
   })
-  @IsString()
-  @IsNotEmpty()
-  location: string;
+  @IsEnum(NigerianStates, { message: 'Location must be a valid Nigerian state' })
+  location: NigerianStates;
+
 
   @ApiPropertyOptional({
     description: 'Contact information of the reporter (optional)',

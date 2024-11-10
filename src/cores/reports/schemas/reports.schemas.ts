@@ -4,6 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsEnum, IsOptional, IsArray } from 'class-validator';
 import { encrypt, decrypt } from 'src/common/utils/encryption';
 import { ReportStatus } from 'src/common/enums/report-status.enum';
+import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 
 export type ReportDocument = Report & Document;
 
@@ -27,11 +28,12 @@ export class Report {
 
   @ApiProperty({
     description: 'Location where the incident occurred',
-    example: 'Lagos, Nigeria',
+    example: 'Lagos',
+    enum: NigerianStates,
   })
-  @IsString()
-  @Prop({ required: true })
-  location: string;
+  @IsEnum(NigerianStates, { message: 'Location must be a valid Nigerian state' })
+  @Prop({ required: true, enum: NigerianStates })
+  location: NigerianStates;
 
   @ApiProperty({
     description: 'Encrypted contact info of the reporter',

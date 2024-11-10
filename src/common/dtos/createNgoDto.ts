@@ -15,6 +15,33 @@ import {
   IsDateString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { NigerianStates } from '../enums/nigeria-states.enum';
+
+class PrimaryLocationDto {
+  @ApiProperty({
+    description: 'Address of the NGO',
+    example: '123 Charity Lane, Lagos, Nigeria',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'Address is required' })
+  address: string;
+
+  @ApiProperty({
+    description: 'City where the NGO is located',
+    example: 'Lagos',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'City is required' })
+  city: string;
+
+  @ApiProperty({
+    description: 'State in Nigeria where the NGO is located',
+    enum: NigerianStates,
+    example: NigerianStates.LAGOS,
+  })
+  @IsIn(Object.values(NigerianStates), { message: 'Invalid state' })
+  state: NigerianStates;
+}
 
 // ContactInfo DTO for primary and secondary contact validation
 class PrimaryContactDto {
@@ -39,8 +66,7 @@ class PrimaryContactDto {
     example: '+2348000000000',
   })
   @IsPhoneNumber(null, {
-    message:
-      'Primary contact phone number must be a valid international number',
+    message: 'Primary contact phone number must be a valid international number',
   })
   @IsNotEmpty({ message: 'Primary contact phone is required' })
   phone: string;
@@ -110,24 +136,10 @@ export class CreateNgoDto {
 
   @ApiProperty({
     description: 'Primary location of the NGO',
-    example: {
-      address: '123 Charity Lane, Lagos, Nigeria',
-      city: 'Lagos',
-      state: 'Lagos State',
-      country: 'Nigeria',
-      latitude: 6.5244,
-      longitude: 3.3792,
-    },
   })
-  @IsNotEmpty({ message: 'Primary location is required' })
-  primary_location: {
-    address: string;
-    city: string;
-    state: string;
-    country: string;
-    latitude: number;
-    longitude: number;
-  };
+  @ValidateNested()
+  @Type(() => PrimaryLocationDto)
+  primary_location: PrimaryLocationDto;
 
   @ApiProperty({
     description: 'Incident types supported by the NGO',
@@ -162,8 +174,7 @@ export class CreateNgoDto {
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   @MaxLength(20, { message: 'Password must not exceed 20 characters' })
   @Matches(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\W_]).{8,}$/, {
-    message:
-      'Password must contain at least one letter, one number, and one special character',
+    message: 'Password must contain at least one letter, one number, and one special character',
   })
   password: string;
 
@@ -175,7 +186,7 @@ export class CreateNgoDto {
   @IsOptional()
   @IsString()
   @IsIn(['ngo'], {
-    message: 'Role must be either ngo',
+    message: 'Role must be ngo',
   })
   role: string;
 
@@ -185,7 +196,6 @@ export class CreateNgoDto {
     example: 1,
   })
   @IsOptional()
-  @IsString()
   rank: number;
 
   @IsOptional()
@@ -197,6 +207,6 @@ export class CreateNgoDto {
     example: '2024-09-20T10:00:00Z',
   })
   @IsDateString()
-  @IsOptional() //
+  @IsOptional()
   verificationCodeExpiresAt?: Date;
 }

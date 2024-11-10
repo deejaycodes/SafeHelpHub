@@ -26,7 +26,7 @@ export class ReportAssignmentService {
       const ngosByCriteria = await this.userModel
         .find({
           role: 'ngo',
-          'primary_location.city': report.location,
+          'primary_location.state': report.location,
           isHandlingReport: false,
         })
         .sort({
@@ -75,7 +75,7 @@ export class ReportAssignmentService {
       const ngosByCriteria = await this.userModel
         .find({
           role: 'ngo',
-          'primary_location.city': report.location,
+          'primary_location.state': report.location,
           isHandlingReport: false,
           _id: { $nin: report.rejected_by },
         })

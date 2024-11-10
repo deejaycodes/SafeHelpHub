@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEnum, IsBoolean } from 'class-validator';
+import { IsString} from 'class-validator';
+import { NigerianStates } from '../enums/nigeria-states.enum';
 
 export type UserDocument = User & Document;
 
@@ -26,10 +27,7 @@ export class User {
     example: {
       address: '123 Charity Lane, Lagos, Nigeria',
       city: 'Lagos',
-      state: 'Lagos State',
-      country: 'Nigeria',
-      latitude: 6.5244,
-      longitude: 3.3792,
+      state: NigerianStates.LAGOS,
     },
   })
   @Prop({
@@ -37,18 +35,12 @@ export class User {
       address: { type: String },
       city: { type: String },
       state: { type: String },
-      country: { type: String },
-      latitude: { type: Number },
-      longitude: { type: Number },
     },
   })
   primary_location: {
     address: string;
     city: string;
-    state: string;
-    country: string;
-    latitude: number;
-    longitude: number;
+    state: NigerianStates;
   };
 
   @ApiProperty({
