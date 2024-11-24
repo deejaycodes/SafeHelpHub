@@ -13,6 +13,7 @@ import { uploadObject } from 'src/common/utils/upload';
 import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
 import { ReportStatus } from 'src/common/enums/report-status.enum';
+import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 
 @Injectable()
 export class ReportsService {
@@ -121,6 +122,8 @@ export class ReportsService {
       report.status = ReportStatus.ACCEPTED;
       await this.usersRepository.findUserByIdAndUpdate(ngoId as any, {
         $inc: { resolvedAcceptCount: 1 },
+        $push: { currentlyAssignedReports: reportId },
+        $set: { isHandlingReport: true }
       });
     } else if (updateData.status === ReportStatus.RESOLVED) {
       report.status = ReportStatus.RESOLVED;
@@ -152,5 +155,33 @@ export class ReportsService {
 
   async findAll(){
     return this.reportsRepository.findAll()
+  }
+
+  private generateMockReports(): Report[] {
+    const mockReports: Report[] = [];
+    
+    const incidentTypes = ['harassment', 'child_abuse', 'sexual_assault', 'FGM', 'trafficking'];
+    const states = Object.values(NigerianStates); // Assuming NigerianStates is an enum
+    const statuses = [ReportStatus.SUBMITTED];
+    
+    for (let i = 0; i < 25; i++) {
+      mockReports.push({
+        incident_type: incidentTypes[i % incidentTypes.length],
+        description: `Sample description for incident number ${i + 1}. This is an example of the description.`,
+        location: states[i % states.length],
+        contact_info: `contact${i + 1}@example.com`,
+        files: [
+          { file_path: `uploads/sample_file_${i + 1}.pdf`, uploaded_at: new Date() },
+        ],
+        status: statuses[i % statuses.length],
+        created_at: new Date(),
+        updated_at: new Date(),
+        user_id: null, // Set user_id to null
+        rejected_by: [],
+        rejection_reasons: [],
+      });
+    }
+
+    return mockReports;
   }
 }

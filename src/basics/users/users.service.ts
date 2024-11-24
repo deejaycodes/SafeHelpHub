@@ -214,4 +214,5 @@ export class UsersService {
     return this.usersRepository.findNgoByLocationOrName(state, ngoName);
   }
   
+  
 }

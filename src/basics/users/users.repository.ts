@@ -8,6 +8,8 @@ import { CreateUserDto } from '../../common/dtos/createUserDto';
 import { User, UserDocument } from '../../common/schemas/users.schema';
 import { Model, isValidObjectId, Types } from 'mongoose';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
+import { faker } from '@faker-js/faker';
+import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 
 @Injectable()
 export class UsersRepository {
@@ -139,5 +141,47 @@ export class UsersRepository {
         new: true,
       })
       .exec();
+  }
+
+  async createMockUsers(): Promise<UserDocument[]> {
+    const users: Partial<User>[] = Array.from({ length: 50 }, () => ({
+      ngo_name: faker.company.name(),
+      registration_number: `NGO-${faker.number.int({ max: 999999 })}`,
+      primary_location: {
+        address: faker.address.streetAddress(),
+        city: faker.address.city(),
+        state: faker.helpers.arrayElement(Object.values(NigerianStates)),
+      },
+      incident_types_supported: faker.helpers.arrayElements(
+        ['domestic_violence', 'child_abuse', 'FGM', 'sexual_assault', 'trafficking'],
+        3,
+      ),
+      services_provided: faker.helpers.arrayElements(
+        ['counselling', 'legal_aid', 'medical_support', 'emergency_shelter', 'financial_assistance'],
+        3,
+      ),
+      contact_info: {
+        primary_contact: {
+          name: faker.person.fullName(),
+          email: faker.internet.email().toLowerCase(),
+          phone: faker.helpers.replaceSymbols('+234##########'),
+        },
+        secondary_contact: {
+          name: faker.person.fullName(),
+          email: faker.internet.email().toLowerCase(),
+          phone: faker.helpers.replaceSymbols('+234##########'),
+        },
+      },
+      username: faker.internet.userName(),
+      email: faker.internet.email().toLowerCase(),
+      password_hash: faker.internet.password(),
+      role: 'ngo', // Set role to ngo
+      isHandlingReport:false,
+      isVerified: faker.datatype.boolean(),
+      created_at: new Date(),
+      updated_at: new Date(),
+    }));
+
+    return this.userModel.create(users);
   }
 }

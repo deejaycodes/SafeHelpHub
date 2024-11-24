@@ -11,10 +11,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersRepository } from './users.repository';
 import { AuthenticationService } from 'src/cores/authentication/authentication.service';
 import { EmailService } from '../email/email.service';
+import { Notification, NotificationSchema } from 'src/common/schemas/notification.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema },
+    ]),
     PassportModule,
     UsersModule,
   ],

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  HttpException,
   HttpStatus,
   Param,
   Post,
@@ -24,11 +25,14 @@ import { SendForgotPasswordCodeDto } from 'src/common/dtos/sendForgotPasswordDto
 import { ValidateResetCodeAndResetPasswordDto } from 'src/common/dtos/validateResetPasswordDto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/cores/authentication/strategy/jwt-guard';
+import { UsersRepository } from './users.repository';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService,
+    private readonly userRepo:UsersRepository
+  ) {}
 
   @Post('forgot-password')
   @ApiOperation({ summary: 'Send forgot password code to user' })
@@ -164,5 +168,23 @@ export class UsersController {
   uploadVerifications(@Req() req, @UploadedFile() file: any) {
     const userFromJwt = req.user as User;
     return this.usersService.uploadUserFile(userFromJwt.id, file);
+  }
+
+
+
+  @Post('mock-ngos')
+  async createMockNgos(): Promise<{ message: string; count: number }> {
+    try {
+      const mockUsers = await this.userRepo.createMockUsers();
+      return {
+        message: 'Mock NGO users created successfully',
+        count: mockUsers.length,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'Failed to create mock NGO users',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

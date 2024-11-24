@@ -8,11 +8,13 @@ import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
 import { ReportAssignmentService } from './reports-assignment';
 import { ScheduleModule } from '@nestjs/schedule';
+import {Notification,  NotificationSchema } from 'src/common/schemas/notification.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Report.name, schema: ReportSchema },
+      { name:Notification.name, schema: NotificationSchema},
       { name: User.name, schema: UserSchema },
     ]),
     ScheduleModule.forRoot(),

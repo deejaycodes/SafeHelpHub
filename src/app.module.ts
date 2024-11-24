@@ -27,6 +27,10 @@ import { QuestionsModule } from './basics/chats/questions.module';
 import { ReportAssignmentService } from './cores/reports/reports-assignment';
 import { ReportSchema, Report } from './cores/reports/schemas/reports.schemas';
 import { ScheduleModule } from '@nestjs/schedule';
+import { Notification, NotificationSchema } from './common/schemas/notification.schema';
+import { NotificationsService } from './notifications/notifications.service';
+import { NotificationController } from './notifications/notifications.controller';
+import { NotificationModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -46,14 +50,16 @@ import { ScheduleModule } from '@nestjs/schedule';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Report.name, schema: ReportSchema },
+      {name:Notification.name, schema:NotificationSchema}
     ]),
 
     MongooseModule.forRoot(process.env.MONGO_URI),
     ReportsModule,
     AuthenticationModule,
     EmailModule,
+    NotificationModule,
   ],
-  controllers: [AppController, AuthsController, UsersController],
+  controllers: [AppController, AuthsController, UsersController, NotificationController],
   providers: [
     UsersRepository,
     AppService,
@@ -74,6 +80,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       useClass: SentryGlobalFilter,
     },
     AuthenticationService,
+    NotificationsService,
   ],
 })
 export class AppModule {}

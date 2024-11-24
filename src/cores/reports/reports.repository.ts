@@ -9,6 +9,7 @@ import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report, ReportDocument } from './schemas/reports.schemas';
 import { Model, Types, isValidObjectId } from 'mongoose';
 import { ReportStatus } from 'src/common/enums/report-status.enum';
+import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 
 @Injectable()
 export class ReportsRepository {
@@ -103,5 +104,38 @@ export class ReportsRepository {
   async findAll(): Promise<ReportDocument[]> {
     const reports = await this.reportModel.find().exec();
     return reports || [];  
+  }
+
+  private generateMockReports(): Report[] {
+    const mockReports: Report[] = [];
+    
+    const incidentTypes = ['harassment', 'child_abuse', 'sexual_assault', 'FGM', 'trafficking'];
+    const states = Object.values(NigerianStates); // Assuming NigerianStates is an enum
+    const statuses = [ReportStatus.SUBMITTED];
+    
+    for (let i = 0; i < 25; i++) {
+      mockReports.push({
+        incident_type: incidentTypes[i % incidentTypes.length],
+        description: `Sample description for incident number ${i + 1}. This is an example of the description.`,
+        location: states[i % states.length],
+        contact_info: `contact${i + 1}@example.com`,
+        files: [
+          { file_path: `uploads/sample_file_${i + 1}.pdf`, uploaded_at: new Date() },
+        ],
+        status: statuses[i % statuses.length],
+        created_at: new Date(),
+        updated_at: new Date(),
+        user_id: null, // Set user_id to null
+        rejected_by: [],
+        rejection_reasons: [],
+      });
+    }
+
+    return mockReports;
+  }
+
+  async createMockReports(): Promise<Report[]> {
+    const reports = this.generateMockReports();
+    return this.reportModel.insertMany(reports);
   }
 }

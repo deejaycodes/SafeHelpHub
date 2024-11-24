@@ -31,11 +31,14 @@ import {
 import * as _ from 'lodash';
 import { User } from '@sentry/nestjs';
 import { UpdateReportDto } from 'src/common/dtos/updateUserReportDto';
+import { ReportsRepository } from './reports.repository';
 
 @ApiTags('reports')
 @Controller('reports')
 export class ReportsController {
-  constructor(private readonly reportsService: ReportsService) {}
+  constructor(private readonly reportsService: ReportsService,
+    private reportRepo:ReportsRepository
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Submit a report' })
@@ -167,5 +170,10 @@ export class ReportsController {
   async findAll(): Promise<ReportDocument[]> {
     const reports = await this.reportsService.findAll();
     return reports.length > 0 ? reports : [];
+  }
+
+  @Post('create-mock-reports')
+  async createMockReports() {
+    return this.reportRepo.createMockReports();
   }
 }

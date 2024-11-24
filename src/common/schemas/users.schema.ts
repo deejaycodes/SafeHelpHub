@@ -145,6 +145,13 @@ export class User {
   email: string;
 
   @ApiProperty({
+    description: 'report assigned',
+   
+  })
+  @Prop({ type: String })
+  currentlyAssignedReports:string
+
+  @ApiProperty({
     description: 'Hashed password for the user',
     example: 'hashedpassword123',
   })
