@@ -114,7 +114,7 @@ export class UsersRepository {
   }
 
   async findNgoByLocationOrName(
-    state?: string,
+    state?: NigerianStates,
     ngoName?: string,
   ): Promise<User[]> {
     const query: any = { role: 'ngo' };

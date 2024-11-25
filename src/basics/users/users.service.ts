@@ -19,6 +19,7 @@ import { SendForgotPasswordCodeDto } from 'src/common/dtos/sendForgotPasswordDto
 import { ValidateResetCodeAndResetPasswordDto } from 'src/common/dtos/validateResetPasswordDto';
 import { uploadObject } from 'src/common/utils/upload';
 import { User } from 'src/common/schemas/users.schema';
+import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 
 @Injectable()
 export class UsersService {
@@ -210,7 +211,7 @@ export class UsersService {
     return this.usersRepository.findUserByIdAndUpdate(id, updateData);
   }
 
-  async findNgoByLocationOrName(state?: string, ngoName?: string) {
+  async findNgoByLocationOrName(state?: NigerianStates, ngoName?: string) {
     return this.usersRepository.findNgoByLocationOrName(state, ngoName);
   }
   

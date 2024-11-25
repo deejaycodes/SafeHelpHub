@@ -4,6 +4,18 @@ import { NgoService } from './ngo.service';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
 import { UsersService } from 'src/basics/users/users.service';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
+
+class FindNgoQueryDto {
+  @IsOptional()
+  @IsEnum(NigerianStates, { message: 'State must be a valid Nigerian state.' })
+  state?: NigerianStates;
+
+  @IsOptional()
+  @IsString()
+  ngo_name?: string;
+}
 
 @ApiTags('Ngo')
 @Controller('ngo')
@@ -72,9 +84,9 @@ export class NgoController {
     description: 'Name of the NGO',
   })
   async findNgoByLocationOrName(
-    @Query('state') state?: string,
-    @Query('ngo_name') ngoName?: string,
+    @Query() query: FindNgoQueryDto
   ) {
+    const { state, ngo_name: ngoName } = query;
     return this.usersService.findNgoByLocationOrName(state, ngoName);
   }
 }
