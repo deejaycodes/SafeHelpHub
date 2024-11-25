@@ -6,6 +6,7 @@ import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
 import { UsersService } from 'src/basics/users/users.service';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
+import { User } from 'src/common/schemas/users.schema';
 
 class FindNgoQueryDto {
   @IsOptional()
@@ -76,16 +77,29 @@ export class NgoController {
   @ApiQuery({
     name: 'state',
     required: false,
-    description: 'State of the NGO primary location',
+    description: 'State of the NGO primary location (must be a valid Nigerian state)',
+    enum: NigerianStates,
   })
   @ApiQuery({
     name: 'ngo_name',
     required: false,
     description: 'Name of the NGO',
+    type: String,
   })
-  async findNgoByLocationOrName(
-    @Query() query: FindNgoQueryDto
-  ) {
+  @ApiResponse({
+    status: 200,
+    description: 'A list of NGOs matching the search criteria',
+    type: [User], 
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid query parameters',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
+  async findNgoByLocationOrName(@Query() query: FindNgoQueryDto) {
     const { state, ngo_name: ngoName } = query;
     return this.usersService.findNgoByLocationOrName(state, ngoName);
   }
