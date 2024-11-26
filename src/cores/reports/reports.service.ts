@@ -119,7 +119,7 @@ export class ReportsService {
       if (file) {
         const { originalname, buffer } = file;
         const fileType = originalname.slice(originalname.lastIndexOf('.'));
-        const documentPath = `file-identification/${new Types.ObjectId()}${fileType}`;
+        const documentPath = `file-identification/${fileType}`;
   
         const uploadResponse = await uploadObject({
           Bucket: 'sportycredit',
