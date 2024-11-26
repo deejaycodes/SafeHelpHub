@@ -21,28 +21,133 @@ export class ReportsService {
     private readonly reportsRepository: ReportsRepository,
     private readonly usersRepository: UsersRepository,
   ) {}
-  async createIncident(
+  // async createIncident(
+  //   createIncidentDto: CreateIncidentDto,
+  //   userId: string | null,
+  // ): Promise<Report> {
+  //   try {
+  //     // Ensure userId is a valid ObjectId
+  //     const userObjectId = userId ? new Types.ObjectId(userId) : null;
+  //     // Fetch user by ObjectId
+  //     const user = userObjectId
+  //       ? await this.usersRepository.fetchSingleUserById(userObjectId)
+  //       : null;
+  //     if (userObjectId && !user) {
+  //       throw new BadRequestException('User not found');
+  //     }
+
+  //     const userIdString = userObjectId ? userObjectId.toString() : null;
+  //     // Create a new incident
+  //     const newIncident = {
+  //       ...createIncidentDto,
+  //       user_id: userIdString,
+  //     };
+
+  //     return await this.reportsRepository.createIncident(newIncident);
+  //   } catch (error) {
+  //     throw new BadRequestException(
+  //       `Error creating incident: ${error.message}`,
+  //     );
+  //   }
+  // }
+
+  // async uploadReportFile(
+  //   reportId: Types.ObjectId | string,
+  //   file: any,
+  // ): Promise<Report> {
+  //   const { originalname, buffer } = file;
+  //   const idFileType = originalname.slice(originalname.lastIndexOf('.'));
+  //   const objectId =
+  //     typeof reportId === 'string' ? new Types.ObjectId(reportId) : reportId;
+
+  //   // Ensure the report exists
+  //   const report = await this.reportsRepository.fetchSingleReportById(objectId);
+  //   if (!report) {
+  //     throw new NotFoundException(`Report ${reportId} not found`);
+  //   }
+
+  //   // Create the document path for the file
+  //   const documentPath = `file-identification/${reportId}${idFileType}`;
+
+  //   // Upload the file to the storage bucket
+  //   const uploadResponse = await uploadObject({
+  //     Bucket: 'sportycredit',
+  //     Key: documentPath,
+  //     Body: buffer,
+  //     ACL: 'public-read',
+  //   });
+
+  //   // Check if the upload was successful
+  //   if (uploadResponse?.$metadata?.httpStatusCode === 200) {
+  //     const fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
+
+  //     // Update the report's files array using repository method
+  //     return await this.reportsRepository.updateReportFiles(objectId, fileUrl);
+  //   }
+
+  //   throw new HttpException(
+  //     {
+  //       status: HttpStatus.BAD_REQUEST,
+  //       error: 'File upload failed',
+  //     },
+  //     HttpStatus.BAD_REQUEST,
+  //   );
+  // }
+
+  async createIncidentWithFile(
     createIncidentDto: CreateIncidentDto,
+    file: any,
     userId: string | null,
   ): Promise<Report> {
     try {
       // Ensure userId is a valid ObjectId
       const userObjectId = userId ? new Types.ObjectId(userId) : null;
-      // Fetch user by ObjectId
+  
+      // Fetch user by ObjectId if userId is provided
       const user = userObjectId
         ? await this.usersRepository.fetchSingleUserById(userObjectId)
         : null;
+  
       if (userObjectId && !user) {
         throw new BadRequestException('User not found');
       }
-
+  
       const userIdString = userObjectId ? userObjectId.toString() : null;
-      // Create a new incident
+  
+      // Handle file upload if a file is provided
+      let fileUrl = null;
+      if (file) {
+        const { originalname, buffer } = file;
+        const fileType = originalname.slice(originalname.lastIndexOf('.'));
+        const documentPath = `file-identification/${new Types.ObjectId()}${fileType}`;
+  
+        const uploadResponse = await uploadObject({
+          Bucket: 'sportycredit',
+          Key: documentPath,
+          Body: buffer,
+          ACL: 'public-read',
+        });
+  
+        if (uploadResponse?.$metadata?.httpStatusCode === 200) {
+          fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
+        } else {
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              error: 'File upload failed',
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+  
+      // Create a new incident, including the file URL if provided
       const newIncident = {
         ...createIncidentDto,
         user_id: userIdString,
+        files: fileUrl ? [fileUrl] : [],
       };
-
+  
       return await this.reportsRepository.createIncident(newIncident);
     } catch (error) {
       throw new BadRequestException(
@@ -50,50 +155,7 @@ export class ReportsService {
       );
     }
   }
-
-  async uploadReportFile(
-    reportId: Types.ObjectId | string,
-    file: any,
-  ): Promise<Report> {
-    const { originalname, buffer } = file;
-    const idFileType = originalname.slice(originalname.lastIndexOf('.'));
-    const objectId =
-      typeof reportId === 'string' ? new Types.ObjectId(reportId) : reportId;
-
-    // Ensure the report exists
-    const report = await this.reportsRepository.fetchSingleReportById(objectId);
-    if (!report) {
-      throw new NotFoundException(`Report ${reportId} not found`);
-    }
-
-    // Create the document path for the file
-    const documentPath = `file-identification/${reportId}${idFileType}`;
-
-    // Upload the file to the storage bucket
-    const uploadResponse = await uploadObject({
-      Bucket: 'sportycredit',
-      Key: documentPath,
-      Body: buffer,
-      ACL: 'public-read',
-    });
-
-    // Check if the upload was successful
-    if (uploadResponse?.$metadata?.httpStatusCode === 200) {
-      const fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
-
-      // Update the report's files array using repository method
-      return await this.reportsRepository.updateReportFiles(objectId, fileUrl);
-    }
-
-    throw new HttpException(
-      {
-        status: HttpStatus.BAD_REQUEST,
-        error: 'File upload failed',
-      },
-      HttpStatus.BAD_REQUEST,
-    );
-  }
-
+  
   async fetchReportStatus(reportId: Types.ObjectId | string) {
     const report = await this.reportsRepository.fetchSingleReportById(reportId);
 
@@ -157,31 +219,5 @@ export class ReportsService {
     return this.reportsRepository.findAll()
   }
 
-  private generateMockReports(): Report[] {
-    const mockReports: Report[] = [];
-    
-    const incidentTypes = ['harassment', 'child_abuse', 'sexual_assault', 'FGM', 'trafficking'];
-    const states = Object.values(NigerianStates); // Assuming NigerianStates is an enum
-    const statuses = [ReportStatus.SUBMITTED];
-    
-    for (let i = 0; i < 25; i++) {
-      mockReports.push({
-        incident_type: incidentTypes[i % incidentTypes.length],
-        description: `Sample description for incident number ${i + 1}. This is an example of the description.`,
-        location: states[i % states.length],
-        contact_info: `contact${i + 1}@example.com`,
-        files: [
-          { file_path: `uploads/sample_file_${i + 1}.pdf`, uploaded_at: new Date() },
-        ],
-        status: statuses[i % statuses.length],
-        created_at: new Date(),
-        updated_at: new Date(),
-        user_id: null, // Set user_id to null
-        rejected_by: [],
-        rejection_reasons: [],
-      });
-    }
 
-    return mockReports;
-  }
 }

@@ -67,14 +67,17 @@ export class ReportsController {
   })
   @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @UseInterceptors(FileInterceptor('file'))
   async createIncident(
+    @UploadedFile() file: Express.Multer.File,
     @Body() createIncidentDto: CreateIncidentDto,
     @Request() req: any,
   ): Promise<Report> {
     try {
       const userId = _.get(req, 'user.id', null);
-      return await this.reportsService.createIncident(
+      return await this.reportsService.createIncidentWithFile(
         createIncidentDto,
+        file,
         userId,
       );
     } catch (error) {
@@ -102,34 +105,34 @@ export class ReportsController {
     return this.reportsService.fetchReportStatus(reportId);
   }
 
-  @Put('upload_file/:reportId')
-  @ApiOperation({ summary: 'Upload file related to a report' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'File uploaded successfully',
-    schema: {
-      example: {
-        message: 'File uploaded successfully',
-      },
-    },
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid file or upload error',
-    schema: {
-      example: {
-        statusCode: 400,
-        message: 'File format not supported',
-      },
-    },
-  })
-  @UseInterceptors(FileInterceptor('file'))
-  uploadVerifications(
-    @Param('reportId') reportId: string,
-    @UploadedFile() file: any,
-  ) {
-    return this.reportsService.uploadReportFile(reportId, file);
-  }
+  // @Put('upload_file/:reportId')
+  // @ApiOperation({ summary: 'Upload file related to a report' })
+  // @ApiResponse({
+  //   status: HttpStatus.OK,
+  //   description: 'File uploaded successfully',
+  //   schema: {
+  //     example: {
+  //       message: 'File uploaded successfully',
+  //     },
+  //   },
+  // })
+  // @ApiResponse({
+  //   status: HttpStatus.BAD_REQUEST,
+  //   description: 'Invalid file or upload error',
+  //   schema: {
+  //     example: {
+  //       statusCode: 400,
+  //       message: 'File format not supported',
+  //     },
+  //   },
+  // })
+  // @UseInterceptors(FileInterceptor('file'))
+  // uploadVerifications(
+  //   @Param('reportId') reportId: string,
+  //   @UploadedFile() file: any,
+  // ) {
+  //   return this.reportsService.uploadReportFile(reportId, file);
+  // }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

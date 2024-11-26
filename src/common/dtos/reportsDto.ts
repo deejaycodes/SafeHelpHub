@@ -64,22 +64,4 @@ export class CreateIncidentDto {
   @IsEmail({}, { message: 'Invalid email format' })
   contact_info?: string;
 
-  @ApiPropertyOptional({
-    description: 'Array of file objects related to the incident (optional)',
-    type: [FileDto],
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => FileDto)
-  files?: FileDto[];
-
-  @ApiPropertyOptional({
-    description: 'Status of the incident',
-    enum: ['submitted', 'in review', 'resolved'],
-    default: 'submitted',
-  })
-  @IsIn(['submitted', 'in review', 'resolved'])
-  @IsOptional()
-  status?: string = 'submitted';
 }
