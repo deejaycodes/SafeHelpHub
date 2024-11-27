@@ -96,7 +96,7 @@ export class ReportsService {
 
   async createIncidentWithFile(
     createIncidentDto: CreateIncidentDto,
-    files: Array<Express.Multer.File>,
+    files: any,
     userId: string | null,
   ): Promise<Report> {
     try {
