@@ -211,8 +211,8 @@ export class UsersService {
     return this.usersRepository.findUserByIdAndUpdate(id, updateData);
   }
 
-  async findNgoByLocationOrName(state?: NigerianStates, ngoName?: string) {
-    return this.usersRepository.findNgoByLocationOrName(state, ngoName);
+  async findNgoByLocationOrName(query:string) {
+    return this.usersRepository.findNgoByLocationOrName(query);
   }
   
   

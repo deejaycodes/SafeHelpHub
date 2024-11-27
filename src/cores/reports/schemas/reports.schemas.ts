@@ -10,6 +10,8 @@ export type ReportDocument = Report & Document;
 
 @Schema({ timestamps: true })
 export class Report {
+
+  
   @ApiProperty({
     description: 'Type of the incident reported',
     example: 'harassment',
@@ -157,6 +159,10 @@ export class Report {
 
   @Prop({ type: [String], default: [] })
   ngo_dashboard_ids?: string[];
+
+  @Prop({ type: Boolean, default: false })
+ isProcessing?: boolean;
+
 }
 
 export const ReportSchema = SchemaFactory.createForClass(Report);

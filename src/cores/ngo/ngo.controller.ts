@@ -75,21 +75,15 @@ export class NgoController {
   @Get('search')
   @ApiOperation({ summary: 'Find NGOs by state or name' })
   @ApiQuery({
-    name: 'state',
+    name: 'query',
     required: false,
-    description: 'State of the NGO primary location (must be a valid Nigerian state)',
-    enum: NigerianStates,
-  })
-  @ApiQuery({
-    name: 'ngo_name',
-    required: false,
-    description: 'Name of the NGO',
+    description: 'Search term to find NGOs by state or name',
     type: String,
   })
   @ApiResponse({
     status: 200,
     description: 'A list of NGOs matching the search criteria',
-    type: [User], 
+    type: [User],
   })
   @ApiResponse({
     status: 400,
@@ -99,8 +93,8 @@ export class NgoController {
     status: 500,
     description: 'Internal server error',
   })
-  async findNgoByLocationOrName(@Query() query: FindNgoQueryDto) {
-    const { state, ngo_name: ngoName } = query;
-    return this.usersService.findNgoByLocationOrName(state, ngoName);
+  async findNgoByLocationOrName(@Query('query') query?: string) {
+    return this.usersService.findNgoByLocationOrName(query);
   }
+  
 }

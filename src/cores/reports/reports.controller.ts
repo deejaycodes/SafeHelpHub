@@ -156,7 +156,7 @@ export class ReportsController {
     @Body() updateData: UpdateReportDto,
     @Req() req,
   ): Promise<ReportDocument> {
-    const userFromJwt = req.user as User;
+    const userFromJwt = req.user 
     return this.reportsService.updateReport(
       reportId,
       userFromJwt.id,

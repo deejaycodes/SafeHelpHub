@@ -11,20 +11,36 @@ export class ReportAssignmentService {
   private readonly logger = new Logger(ReportAssignmentService.name);
 
   constructor(
-    @InjectModel(Report.name)
-    private readonly reportModel: Model<ReportDocument>,
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    @InjectModel(Notification.name) private notificationModel: Model<NotificationDocument>,
+    @InjectModel(Report.name) private reportModel: Model<Report>,
+    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Notification.name) private notificationModel: Model<Notification>,
   ) {}
 
+  // Cron job to assign reports to NGOs
   @Cron(CronExpression.EVERY_MINUTE)
   async assignReportsToNGOs() {
     this.logger.debug('Running report assignment job...');
 
     const unassignedReports = await this.reportModel
-      .find({ status: 'submitted' })
+      .find({
+        status: 'submitted',
+        isProcessing: false, // Only process reports that aren't being processed
+      })
       .exec();
+
     for (const report of unassignedReports) {
+      // Lock the report to avoid concurrent processing
+      const updatedReport = await this.reportModel.findOneAndUpdate(
+        { _id: report._id, isProcessing: false },
+        { $set: { isProcessing: true } },
+        { new: true },
+      );
+
+      if (!updatedReport) {
+        this.logger.debug(`Report ${report._id} is already being processed.`);
+        continue;
+      }
+
       const ngosByCriteria = await this.userModel
         .find({
           role: 'ngo',
@@ -48,15 +64,13 @@ export class ReportAssignmentService {
           highestRankNgos[Math.floor(Math.random() * highestRankNgos.length)];
 
         this.logger.debug(
-          `Report ${report._id} located in ${report.location} matched to NGO ${selectedNgo._id} with rank ${selectedNgo.rank}, 
-                  ${selectedNgo.resolvedReportsCount} resolved cases, and ${selectedNgo.rejectedReportsCount} rejected cases.`,
+          `Report ${report._id} located in ${report.location} matched to NGO ${selectedNgo._id} with rank ${selectedNgo.rank}, ` +
+            `${selectedNgo.resolvedReportsCount} resolved cases, and ${selectedNgo.rejectedReportsCount} rejected cases.`,
         );
-
-       
 
         report.ngo_dashboard_ids = [selectedNgo._id.toString()];
         await report.save();
-        selectedNgo.isHandlingReport= false
+        selectedNgo.isHandlingReport = false;
         await selectedNgo.save();
 
         for (const ngo of highestRankNgos) {
@@ -64,34 +78,52 @@ export class ReportAssignmentService {
             ngoId: ngo._id.toString(),
             reportId: report._id.toString(),
             message: `A new report has been assigned. You can accept it. Report ID: ${report._id} located in ${report.location}.`,
-            status: 'unread', 
+            status: 'unread',
           });
-
         }
-        
       } else {
         this.logger.debug(
           `No suitable available NGO found for Report ${report._id} in ${report.location}.`,
         );
       }
+
+      // Unlock the report after processing
+      report.isProcessing = false;
+      await report.save();
     }
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // Cron job to reassign rejected reports
+  @Cron('*/90 * * * * *') // Every 90 seconds
   async reassignRejectedReports() {
     this.logger.debug('Running rejected report reassignment job...');
 
     const rejectedReports = await this.reportModel
-      .find({ status: 'rejected' })
+      .find({
+        status: 'rejected',
+        isProcessing: false, // Only process reports that aren't being processed
+      })
       .exec();
 
     for (const report of rejectedReports) {
+      // Lock the report to avoid concurrent processing
+      const updatedReport = await this.reportModel.findOneAndUpdate(
+        { _id: report._id, isProcessing: false },
+        { $set: { isProcessing: true } },
+        { new: true },
+      );
+
+      if (!updatedReport) {
+        this.logger.debug(`Report ${report._id} is already being processed.`);
+        continue;
+      }
+
       const ngosByCriteria = await this.userModel
         .find({
           role: 'ngo',
           'primary_location.state': report.location,
           isHandlingReport: false,
-          _id: { $nin: report.rejected_by },
+          _id: { $nin: report.rejected_by }, // Exclude previously rejected NGOS
         })
         .sort({
           rank: -1,
@@ -125,13 +157,16 @@ export class ReportAssignmentService {
             status: 'unread',
           });
           await notification.save();
-
         }
       } else {
         this.logger.debug(
           `No suitable available NGO found for reassigning Report ${report._id} in ${report.location}.`,
         );
       }
+
+      // Unlock the report after processing
+      report.isProcessing = false;
+      await report.save();
     }
   }
 }

@@ -113,22 +113,22 @@ export class UsersRepository {
     return updatedUser;
   }
 
-  async findNgoByLocationOrName(
-    state?: NigerianStates,
-    ngoName?: string,
-  ): Promise<User[]> {
-    const query: any = { role: 'ngo' };
-
-    if (state) {
-      query['primary_location.state'] = state;
+  async findNgoByLocationOrName(query?: string): Promise<User[]> {
+    const searchQuery: any = { role: 'ngo' };
+  
+    if (query) {
+      const isState = Object.values(NigerianStates).includes(query as NigerianStates);
+  
+      if (isState) {
+        searchQuery['primary_location.state'] = query;
+      } else {
+        searchQuery.ngo_name = query;
+      }
     }
-
-    if (ngoName) {
-      query.ngo_name = ngoName;
-    }
-
-    return this.userModel.find(query).exec();
+  
+    return this.userModel.find(searchQuery).exec();
   }
+  
   async findUserByIdAndUpdate(
     userId: Types.ObjectId | string,
     updateData: any,

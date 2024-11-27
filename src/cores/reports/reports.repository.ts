@@ -125,6 +125,7 @@ export class ReportsRepository {
         status: statuses[i % statuses.length],
         created_at: new Date(),
         updated_at: new Date(),
+        isProcessing:false,
         user_id: null, // Set user_id to null
         rejected_by: [],
         rejection_reasons: [],
