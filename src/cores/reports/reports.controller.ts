@@ -70,7 +70,7 @@ export class ReportsController {
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @UseInterceptors(FilesInterceptor('files', 2))
   async createIncident(
-    @UploadedFiles() files: Array<Express.Multer.File>,
+    @UploadedFiles() files: any,
     @Body() createIncidentDto: CreateIncidentDto,
     @Request() req: any,
   ): Promise<Report> {
