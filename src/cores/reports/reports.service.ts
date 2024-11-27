@@ -96,7 +96,7 @@ export class ReportsService {
 
   async createIncidentWithFile(
     createIncidentDto: CreateIncidentDto,
-    file: any,
+    files: Array<Express.Multer.File>,
     userId: string | null,
   ): Promise<Report> {
     try {
@@ -114,38 +114,40 @@ export class ReportsService {
   
       const userIdString = userObjectId ? userObjectId.toString() : null;
   
-      // Handle file upload if a file is provided
-      let fileUrl = null;
-      if (file) {
-        const { originalname, buffer } = file;
-        const fileType = originalname.slice(originalname.lastIndexOf('.'));
-        const documentPath = `file-identification/${fileType}`;
+      const fileUrls: string[] = [];
+      if (files && files.length > 0) {
+        for (const file of files) {
+          const { originalname, buffer } = file;
+          const fileType = originalname.slice(originalname.lastIndexOf('.'));
+          const documentPath = `file-identification/${Date.now()}-${originalname}`;
   
-        const uploadResponse = await uploadObject({
-          Bucket: 'sportycredit',
-          Key: documentPath,
-          Body: buffer,
-          ACL: 'public-read',
-        });
+          const uploadResponse = await uploadObject({
+            Bucket: 'sportycredit',
+            Key: documentPath,
+            Body: buffer,
+            ACL: 'public-read',
+          });
   
-        if (uploadResponse?.$metadata?.httpStatusCode === 200) {
-          fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
-        } else {
-          throw new HttpException(
-            {
-              status: HttpStatus.BAD_REQUEST,
-              error: 'File upload failed',
-            },
-            HttpStatus.BAD_REQUEST,
-          );
+          if (uploadResponse?.$metadata?.httpStatusCode === 200) {
+            const fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
+            fileUrls.push(fileUrl);
+          } else {
+            throw new HttpException(
+              {
+                status: HttpStatus.BAD_REQUEST,
+                error: `Failed to upload file: ${originalname}`,
+              },
+              HttpStatus.BAD_REQUEST,
+            );
+          }
         }
       }
   
-      // Create a new incident, including the file URL if provided
+      // Create a new incident, including all uploaded file URLs
       const newIncident = {
         ...createIncidentDto,
         user_id: userIdString,
-        files: fileUrl ? [fileUrl] : [],
+        files: fileUrls,
       };
   
       return await this.reportsRepository.createIncident(newIncident);

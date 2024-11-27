@@ -15,12 +15,13 @@ import {
   HttpStatus,
   Patch,
   Req,
+  UploadedFiles,
 } from '@nestjs/common';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report, ReportDocument } from './schemas/reports.schemas';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from 'src/cores/authentication/strategy/jwt-guard';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -67,9 +68,9 @@ export class ReportsController {
   })
   @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files', 2))
   async createIncident(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createIncidentDto: CreateIncidentDto,
     @Request() req: any,
   ): Promise<Report> {
@@ -77,7 +78,7 @@ export class ReportsController {
       const userId = _.get(req, 'user.id', null);
       return await this.reportsService.createIncidentWithFile(
         createIncidentDto,
-        file,
+        files,
         userId,
       );
     } catch (error) {
