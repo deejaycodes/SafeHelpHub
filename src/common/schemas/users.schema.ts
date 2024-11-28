@@ -54,9 +54,9 @@ export class User {
   @ApiProperty({
     description: 'References to the incident types for the report',
     example: ['63f7c1e8c839e4b8a2c8a921', '63f7c1e8c839e4b8a2c8a922'],
-    type: [String], // Indicates it's an array of strings (ObjectIds)
+    type: [String], 
   })
-  @Prop({ type: [Types.ObjectId], ref: 'IncidentType', required: true }) // Array of ObjectIds
+  @Prop({ type: [Types.ObjectId], ref: 'IncidentType', required: true }) 
   incident_types_supported: Types.ObjectId[];
 
   @ApiProperty({

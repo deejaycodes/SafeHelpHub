@@ -14,7 +14,7 @@ import { IncidentType, IncidentTypeSchema } from '../incident/entities/incident.
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema },
-      {name:IncidentType.name, schema:IncidentTypeSchema}
+       { name: 'IncidentType', schema: IncidentTypeSchema },
     ]),
     PassportModule,
     UsersModule,

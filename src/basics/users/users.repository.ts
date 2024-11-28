@@ -58,7 +58,7 @@ export class UsersRepository {
       const objectId =
         typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
 
-      const user = await this.userModel.findById(objectId).exec();
+      const user = await this.userModel.findById(objectId).populate('incident_types_supported', 'name').exec();
 
       if (!user) {
         throw new NotFoundException(`User with ID ${objectId} not found`);
@@ -161,7 +161,9 @@ export class UsersRepository {
       }
     }
   
-    return this.userModel.find(searchQuery).exec();
+    return this.userModel.find(searchQuery)
+    .populate('incident_types_supported', 'name')
+    .exec();
   }
   
   async findUserByIdAndUpdate(
