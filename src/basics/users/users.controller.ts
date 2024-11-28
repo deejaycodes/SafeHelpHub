@@ -14,6 +14,7 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -143,8 +144,22 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
   @Put('profile_picture')
   @ApiOperation({ summary: 'Upload profile picture' })
+  @ApiBody({
+    description: 'Upload file',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Picture uploaded successfully',
@@ -172,8 +187,23 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
   @Put('file')
   @ApiOperation({ summary: 'File uploaded successfully' })
+
+  @ApiBody({
+    description: 'Upload file',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'array',
+          format: 'binary', 
+        },
+      },
+    },
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'File uploaded successfully',

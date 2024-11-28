@@ -5,9 +5,7 @@ import {
   Get,
   Param,
   Post,
-  Put,
   Request,
-  UploadedFile,
   UseGuards,
   UseInterceptors,
   UsePipes,
@@ -21,9 +19,11 @@ import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report, ReportDocument } from './schemas/reports.schemas';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from 'src/cores/authentication/strategy/jwt-guard';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import {  FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -33,6 +33,7 @@ import * as _ from 'lodash';
 import { User } from '@sentry/nestjs';
 import { UpdateReportDto } from 'src/common/dtos/updateUserReportDto';
 import { ReportsRepository } from './reports.repository';
+import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 
 @ApiTags('reports')
 @Controller('reports')
@@ -43,16 +44,33 @@ export class ReportsController {
 
   @Post()
   @ApiOperation({ summary: 'Submit a report' })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Report submitted successfully',
+  @ApiBody({
+    description: 'Incident report data with optional files',
     schema: {
-      example: {
-        id: 'report123',
-        status: 'Pending',
-        description: 'Report description',
-        created_at: '2024-10-04T08:00:00Z',
-        user_id: 'user123',
+      type: 'object',
+      properties: {
+
+        location: {
+          type: 'string',
+          enum: Object.values(NigerianStates),
+          description: 'Location where the incident occurred',
+          example: 'Lagos',
+        },
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+        description: {
+          type: 'string',
+          example: 'This is a description of the incident',
+        },
+        incident_type: {
+          type: 'string',
+          example: 'Harassment',
+        },
       },
     },
   })
@@ -69,6 +87,7 @@ export class ReportsController {
   @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @UseInterceptors(FilesInterceptor('files', 2))
+  @ApiConsumes('multipart/form-data')
   async createIncident(
     @Body() createIncidentDto: CreateIncidentDto,
     @Request() req: any,
