@@ -13,12 +13,13 @@ export class Report {
 
   
   @ApiProperty({
-    description: 'Type of the incident reported',
-    example: 'harassment',
+    description: 'Reference to the incident type for the report',
+    example: '63f7c1e8c839e4b8a2c8a921', 
+    type: String, 
   })
-  @IsString()
-  @Prop({ required: true })
-  incident_type: string;
+  @Prop({ type: Types.ObjectId, ref: 'IncidentType', required: true })
+  incident_type: Types.ObjectId;
+  
 
   @ApiProperty({
     description: 'Description of the incident',

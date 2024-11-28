@@ -176,8 +176,8 @@ export class ReportsController {
     return reports.length > 0 ? reports : [];
   }
 
-  @Post('create-mock-reports')
-  async createMockReports() {
-    return this.reportRepo.createMockReports();
-  }
+  // @Post('create-mock-reports')
+  // async createMockReports() {
+  //   return this.reportRepo.createMockReports();
+  // }
 }

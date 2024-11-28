@@ -31,6 +31,8 @@ import { Notification, NotificationSchema } from './common/schemas/notification.
 import { NotificationsService } from './notifications/notifications.service';
 import { NotificationController } from './notifications/notifications.controller';
 import { NotificationModule } from './notifications/notifications.module';
+import { IncidentTypeModule } from './basics/incident/incident.module';
+import { IncidentType, IncidentTypeSchema } from './basics/incident/schemas/incident.schema';
 
 @Module({
   imports: [
@@ -50,7 +52,8 @@ import { NotificationModule } from './notifications/notifications.module';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Report.name, schema: ReportSchema },
-      {name:Notification.name, schema:NotificationSchema}
+      {name:Notification.name, schema:NotificationSchema},
+      { name: IncidentType.name, schema:IncidentTypeSchema}
     ]),
 
     MongooseModule.forRoot(process.env.MONGO_URI),
@@ -58,6 +61,7 @@ import { NotificationModule } from './notifications/notifications.module';
     AuthenticationModule,
     EmailModule,
     NotificationModule,
+    IncidentTypeModule,
   ],
   controllers: [AppController, AuthsController, UsersController, NotificationController],
   providers: [

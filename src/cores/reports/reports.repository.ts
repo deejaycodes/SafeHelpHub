@@ -10,14 +10,24 @@ import { Report, ReportDocument } from './schemas/reports.schemas';
 import { Model, Types, isValidObjectId } from 'mongoose';
 import { ReportStatus } from 'src/common/enums/report-status.enum';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
+import { IncidentType, IncidentTypeDocument } from 'src/basics/incident/schemas/incident.schema';
 
 @Injectable()
 export class ReportsRepository {
   constructor(
     @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
+    @InjectModel( IncidentType.name) private incidentModel: Model<IncidentTypeDocument>
   ) {}
 
   async createIncident(createIncidentDto: CreateIncidentDto): Promise<Report> {
+
+    const { incident_type } = createIncidentDto;
+    const existingIncidentType = await this.incidentModel.findById(incident_type);
+    console.log(existingIncidentType)
+    if (!existingIncidentType) {
+      throw new NotFoundException(`IncidentType with ID ${incident_type} not found`);
+    }
+
     const createdIncident = new this.reportModel(createIncidentDto);
     return await createdIncident.save();
   }
@@ -106,37 +116,37 @@ export class ReportsRepository {
     return reports || [];  
   }
 
-  private generateMockReports(): Report[] {
-    const mockReports: Report[] = [];
+  // private generateMockReports(): Report[] {
+  //   const mockReports: Report[] = [];
     
-    const incidentTypes = ['harassment', 'child_abuse', 'sexual_assault', 'FGM', 'trafficking'];
-    const states = Object.values(NigerianStates); // Assuming NigerianStates is an enum
-    const statuses = [ReportStatus.SUBMITTED];
+  //   const incidentTypes = ['harassment', 'child_abuse', 'sexual_assault', 'FGM', 'trafficking'];
+  //   const states = Object.values(NigerianStates); // Assuming NigerianStates is an enum
+  //   const statuses = [ReportStatus.SUBMITTED];
     
-    for (let i = 0; i < 25; i++) {
-      mockReports.push({
-        incident_type: incidentTypes[i % incidentTypes.length],
-        description: `Sample description for incident number ${i + 1}. This is an example of the description.`,
-        location: states[i % states.length],
-        contact_info: `contact${i + 1}@example.com`,
-        files: [
-          { file_path: `uploads/sample_file_${i + 1}.pdf`, uploaded_at: new Date() },
-        ],
-        status: statuses[i % statuses.length],
-        created_at: new Date(),
-        updated_at: new Date(),
-        isProcessing:false,
-        user_id: null, // Set user_id to null
-        rejected_by: [],
-        rejection_reasons: [],
-      });
-    }
+  //   for (let i = 0; i < 25; i++) {
+  //     mockReports.push({
+  //       incident_type: incidentTypes[i % incidentTypes.length],
+  //       description: `Sample description for incident number ${i + 1}. This is an example of the description.`,
+  //       location: states[i % states.length],
+  //       contact_info: `contact${i + 1}@example.com`,
+  //       files: [
+  //         { file_path: `uploads/sample_file_${i + 1}.pdf`, uploaded_at: new Date() },
+  //       ],
+  //       status: statuses[i % statuses.length],
+  //       created_at: new Date(),
+  //       updated_at: new Date(),
+  //       isProcessing:false,
+  //       user_id: null, // Set user_id to null
+  //       rejected_by: [],
+  //       rejection_reasons: [],
+  //     });
+  //   }
 
-    return mockReports;
-  }
+  //   return mockReports;
+  // }
 
-  async createMockReports(): Promise<Report[]> {
-    const reports = this.generateMockReports();
-    return this.reportModel.insertMany(reports);
-  }
+  // async createMockReports(): Promise<Report[]> {
+  //   const reports = this.generateMockReports();
+  //   return this.reportModel.insertMany(reports);
+  // }
 }
