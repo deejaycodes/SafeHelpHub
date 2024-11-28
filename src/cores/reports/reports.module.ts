@@ -9,7 +9,7 @@ import { ReportsRepository } from './reports.repository';
 import { ReportAssignmentService } from './reports-assignment';
 import { ScheduleModule } from '@nestjs/schedule';
 import {Notification,  NotificationSchema } from 'src/common/schemas/notification.schema';
-import { IncidentType, IncidentTypeSchema } from 'src/basics/incident/schemas/incident.schema';
+import { IncidentType, IncidentTypeSchema } from 'src/basics/incident/entities/incident.schema';
 
 @Module({
   imports: [

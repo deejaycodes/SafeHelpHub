@@ -70,16 +70,16 @@ export class ReportsController {
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @UseInterceptors(FilesInterceptor('files', 2))
   async createIncident(
-    @UploadedFiles() files: any,
     @Body() createIncidentDto: CreateIncidentDto,
     @Request() req: any,
+    @UploadedFiles() files?: any,
   ): Promise<Report> {
     try {
       const userId = _.get(req, 'user.id', null);
       return await this.reportsService.createIncidentWithFile(
         createIncidentDto,
-        files,
         userId,
+        files,
       );
     } catch (error) {
       throw new BadRequestException(error.message);

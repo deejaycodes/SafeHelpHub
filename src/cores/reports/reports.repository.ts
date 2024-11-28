@@ -10,7 +10,7 @@ import { Report, ReportDocument } from './schemas/reports.schemas';
 import { Model, Types, isValidObjectId } from 'mongoose';
 import { ReportStatus } from 'src/common/enums/report-status.enum';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
-import { IncidentType, IncidentTypeDocument } from 'src/basics/incident/schemas/incident.schema';
+import { IncidentType, IncidentTypeDocument } from 'src/basics/incident/entities/incident.schema';
 
 @Injectable()
 export class ReportsRepository {
@@ -23,7 +23,6 @@ export class ReportsRepository {
 
     const { incident_type } = createIncidentDto;
     const existingIncidentType = await this.incidentModel.findById(incident_type);
-    console.log(existingIncidentType)
     if (!existingIncidentType) {
       throw new NotFoundException(`IncidentType with ID ${incident_type} not found`);
     }

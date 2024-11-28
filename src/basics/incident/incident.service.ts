@@ -3,7 +3,7 @@ import { CreateIncidentTypeDto } from './dto/create-incident.dto';
 //import { UpdateIncidentDto } from './dto/update-incident.dto';
 import { InjectModel} from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose'
-import { IncidentType, IncidentTypeDocument } from './schemas/incident.schema';
+import { IncidentType, IncidentTypeDocument } from './entities/incident.schema';
 
 @Injectable()
 export class IncidentTypeService {

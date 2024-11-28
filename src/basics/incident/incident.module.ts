@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { IncidentTypeService } from './incident.service';
 import { IncidentTypeController } from './incident.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { IncidentType } from './schemas/incident.schema';
+import { IncidentType } from './entities/incident.schema';
 
 @Module({
   imports: [

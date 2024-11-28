@@ -96,8 +96,9 @@ export class ReportsService {
 
   async createIncidentWithFile(
     createIncidentDto: CreateIncidentDto,
-    files: any,
     userId: string | null,
+    files?: any,
+   
   ): Promise<Report> {
     try {
       // Ensure userId is a valid ObjectId

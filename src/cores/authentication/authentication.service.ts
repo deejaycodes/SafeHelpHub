@@ -29,9 +29,6 @@ export class AuthenticationService {
     await this.emailService.sendVerificationEmail(email, verificationCode);
     return {
       message: 'Registration successful. Please verify your email.',
-      token: this.jwtService.sign(email, {
-        secret: process.env.JWT_KEY,
-      }),
     };
   }
 

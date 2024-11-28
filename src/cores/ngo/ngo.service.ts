@@ -16,7 +16,7 @@ export class NgoService {
   ) {}
 
   async registerNgo(createNgoDto: CreateNgoDto): Promise<RegisterResponseDto> {
-    const email = createNgoDto.contact_info.primary_contact.email;
+    const email = createNgoDto.primary_contact.email;
     const verificationCode = randomInt(100000, 999999).toString();
     const verificationCodeExpiresAt = new Date(Date.now() + 30 * 1000);
     await this.usersService.createNgo({
@@ -27,10 +27,7 @@ export class NgoService {
     });
    // await this.emailService.sendVerificationEmail(email, verificationCode);
     return {
-      message: 'Registration successful. Please verify your email.',
-      token: this.jwtService.sign(email, {
-        secret: process.env.JWT_KEY,
-      }),
+      message: 'Registration successful. Please verify your email.'
     };
   }
 

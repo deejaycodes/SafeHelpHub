@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString} from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsObject, IsString} from 'class-validator';
 import { NigerianStates } from '../enums/nigeria-states.enum';
 
 export type UserDocument = User & Document;
@@ -14,6 +14,14 @@ export class User {
   })
   @Prop({ type: String })
   ngo_name: string;
+
+
+  @ApiProperty({
+    description: 'Name of the NGO Admin',
+    example: 'John-doe',
+  })
+  @Prop({ type: String })
+  admin_name: string;
 
   @ApiProperty({
     description: 'Registration number of the NGO',
@@ -44,26 +52,12 @@ export class User {
   };
 
   @ApiProperty({
-    description: 'Incident types supported by the NGO',
-    example: [
-      'domestic_violence',
-      'child_abuse',
-      'FGM',
-      'sexual_assault',
-      'trafficking',
-    ],
+    description: 'References to the incident types for the report',
+    example: ['63f7c1e8c839e4b8a2c8a921', '63f7c1e8c839e4b8a2c8a922'],
+    type: [String], // Indicates it's an array of strings (ObjectIds)
   })
-  @Prop({
-    type: [String],
-    enum: [
-      'domestic_violence',
-      'child_abuse',
-      'FGM',
-      'sexual_assault',
-      'trafficking',
-    ],
-  })
-  incident_types_supported: string[];
+  @Prop({ type: [Types.ObjectId], ref: 'IncidentType', required: true }) // Array of ObjectIds
+  incident_types_supported: Types.ObjectId[];
 
   @ApiProperty({
     description: 'Services provided by the NGO',
@@ -188,16 +182,33 @@ export class User {
     example: false,
   })
   @Prop({ default: false })
-  isVerified: boolean;
+  isVerified?: boolean;
 
   @ApiProperty({
-    description: 'Profile picture file path',
-    type: String,
-    example: 'uploads/profile_picture123.jpg',
+    description: 'Profile picture details',
+    type: Object,
+    example: { file_path: 'uploads/profile_picture123.jpg', uploaded_at: '2024-11-28T20:07:05.895Z' },
   })
-  @IsString()
-  @Prop({ type: String })
-  profilePicture: string;
+  @IsObject()
+  @Prop({
+    type: { file_path: String, uploaded_at: Date },
+  })
+  profilePicture: { file_path: string; uploaded_at: Date };
+  
+
+  @ApiProperty({
+    description: 'List of verified document associated with NGO',
+    type: Array,
+    example: [
+      {
+        file_path: 'uploads/report123.pdf',
+        uploaded_at: '2023-09-12T14:48:00.000Z',
+      },
+    ],
+  })
+  @IsArray()
+  @Prop({ type: Array })
+  files?: Array<{ file_path: string; uploaded_at: Date }>;
 
   @ApiProperty({
     description: 'Rank of the user',
@@ -228,7 +239,7 @@ export class User {
     example: '1234',
   })
   @Prop({ type: String })
-  verificationCode: string;
+  verificationCode?: string;
 
   @ApiProperty({
     description: 'resetcode expiry time',

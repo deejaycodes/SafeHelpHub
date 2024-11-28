@@ -2,48 +2,13 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
   IsNotEmpty,
-  IsEmail,
-  IsPhoneNumber,
-  MinLength,
-  MaxLength,
-  Matches,
-  IsOptional,
-  IsIn,
   ValidateNested,
-  IsArray,
-  ArrayMinSize,
+  IsIn,
+  IsOptional,
   IsDateString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { NigerianStates } from '../enums/nigeria-states.enum';
 
-class PrimaryLocationDto {
-  @ApiProperty({
-    description: 'Address of the NGO',
-    example: '123 Charity Lane, Lagos, Nigeria',
-  })
-  @IsString()
-  @IsNotEmpty({ message: 'Address is required' })
-  address: string;
-
-  @ApiProperty({
-    description: 'City where the NGO is located',
-    example: 'Lagos',
-  })
-  @IsString()
-  @IsNotEmpty({ message: 'City is required' })
-  city: string;
-
-  @ApiProperty({
-    description: 'State in Nigeria where the NGO is located',
-    enum: NigerianStates,
-    example: NigerianStates.LAGOS,
-  })
-  @IsIn(Object.values(NigerianStates), { message: 'Invalid state' })
-  state: NigerianStates;
-}
-
-// ContactInfo DTO for primary and secondary contact validation
 class PrimaryContactDto {
   @ApiProperty({
     description: "Primary contact person's name",
@@ -57,7 +22,7 @@ class PrimaryContactDto {
     description: "Primary contact person's email",
     example: 'john.doe@ngoemail.com',
   })
-  @IsEmail({}, { message: 'Primary contact email must be valid' })
+  @IsString()
   @IsNotEmpty({ message: 'Primary contact email is required' })
   email: string;
 
@@ -65,56 +30,9 @@ class PrimaryContactDto {
     description: "Primary contact person's phone",
     example: '+2348000000000',
   })
-  @IsPhoneNumber(null, {
-    message: 'Primary contact phone number must be a valid international number',
-  })
+  @IsString()
   @IsNotEmpty({ message: 'Primary contact phone is required' })
   phone: string;
-}
-
-class SecondaryContactDto {
-  @ApiPropertyOptional({
-    description: "Secondary contact person's name",
-    example: 'Jane Doe',
-  })
-  @IsOptional()
-  @IsString({ message: 'Secondary contact name must be a string' })
-  name?: string;
-
-  @ApiPropertyOptional({
-    description: "Secondary contact person's email",
-    example: 'jane.doe@ngoemail.com',
-  })
-  @IsOptional()
-  @IsEmail({}, { message: 'Secondary contact email must be valid' })
-  email?: string;
-
-  @ApiPropertyOptional({
-    description: "Secondary contact person's phone",
-    example: '+2348012345678',
-  })
-  @IsOptional()
-  @IsPhoneNumber(null, {
-    message: 'Secondary contact phone number must be valid',
-  })
-  phone?: string;
-}
-
-class ContactInfoDto {
-  @ApiProperty({
-    description: 'Primary contact details',
-  })
-  @ValidateNested()
-  @Type(() => PrimaryContactDto)
-  primary_contact: PrimaryContactDto;
-
-  @ApiPropertyOptional({
-    description: 'Secondary contact details (optional)',
-  })
-  @ValidateNested()
-  @Type(() => SecondaryContactDto)
-  @IsOptional()
-  secondary_contact?: SecondaryContactDto;
 }
 
 export class CreateNgoDto {
@@ -127,42 +45,11 @@ export class CreateNgoDto {
   ngo_name: string;
 
   @ApiProperty({
-    description: 'Registration number of the NGO',
-    example: 'NGO-123456',
-  })
-  @IsString()
-  @IsNotEmpty({ message: 'Registration number is required' })
-  registration_number: string;
-
-  @ApiProperty({
-    description: 'Primary location of the NGO',
+    description: 'Primary contact details for the NGO',
   })
   @ValidateNested()
-  @Type(() => PrimaryLocationDto)
-  primary_location: PrimaryLocationDto;
-
-  @ApiProperty({
-    description: 'Incident types supported by the NGO',
-    example: ['domestic_violence', 'child_abuse', 'FGM'],
-  })
-  @IsArray()
-  @ArrayMinSize(1, { message: 'At least one incident type is required' })
-  incident_types_supported: string[];
-
-  @ApiProperty({
-    description: 'Services provided by the NGO',
-    example: ['counselling', 'legal_aid', 'medical_support'],
-  })
-  @IsArray()
-  @ArrayMinSize(1, { message: 'At least one service is required' })
-  services_provided: string[];
-
-  @ApiProperty({
-    description: 'Contact information for the NGO',
-  })
-  @ValidateNested()
-  @Type(() => ContactInfoDto)
-  contact_info: ContactInfoDto;
+  @Type(() => PrimaryContactDto)
+  primary_contact: PrimaryContactDto;
 
   @ApiProperty({
     description:
@@ -171,11 +58,6 @@ export class CreateNgoDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @MaxLength(20, { message: 'Password must not exceed 20 characters' })
-  @Matches(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\W_]).{8,}$/, {
-    message: 'Password must contain at least one letter, one number, and one special character',
-  })
   password: string;
 
   @ApiPropertyOptional({
@@ -189,15 +71,6 @@ export class CreateNgoDto {
     message: 'Role must be ngo',
   })
   role: string;
-
-  @ApiPropertyOptional({
-    description: 'Rank of the user, can be either 1, 2, or 3',
-    enum: [1, 2, 3],
-    example: 1,
-  })
-  @IsOptional()
-  rank: number;
-
   @IsOptional()
   @IsString()
   verificationCode?: string;

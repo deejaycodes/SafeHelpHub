@@ -32,7 +32,7 @@ import { NotificationsService } from './notifications/notifications.service';
 import { NotificationController } from './notifications/notifications.controller';
 import { NotificationModule } from './notifications/notifications.module';
 import { IncidentTypeModule } from './basics/incident/incident.module';
-import { IncidentType, IncidentTypeSchema } from './basics/incident/schemas/incident.schema';
+import { IncidentType, IncidentTypeSchema } from './basics/incident/entities/incident.schema';
 
 @Module({
   imports: [

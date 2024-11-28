@@ -1,22 +1,13 @@
-import { Body, Controller, Post, HttpStatus, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Post, HttpStatus, Request, Get, Query,  HttpException,  Req, Put, UseGuards } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NgoService } from './ngo.service';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
 import { UsersService } from 'src/basics/users/users.service';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { User } from 'src/common/schemas/users.schema';
+import { UpdateNgoDto } from 'src/common/dtos/updateNgoDto';
+import { JwtAuthGuard } from '../authentication/strategy/jwt-guard';
 
-class FindNgoQueryDto {
-  @IsOptional()
-  @IsEnum(NigerianStates, { message: 'State must be a valid Nigerian state.' })
-  state?: NigerianStates;
-
-  @IsOptional()
-  @IsString()
-  ngo_name?: string;
-}
 
 @ApiTags('Ngo')
 @Controller('ngo')
@@ -96,5 +87,60 @@ export class NgoController {
   async findNgoByLocationOrName(@Query('query') query?: string) {
     return this.usersService.findNgoByLocationOrName(query);
   }
-  
+
+
+  @Put('onboard')
+@ApiOperation({
+  summary: 'Update an NGO by user ID',
+  description: 'Updates the details of an NGO based on the provided user ID and update data.',
+})
+
+@ApiBody({
+  description: 'The data to update the NGO',
+  type: UpdateNgoDto, 
+})
+@ApiResponse({
+  status: HttpStatus.OK,
+  description: 'NGO updated successfully.',
+  schema: {
+    example: {
+      message: 'NGO updated successfully.',
+    },
+  },
+})
+@ApiResponse({
+  status: HttpStatus.BAD_REQUEST,
+  description: 'Invalid input data.',
+  schema: {
+    example: {
+      statusCode: 400,
+      message: 'Bad Request',
+    },
+  },
+})
+@ApiResponse({
+  status: HttpStatus.INTERNAL_SERVER_ERROR,
+  description: 'Internal server error.',
+  schema: {
+    example: {
+      statusCode: 500,
+      message: 'Failed to update NGO',
+    },
+  },
+})
+@UseGuards(JwtAuthGuard)
+async updateNgo(
+  @Request() req: any,
+  @Body() updateNgoDto: UpdateNgoDto, 
+): Promise<any> {
+  try {
+    const userFromJwt = req.user 
+    return await this.usersService.updateNgo(userFromJwt.id, updateNgoDto);
+  } catch (error) {
+    throw new HttpException(
+      error.response || 'Failed to update NGO',
+      error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
+}
 }

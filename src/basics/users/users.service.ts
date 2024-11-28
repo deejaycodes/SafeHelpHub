@@ -20,6 +20,7 @@ import { ValidateResetCodeAndResetPasswordDto } from 'src/common/dtos/validateRe
 import { uploadObject } from 'src/common/utils/upload';
 import { User } from 'src/common/schemas/users.schema';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
+import { UpdateNgoDto } from 'src/common/dtos/updateNgoDto';
 
 @Injectable()
 export class UsersService {
@@ -65,7 +66,7 @@ export class UsersService {
   }
 
   async createNgo(createNgoDto: CreateNgoDto): Promise<any> {
-    const email = createNgoDto.contact_info.primary_contact.email.toLowerCase();
+    const email = createNgoDto.primary_contact.email.toLowerCase();
 
     // Check if the NGO user already exists
     const existingUser = await this.usersRepository.findUserByCriteria({
@@ -83,9 +84,8 @@ export class UsersService {
       password_hash,
       contact_info: {
         primary_contact: {
-          ...createNgoDto.contact_info.primary_contact,
+          ...createNgoDto.primary_contact,
         },
-        secondary_contact: createNgoDto.contact_info.secondary_contact || {},
       },
       email,
     };
@@ -167,36 +167,31 @@ export class UsersService {
 
     return { message: 'Account verified successfully' };
   }
-
-  async uploadUserFile(userId: Types.ObjectId | any, file: any): Promise<User> {
+  async uploadUserProfilePicture(userId: Types.ObjectId | any, file: any): Promise<any> {
     const { originalname, buffer } = file;
     const idFileType = originalname.slice(originalname.lastIndexOf('.'));
     const objectId =
       typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
 
-    // Ensure the report exists
-    const report = await this.usersRepository.fetchSingleUserById(objectId);
-    if (!report) {
-      throw new NotFoundException(`User ${userId} not found`);
-    }
-
-    // Create the document path for the file
     const documentPath = `file-identification/${userId}${idFileType}`;
-
-    // Upload the file to the storage bucket
+  
     const uploadResponse = await uploadObject({
       Bucket: 'sportycredit',
       Key: documentPath,
       Body: buffer,
       ACL: 'public-read',
     });
-
+  
     if (uploadResponse?.$metadata?.httpStatusCode === 200) {
       const fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
+  
+      const data = await this.usersRepository.updateUserProfilePicture(objectId, fileUrl);
 
-      return await this.usersRepository.updateUserFiles(objectId, fileUrl);
+      return {
+        message: 'profile picture uploaded succesful'
+      }
     }
-
+  
     // Throw error if file upload failed
     throw new HttpException(
       {
@@ -206,7 +201,41 @@ export class UsersService {
       HttpStatus.BAD_REQUEST,
     );
   }
+  
 
+  async uploadUserFile(userId: Types.ObjectId | any, file: any): Promise<User> {
+    const { originalname, buffer } = file;
+    const idFileType = originalname.slice(originalname.lastIndexOf('.'));
+    const objectId =
+      typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
+  
+    // Create the document path for the file
+    const documentPath = `file-identification/${userId}${idFileType}`;
+  
+    // Upload the file to the storage bucket
+    const uploadResponse = await uploadObject({
+      Bucket: 'sportycredit',
+      Key: documentPath,
+      Body: buffer,
+      ACL: 'public-read',
+    });
+  
+    if (uploadResponse?.$metadata?.httpStatusCode === 200) {
+      const fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
+  
+      return await this.usersRepository.updateUserFiles(objectId, fileUrl);
+    }
+  
+    // Throw error if file upload failed
+    throw new HttpException(
+      {
+        status: HttpStatus.BAD_REQUEST,
+        error: 'File upload failed',
+      },
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+  
   async findByIdAndUpdate(id: any, updateData: any) {
     return this.usersRepository.findUserByIdAndUpdate(id, updateData);
   }
@@ -215,5 +244,28 @@ export class UsersService {
     return this.usersRepository.findNgoByLocationOrName(query);
   }
   
+  async updateNgo(
+    userId: string,
+    updateNgoDto: UpdateNgoDto,
+  ): Promise<any> {
+    // Check if the user exists
+    const existingNgo = await this.usersRepository.fetchSingleUserById(userId);
+    if (!existingNgo) {
+      throw new HttpException('NGO not found', HttpStatus.NOT_FOUND);
+    }
+  
+   
+    // Prepare updated NGO data
+    const updatedNgoData = {
+      ...updateNgoDto,
+    };
+  
+    // Save updated details
+    const updatedNgo = await this.usersRepository.findUserByIdAndUpdate(userId, updatedNgoData);
+  
+    return {
+      message: "updated successfully"
+    };
+  }
   
 }

@@ -2,10 +2,10 @@ import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CreateIncidentTypeDto } from './dto/create-incident.dto';
 import { IncidentTypeService } from './incident.service';
-import { IncidentType } from './schemas/incident.schema';
+import { IncidentType } from './entities/incident.schema';
 
 
-@ApiTags('Incident Types') // Grouping in Swagger
+@ApiTags('Incident Types') 
 @Controller('incident-types')
 export class IncidentTypeController {
   constructor(private readonly incidentService: IncidentTypeService) {}

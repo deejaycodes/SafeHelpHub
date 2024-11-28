@@ -8,8 +8,14 @@ export class RegisterResponseDto {
   message: string;
 
   @ApiProperty({
-    description: 'JWT token for email verification',
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    description: 'Additional data related to the registration',
+    example: {
+      user: {
+        id: '63f6b3eaf6477d49f87e9c7f',
+        email: 'user@example.com',
+        name: 'John Doe',
+      },
+    },
   })
-  token: string;
+  data?: any
 }

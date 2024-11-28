@@ -143,7 +143,7 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Put('profile_picture/:userId')
+  @Put('profile_picture')
   @ApiOperation({ summary: 'Upload profile picture' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -167,24 +167,51 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('file'))
   uploadVerifications(@Req() req, @UploadedFile() file: any) {
     const userFromJwt = req.user as User;
+    return this.usersService.uploadUserProfilePicture(userFromJwt.id, file);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Put('file')
+  @ApiOperation({ summary: 'File uploaded successfully' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'File uploaded successfully',
+    schema: {
+      example: {
+        message: 'File uploaded successfully',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid file or upload error',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'File format not supported',
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  uploadUserFile(@Req() req, @UploadedFile() file: any) {
+    const userFromJwt = req.user as User;
     return this.usersService.uploadUserFile(userFromJwt.id, file);
   }
 
-
-
-  @Post('mock-ngos')
-  async createMockNgos(): Promise<{ message: string; count: number }> {
-    try {
-      const mockUsers = await this.userRepo.createMockUsers();
-      return {
-        message: 'Mock NGO users created successfully',
-        count: mockUsers.length,
-      };
-    } catch (error) {
-      throw new HttpException(
-        'Failed to create mock NGO users',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  // @Post('mock-ngos')
+  // async createMockNgos(): Promise<{ message: string; count: number }> {
+  //   try {
+  //     const mockUsers = await this.userRepo.createMockUsers();
+  //     return {
+  //       message: 'Mock NGO users created successfully',
+  //       count: mockUsers.length,
+  //     };
+  //   } catch (error) {
+  //     throw new HttpException(
+  //       'Failed to create mock NGO users',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 }
