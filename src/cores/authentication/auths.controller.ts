@@ -67,7 +67,20 @@ export class AuthsController {
 
   @Post('login')
   @ApiOperation({ summary: 'Login endpoint' })
-  @ApiBody({ type: LoginDto })
+  @ApiBody({
+    type: LoginDto,
+    description: 'Provide email and password to log in.',
+    examples: {
+      example1: {
+        summary: 'Valid login example',
+        description: 'An example of valid credentials.',
+        value: {
+          email: 'user@example.com',
+          password: 'password123',
+        },
+      },
+    },
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Login successful',
@@ -110,10 +123,13 @@ export class AuthsController {
       username: req.user.username,
       role: req.user.role,
       email: req.user.email,
+      resolved:req.user.resolvedReportsCount,
+      rejected:req.user.rejectedReportsCount,
+      pending:req.user.acceptReportsCount,
       created_at: req.user.created_at,
       updated_at: req.user.updated_at,
     };
-
+  
     return {
       ...payload,
       token: this.jwtService.sign(payload, {
@@ -121,4 +137,4 @@ export class AuthsController {
       }),
     };
   }
-}
+}  

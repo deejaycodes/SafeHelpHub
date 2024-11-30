@@ -10,6 +10,7 @@ import { ReportAssignmentService } from './reports-assignment';
 import { ScheduleModule } from '@nestjs/schedule';
 import {Notification,  NotificationSchema } from 'src/common/schemas/notification.schema';
 import { IncidentType, IncidentTypeSchema } from 'src/basics/incident/entities/incident.schema';
+import { ReportAssignment, ReportAssignmentSchema } from './schemas/report_status.schema';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { IncidentType, IncidentTypeSchema } from 'src/basics/incident/entities/i
       { name: Report.name, schema: ReportSchema },
       { name:Notification.name, schema: NotificationSchema},
       { name: User.name, schema: UserSchema },
-      {name:IncidentType.name, schema:IncidentTypeSchema}
+      {name:IncidentType.name, schema:IncidentTypeSchema},
+      {name:ReportAssignment.name, schema:ReportAssignmentSchema}
     ]),
     ScheduleModule.forRoot(),
   ],

@@ -18,17 +18,23 @@ export class NgoService {
   async registerNgo(createNgoDto: CreateNgoDto): Promise<RegisterResponseDto> {
     const email = createNgoDto.primary_contact.email;
     const verificationCode = randomInt(100000, 999999).toString();
-    const verificationCodeExpiresAt = new Date(Date.now() + 30 * 1000);
+    const verificationCodeExpiresAt = new Date(Date.now() + 30 * 60 * 1000); // Set expiry to 30 minutes
+    
     await this.usersService.createNgo({
       ...createNgoDto,
       role: 'ngo',
-      verificationCode: verificationCode,
-      verificationCodeExpiresAt: verificationCodeExpiresAt,
+      verificationCode,
+      verificationCodeExpiresAt,
     });
-   // await this.emailService.sendVerificationEmail(email, verificationCode);
+  
+    try {
+      await this.emailService.sendVerificationEmail(email, verificationCode);
+    } catch (error) {
+      console.error(`Failed to send verification email to ${email}: ${error.message}`);
+    }
+  
     return {
-      message: 'Registration successful. Please verify your email.'
+      message: 'Registration successful. Please verify your email.',
     };
   }
-
 }

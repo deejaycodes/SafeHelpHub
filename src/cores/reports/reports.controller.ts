@@ -14,6 +14,8 @@ import {
   Patch,
   Req,
   UploadedFiles,
+  NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report, ReportDocument } from './schemas/reports.schemas';
@@ -34,6 +36,7 @@ import { User } from '@sentry/nestjs';
 import { UpdateReportDto } from 'src/common/dtos/updateUserReportDto';
 import { ReportsRepository } from './reports.repository';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
+import { ReportAssignment } from './schemas/report_status.schema';
 
 @ApiTags('reports')
 @Controller('reports')
@@ -125,35 +128,6 @@ export class ReportsController {
     return this.reportsService.fetchReportStatus(reportId);
   }
 
-  // @Put('upload_file/:reportId')
-  // @ApiOperation({ summary: 'Upload file related to a report' })
-  // @ApiResponse({
-  //   status: HttpStatus.OK,
-  //   description: 'File uploaded successfully',
-  //   schema: {
-  //     example: {
-  //       message: 'File uploaded successfully',
-  //     },
-  //   },
-  // })
-  // @ApiResponse({
-  //   status: HttpStatus.BAD_REQUEST,
-  //   description: 'Invalid file or upload error',
-  //   schema: {
-  //     example: {
-  //       statusCode: 400,
-  //       message: 'File format not supported',
-  //     },
-  //   },
-  // })
-  // @UseInterceptors(FileInterceptor('file'))
-  // uploadVerifications(
-  //   @Param('reportId') reportId: string,
-  //   @UploadedFile() file: any,
-  // ) {
-  //   return this.reportsService.uploadReportFile(reportId, file);
-  // }
-
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Patch(':reportId')
@@ -195,8 +169,46 @@ export class ReportsController {
     return reports.length > 0 ? reports : [];
   }
 
-  // @Post('create-mock-reports')
-  // async createMockReports() {
-  //   return this.reportRepo.createMockReports();
-  // }
+  @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@Get('ngo/history')
+@ApiOperation({
+  summary: 'Get the report history for a specific NGO',
+  description: 'Fetch all reports assigned to the NGO based on their ID.',
+})
+@ApiResponse({
+  status: 200,
+  description: 'The report history has been successfully retrieved.',
+  type: [ReportAssignment], 
+})
+@ApiResponse({
+  status: 404,
+  description: 'No reports found for this NGO.',
+})
+@ApiResponse({
+  status: 401,
+  description: 'Unauthorized. Token is invalid or missing.',
+})
+@ApiResponse({
+  status: 500,
+  description: 'An internal server error occurred.',
+})
+async findReportHistoryForNgo(@Req() req): Promise<ReportAssignment[]> {
+  try {
+    const reports = await this.reportsService.findReportHistoryForNgo(req.user.id);
+
+    return reports;
+  } catch (error) {
+    console.error('Error fetching NGO report history:', error);
+
+    if (error instanceof NotFoundException) {
+      throw error; 
+    }
+    throw new InternalServerErrorException(
+      'An error occurred while fetching NGO report history.',
+    );
+  }
+}
+
+
 }

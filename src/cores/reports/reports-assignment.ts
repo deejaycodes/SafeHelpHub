@@ -24,12 +24,11 @@ export class ReportAssignmentService {
     const unassignedReports = await this.reportModel
       .find({
         status: 'submitted',
-        isProcessing: false, // Only process reports that aren't being processed
+        isProcessing: false, 
       })
       .exec();
 
     for (const report of unassignedReports) {
-      // Lock the report to avoid concurrent processing
       const updatedReport = await this.reportModel.findOneAndUpdate(
         { _id: report._id, isProcessing: false },
         { $set: { isProcessing: true } },
@@ -86,27 +85,23 @@ export class ReportAssignmentService {
           `No suitable available NGO found for Report ${report._id} in ${report.location}.`,
         );
       }
-
-      // Unlock the report after processing
       report.isProcessing = false;
       await report.save();
     }
   }
 
-  // Cron job to reassign rejected reports
-  @Cron('*/90 * * * * *') // Every 90 seconds
+  @Cron('*/90 * * * * *') 
   async reassignRejectedReports() {
     this.logger.debug('Running rejected report reassignment job...');
 
     const rejectedReports = await this.reportModel
       .find({
         status: 'rejected',
-        isProcessing: false, // Only process reports that aren't being processed
+        isProcessing: false, 
       })
       .exec();
 
     for (const report of rejectedReports) {
-      // Lock the report to avoid concurrent processing
       const updatedReport = await this.reportModel.findOneAndUpdate(
         { _id: report._id, isProcessing: false },
         { $set: { isProcessing: true } },
@@ -123,7 +118,7 @@ export class ReportAssignmentService {
           role: 'ngo',
           'primary_location.state': report.location,
           isHandlingReport: false,
-          _id: { $nin: report.rejected_by }, // Exclude previously rejected NGOS
+          _id: { $nin: report.rejected_by }, 
         })
         .sort({
           rank: -1,
@@ -163,8 +158,6 @@ export class ReportAssignmentService {
           `No suitable available NGO found for reassigning Report ${report._id} in ${report.location}.`,
         );
       }
-
-      // Unlock the report after processing
       report.isProcessing = false;
       await report.save();
     }
