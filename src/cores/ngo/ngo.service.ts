@@ -32,10 +32,18 @@ export class NgoService {
     } catch (error) {
       console.error(`Failed to send verification email to ${email}: ${error.message}`);
     }
+
+    const user = {
+      id: ngo._id,  // Assuming '_id' is the user ID
+      email: ngo.email,
+      name: ngo.contact_info.primary_contact.name,  
+    };
   
     return {
       message: 'Registration successful. Please verify your email.',
-      data : ngo
+      data: {
+        user,
+      },
     };
   }
 }
