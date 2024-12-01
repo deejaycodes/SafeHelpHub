@@ -20,7 +20,7 @@ export class NgoService {
     const verificationCode = randomInt(100000, 999999).toString();
     const verificationCodeExpiresAt = new Date(Date.now() + 30 * 60 * 1000); // Set expiry to 30 minutes
     
-    await this.usersService.createNgo({
+   const ngo =  await this.usersService.createNgo({
       ...createNgoDto,
       role: 'ngo',
       verificationCode,
@@ -35,6 +35,7 @@ export class NgoService {
   
     return {
       message: 'Registration successful. Please verify your email.',
+      data : ngo
     };
   }
 }
