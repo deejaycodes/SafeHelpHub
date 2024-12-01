@@ -255,6 +255,13 @@ export class User {
   created_at: Date;
 
   @ApiProperty({
+    description: 'check if the onboard',
+    example: false,
+  })
+  @Prop({ default: false })
+  onBoard?: boolean;
+
+  @ApiProperty({
     description: 'Date when the record was last updated',
     example: '2024-09-16T10:15:00.000Z',
   })

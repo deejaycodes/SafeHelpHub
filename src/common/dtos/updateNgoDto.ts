@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
+  IsBoolean,
   IsIn,
   IsMongoId,
   IsNotEmpty,
@@ -64,5 +65,13 @@ export class UpdateNgoDto {
   @IsString()
   @IsOptional()
   registration_number?: string;
+
+  @ApiPropertyOptional({
+    description: 'Indicates if the NGO is onboarded',
+    example: true,
+  })
+  @IsBoolean()
+  @IsOptional()
+  onBoard?: boolean;
 
 }

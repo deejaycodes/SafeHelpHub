@@ -123,6 +123,7 @@ export class AuthsController {
       username: req.user.username,
       role: req.user.role,
       email: req.user.email,
+      onBoard:req.user.onBoard,
       resolved:req.user.resolvedReportsCount,
       rejected:req.user.rejectedReportsCount,
       pending:req.user.acceptReportsCount,
