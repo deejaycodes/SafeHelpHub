@@ -1,5 +1,5 @@
 import { Body, Controller, Post, HttpStatus, Request, Get, Query,  HttpException,  Req, Put, UseGuards } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NgoService } from './ngo.service';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
@@ -7,6 +7,7 @@ import { UsersService } from 'src/basics/users/users.service';
 import { User } from 'src/common/schemas/users.schema';
 import { UpdateNgoDto } from 'src/common/dtos/updateNgoDto';
 import { JwtAuthGuard } from '../authentication/strategy/jwt-guard';
+import { AuthGuard } from '@nestjs/passport';
 
 
 @ApiTags('Ngo')
@@ -128,7 +129,8 @@ export class NgoController {
     },
   },
 })
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('jwt')
 async updateNgo(
   @Request() req: any,
   @Body() updateNgoDto: UpdateNgoDto, 

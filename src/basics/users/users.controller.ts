@@ -27,6 +27,7 @@ import { ValidateResetCodeAndResetPasswordDto } from 'src/common/dtos/validateRe
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/cores/authentication/strategy/jwt-guard';
 import { UsersRepository } from './users.repository';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('users')
 @Controller('users')
@@ -142,8 +143,8 @@ export class UsersController {
     return this.usersService.verifyAccount(verifyAccountDto);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+ @ApiBearerAuth('jwt')
   @ApiConsumes('multipart/form-data')
   @Put('profile_picture')
   @ApiOperation({ summary: 'Upload profile picture' })
@@ -185,8 +186,8 @@ export class UsersController {
     return this.usersService.uploadUserProfilePicture(userFromJwt.id, file);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
   @ApiConsumes('multipart/form-data')
   @Put('file')
   @ApiOperation({ summary: 'File uploaded successfully' })

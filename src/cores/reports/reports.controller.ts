@@ -37,6 +37,7 @@ import { UpdateReportDto } from 'src/common/dtos/updateUserReportDto';
 import { ReportsRepository } from './reports.repository';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { ReportAssignment } from './schemas/report_status.schema';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('reports')
 @Controller('reports')
@@ -87,7 +88,8 @@ export class ReportsController {
       },
     },
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @UseInterceptors(FilesInterceptor('files', 2))
   @ApiConsumes('multipart/form-data')
@@ -128,8 +130,8 @@ export class ReportsController {
     return this.reportsService.fetchReportStatus(reportId);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
   @Patch(':reportId')
   @ApiOperation({ summary: 'Update a report' })
   @ApiParam({ name: 'reportId', description: 'ID of the report to update' })
@@ -169,8 +171,8 @@ export class ReportsController {
     return reports.length > 0 ? reports : [];
   }
 
-  @UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
 @Get('ngo/history')
 @ApiOperation({
   summary: 'Get the report history for a specific NGO',
