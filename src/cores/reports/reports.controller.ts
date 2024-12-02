@@ -105,8 +105,8 @@ export class ReportsController {
       },
     },
   })
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('jwt')
+  
+
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @UseInterceptors(FilesInterceptor('files', 2))
   @ApiConsumes('multipart/form-data')
@@ -116,10 +116,9 @@ export class ReportsController {
     @UploadedFiles() files?: any,
   ): Promise<Report> {
     try {
-      const userId = _.get(req, 'user.id', null);
+    
       return await this.reportsService.createIncidentWithFile(
         createIncidentDto,
-        userId,
         files,
       );
     } catch (error) {

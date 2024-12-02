@@ -27,24 +27,24 @@ export class ReportsService {
 
   async createIncidentWithFile(
     createIncidentDto: CreateIncidentDto,
-    userId: string | null,
+
     files?: any,
    
   ): Promise<Report> {
     try {
       // Ensure userId is a valid ObjectId
-      const userObjectId = userId ? new Types.ObjectId(userId) : null;
+      // const userObjectId = userId ? new Types.ObjectId(userId) : null;
   
-      // Fetch user by ObjectId if userId is provided
-      const user = userObjectId
-        ? await this.usersRepository.fetchSingleUserById(userObjectId)
-        : null;
+      // // Fetch user by ObjectId if userId is provided
+      // const user = userObjectId
+      //   ? await this.usersRepository.fetchSingleUserById(userObjectId)
+      //   : null;
   
-      if (userObjectId && !user) {
-        throw new BadRequestException('User not found');
-      }
+      // if (userObjectId && !user) {
+      //   throw new BadRequestException('User not found');
+      // }
   
-      const userIdString = userObjectId ? userObjectId.toString() : null;
+      //const userIdString = userObjectId ? userObjectId.toString() : null;
   
       const fileUrls: string[] = [];
       if (files && files.length > 0) {
@@ -78,7 +78,6 @@ export class ReportsService {
       // Create a new incident, including all uploaded file URLs
       const newIncident = {
         ...createIncidentDto,
-        user_id: userIdString,
         files: fileUrls,
       };
   
@@ -172,29 +171,7 @@ export class ReportsService {
     return this.reportsRepository.save(report as ReportDocument);
   }
 
-  async findReportHistoryForNgo(id: string, query?: string) {
-    const searchQuery: any = { ngoId: new Types.ObjectId(id) };
   
-    if (query) {
-      // Check if the query matches a location (e.g., state)
-      const isLocation = Object.values(NigerianStates).includes(query as NigerianStates);
-  
-      if (isLocation) {
-        // If the query is a valid location, filter by location
-        searchQuery['report.location'] = query;
-      } else {
-        // If the query is not a location, filter by report name
-        searchQuery['report.name'] = query;
-      }
-    }
-  
-    // Perform the search with the query
-    const reports = await this.reportAssignmentRepository.find({
-      where: searchQuery,
-    });
-  
-    return reports;
-  }
   
 
   
