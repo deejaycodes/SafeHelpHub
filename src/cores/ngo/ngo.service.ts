@@ -34,7 +34,7 @@ export class NgoService {
     }
 
     const user = {
-      id: ngo._id,  // Assuming '_id' is the user ID
+      id: ngo._id,  
       email: ngo.email,
       name: ngo.contact_info.primary_contact.name,  
     };

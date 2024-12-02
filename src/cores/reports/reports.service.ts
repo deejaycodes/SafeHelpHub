@@ -120,6 +120,9 @@ export class ReportsService {
         $inc: { resolvedAcceptCount: 1 },
         $set: { isHandlingReport: true }
       });
+
+      report.accepted_by =report.accepted_by || [];
+      report.accepted_by.push(ngoId);
       await this.reportAssignmentRepository.create({
         ngoId: ngoId,
         reportId: reportId,
@@ -169,18 +172,30 @@ export class ReportsService {
     return this.reportsRepository.save(report as ReportDocument);
   }
 
-  async findReportHistoryForNgo(id: string) {
-    const objectId = new Types.ObjectId(id);
-    const reports = await this.reportAssignmentRepository.find({
-      ngoId : id
-    }).exec(); 
-    
-    if (!reports || reports.length === 0) {
-        return []
+  async findReportHistoryForNgo(id: string, query?: string) {
+    const searchQuery: any = { ngoId: new Types.ObjectId(id) };
+  
+    if (query) {
+      // Check if the query matches a location (e.g., state)
+      const isLocation = Object.values(NigerianStates).includes(query as NigerianStates);
+  
+      if (isLocation) {
+        // If the query is a valid location, filter by location
+        searchQuery['report.location'] = query;
+      } else {
+        // If the query is not a location, filter by report name
+        searchQuery['report.name'] = query;
+      }
     }
-    
+  
+    // Perform the search with the query
+    const reports = await this.reportAssignmentRepository.find({
+      where: searchQuery,
+    });
+  
     return reports;
-}
+  }
+  
 
   
   async findAll(){

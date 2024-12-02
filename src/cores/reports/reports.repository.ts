@@ -115,6 +115,29 @@ export class ReportsRepository {
     return reports || [];  
   }
 
+  async findReports(userId: string, query?: string) {
+    // Initialize filter with $or condition to check userId in accepted_by or rejected_by
+    const filter: any = {
+      $or: [
+        { accepted_by: { $in: [userId] } },
+        { rejected_by: { $in: [userId] } },
+      ],
+    };
+    if (query) {
+      const isState = Object.values(NigerianStates).includes(query as NigerianStates);
+
+      if (isState) {
+        
+        filter['location'] = query;
+      } else {
+       
+        filter['incident_type'] = { $regex: new RegExp(query, 'i') }; 
+      }
+    }
+
+    // Return the filtered reports
+    return this.reportModel.find(filter).exec();
+  }
   // private generateMockReports(): Report[] {
   //   const mockReports: Report[] = [];
     

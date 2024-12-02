@@ -16,6 +16,7 @@ import {
   UploadedFiles,
   NotFoundException,
   InternalServerErrorException,
+  Query,
 } from '@nestjs/common';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report, ReportDocument } from './schemas/reports.schemas';
@@ -46,6 +47,22 @@ export class ReportsController {
     private reportRepo:ReportsRepository
   ) {}
 
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
+  @Get('search')
+  @ApiOperation({ summary: 'Search for ngo reports by location or incident name ' })
+  @ApiResponse({
+    status: 200,
+    description: 'Reports retrieved successfully',
+    type: [Report],
+  })
+  async searchReports(
+    @Req() req,
+    @Query('query') query?: string,
+  ) {
+    const userId = req.user.id;
+    return this.reportRepo.findReports(userId, query);
+  }
   @Post()
   @ApiOperation({ summary: 'Submit a report' })
   @ApiBody({
@@ -171,46 +188,5 @@ export class ReportsController {
     return reports.length > 0 ? reports : [];
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('jwt')
-@Get('ngo/history')
-@ApiOperation({
-  summary: 'Get the report history for a specific NGO',
-  description: 'Fetch all reports assigned to the NGO based on their ID.',
-})
-@ApiResponse({
-  status: 200,
-  description: 'The report history has been successfully retrieved.',
-  type: [ReportAssignment], 
-})
-@ApiResponse({
-  status: 404,
-  description: 'No reports found for this NGO.',
-})
-@ApiResponse({
-  status: 401,
-  description: 'Unauthorized. Token is invalid or missing.',
-})
-@ApiResponse({
-  status: 500,
-  description: 'An internal server error occurred.',
-})
-async findReportHistoryForNgo(@Req() req): Promise<ReportAssignment[]> {
-  try {
-    const reports = await this.reportsService.findReportHistoryForNgo(req.user.id);
-
-    return reports;
-  } catch (error) {
-    console.error('Error fetching NGO report history:', error);
-
-    if (error instanceof NotFoundException) {
-      throw error; 
-    }
-    throw new InternalServerErrorException(
-      'An error occurred while fetching NGO report history.',
-    );
-  }
-}
-
-
+  
 }

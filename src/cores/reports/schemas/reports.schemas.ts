@@ -130,6 +130,10 @@ export class Report {
   @Prop({ type: [String], ref: 'User' })
   rejected_by?: string[];
 
+  
+  @Prop({ type: [String], ref: 'User' })
+  accepted_by?: string[];
+
   @ApiProperty({
     description: 'Rejection reasons for the report, if any',
     type: Array,
