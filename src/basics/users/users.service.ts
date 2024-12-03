@@ -267,5 +267,8 @@ export class UsersService {
       message: "updated successfully"
     };
   }
-  
+ 
+  async removeUser(id:string) {
+    return await this.usersRepository.deleteUserById(id)
+  }
 }

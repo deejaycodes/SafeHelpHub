@@ -1,4 +1,4 @@
-import { Body, Controller, Post, HttpStatus, Request, Get, Query,  HttpException,  Req, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, HttpStatus, Request, Get, Query,  HttpException,  Req, Put, UseGuards, Delete } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NgoService } from './ngo.service';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
@@ -145,4 +145,14 @@ async updateNgo(
     );
   }
 }
+
+@UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Delete a NGO ' })
+  @ApiResponse({ status: 200, description: 'NGO deleted successfully' })
+  @ApiResponse({ status: 404, description: 'NGO not found' })
+  @Delete()
+  async deleteUser(@Req() req): Promise<{ message: string }> {
+    return this.usersService.removeUser(req.user.id);
+  }
 }

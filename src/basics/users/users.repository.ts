@@ -180,45 +180,15 @@ export class UsersRepository {
       .exec();
   }
 
-  // async createMockUsers(): Promise<UserDocument[]> {
-  //   const users: Partial<User>[] = Array.from({ length: 50 }, () => ({
-  //     ngo_name: faker.company.name(),
-  //     registration_number: `NGO-${faker.number.int({ max: 999999 })}`,
-  //     primary_location: {
-  //       address: faker.address.streetAddress(),
-  //       city: faker.address.city(),
-  //       state: faker.helpers.arrayElement(Object.values(NigerianStates)),
-  //     },
-  //     incident_types_supported: faker.helpers.arrayElements(
-  //       ['domestic_violence', 'child_abuse', 'FGM', 'sexual_assault', 'trafficking'],
-  //       3,
-  //     ),
-  //     services_provided: faker.helpers.arrayElements(
-  //       ['counselling', 'legal_aid', 'medical_support', 'emergency_shelter', 'financial_assistance'],
-  //       3,
-  //     ),
-  //     contact_info: {
-  //       primary_contact: {
-  //         name: faker.person.fullName(),
-  //         email: faker.internet.email().toLowerCase(),
-  //         phone: faker.helpers.replaceSymbols('+234##########'),
-  //       },
-  //       secondary_contact: {
-  //         name: faker.person.fullName(),
-  //         email: faker.internet.email().toLowerCase(),
-  //         phone: faker.helpers.replaceSymbols('+234##########'),
-  //       },
-  //     },
-  //     username: faker.internet.userName(),
-  //     email: faker.internet.email().toLowerCase(),
-  //     password_hash: faker.internet.password(),
-  //     role: 'ngo', // Set role to ngo
-  //     isHandlingReport:false,
-  //     isVerified: faker.datatype.boolean(),
-  //     created_at: new Date(),
-  //     updated_at: new Date(),
-  //   }));
+  async deleteUserById(userId: string): Promise<{ message: string }> {
+    const user = await this.userModel.findById(userId);
 
-  //   return this.userModel.create(users);
-  // }
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    await this.userModel.deleteOne({ _id: userId });
+    return { message: `User with ID ${userId} deleted successfully` };
+  }
+
 }
