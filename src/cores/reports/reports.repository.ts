@@ -136,7 +136,9 @@ export class ReportsRepository {
     }
 
     // Return the filtered reports
-    return this.reportModel.find(filter).exec();
+    return this.reportModel.find(filter)
+    .populate('incident_type') 
+    .exec();
   }
   // private generateMockReports(): Report[] {
   //   const mockReports: Report[] = [];

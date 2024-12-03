@@ -162,7 +162,7 @@ export class UsersRepository {
     }
   
     return this.userModel.find(searchQuery)
-    .populate('incident_types_supported', 'name')
+    .populate('incident_types_supported') 
     .exec();
   }
   
