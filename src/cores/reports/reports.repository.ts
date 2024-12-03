@@ -137,7 +137,7 @@ export class ReportsRepository {
 
     // Return the filtered reports
     return this.reportModel.find(filter)
-    .populate('incident_type') 
+    .populate('incident_type', 'name') 
     .exec();
   }
   // private generateMockReports(): Report[] {
