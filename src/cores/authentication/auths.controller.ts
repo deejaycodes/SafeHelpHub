@@ -122,6 +122,7 @@ export class AuthsController {
       id: req.user.id,
       username: req.user.username,
       role: req.user.role,
+      ngo:req.user.ngo_name,
       email: req.user.email,
       onBoard:req.user.onBoard,
       resolved:req.user.resolvedReportsCount,

@@ -19,10 +19,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: any) {
     try {
       const username = payload.username;
+      const ngo_name = payload.ngo_name
       const id = payload.id;
       const role = payload.role;
 
-      return { username, id, role };
+      return { username, id, role, ngo_name };
     } catch (error) {
       throw new Error(`Error validating JWT payload: ${error.message}`);
     }
