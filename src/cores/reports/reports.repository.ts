@@ -121,6 +121,7 @@ export class ReportsRepository {
       $or: [
         { accepted_by: { $in: [userId] } },
         { rejected_by: { $in: [userId] } },
+        { ngo_dashboard_ids:  { $in: [userId] }}
       ],
     };
     if (query) {
