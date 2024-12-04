@@ -33,6 +33,7 @@ import { NotificationController } from './notifications/notifications.controller
 import { NotificationModule } from './notifications/notifications.module';
 import { IncidentTypeModule } from './basics/incident/incident.module';
 import { IncidentType, IncidentTypeSchema } from './basics/incident/entities/incident.schema';
+import { ReportsRepository } from './cores/reports/reports.repository';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { IncidentType, IncidentTypeSchema } from './basics/incident/entities/inc
     UsersService,
     JwtService,
     EmailService,
+    ReportsRepository,
     LocalStrategy,
     JwtStrategy,
     NgoService,

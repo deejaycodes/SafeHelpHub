@@ -168,7 +168,19 @@ export class Report {
 
   @Prop({ type: Boolean, default: false })
  isProcessing?: boolean;
-
+ @Prop({
+  type: [String],
+  default: [],
+  get: function () {
+    
+    return this.ngo_dashboard_ids || [];
+  },
+})
+assignedUsers?: string[];
+ 
 }
 
+
 export const ReportSchema = SchemaFactory.createForClass(Report);
+
+

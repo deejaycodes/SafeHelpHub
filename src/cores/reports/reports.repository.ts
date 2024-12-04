@@ -141,6 +141,15 @@ export class ReportsRepository {
     .populate('incident_type', 'name') 
     .exec();
   }
+
+  async countUserAssignments(userId: string): Promise<number> {
+    const reports = await this.reportModel.find().exec();
+    const filteredReports = reports.filter((report) =>
+      report.assignedUsers.includes(userId),
+    );
+  
+    return filteredReports.length;
+  }
   // private generateMockReports(): Report[] {
   //   const mockReports: Report[] = [];
     

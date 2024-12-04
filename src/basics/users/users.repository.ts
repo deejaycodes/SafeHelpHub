@@ -18,19 +18,19 @@ export class UsersRepository {
   @InjectModel( IncidentType.name) private incidentModel: Model<IncidentTypeDocument>
 ) {}
 
-  async onModuleInit() {
-    await this.cleanupUnverifiedUsers();
-    // Set an interval to run cleanup every 30 minutes
-    setInterval(() => this.cleanupUnverifiedUsers(), 30 * 60 * 1000);
-  }
+  // async onModuleInit() {
+  //   await this.cleanupUnverifiedUsers();
+  //   // Set an interval to run cleanup every 30 minutes
+  //   setInterval(() => this.cleanupUnverifiedUsers(), 30 * 60 * 1000);
+  // }
 
-  private async cleanupUnverifiedUsers() {
-    const cutoffDate = new Date(Date.now() - 30 * 60 * 1000);
-    await this.userModel.deleteMany({
-      isVerified: false,
-      created_at: { $lt: cutoffDate },
-    });
-  }
+  // private async cleanupUnverifiedUsers() {
+  //   const cutoffDate = new Date(Date.now() - 30 * 60 * 1000);
+  //   await this.userModel.deleteMany({
+  //     isVerified: false,
+  //     created_at: { $lt: cutoffDate },
+  //   });
+  // }
 
   async createUser(createUserDto: CreateUserDto | CreateNgoDto): Promise<User> {
     const createdUser = new this.userModel(createUserDto);

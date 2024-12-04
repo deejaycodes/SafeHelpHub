@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from 'src/common/schemas/users.schema';
-import { Report, ReportDocument } from './schemas/reports.schemas';
-import { Notification, NotificationDocument } from 'src/common/schemas/notification.schema';
+import { User} from 'src/common/schemas/users.schema';
+import { Report, } from './schemas/reports.schemas';
+import { Notification,  } from 'src/common/schemas/notification.schema';
 
 @Injectable()
 export class ReportAssignmentService {
@@ -66,9 +66,14 @@ export class ReportAssignmentService {
           `Report ${report._id} located in ${report.location} matched to NGO ${selectedNgo._id} with rank ${selectedNgo.rank}, ` +
             `${selectedNgo.resolvedReportsCount} resolved cases, and ${selectedNgo.rejectedReportsCount} rejected cases.`,
         );
-
-        report.ngo_dashboard_ids = [selectedNgo._id.toString()];
-        await report.save();
+        await this.reportModel.updateOne(
+          { _id: report._id }, 
+          {
+            $set: {
+              ngo_dashboard_ids: [selectedNgo._id.toString()],
+            },
+          },
+        );
         selectedNgo.isHandlingReport = false;
         await selectedNgo.save();
 
@@ -141,6 +146,7 @@ export class ReportAssignmentService {
         );
 
         report.ngo_dashboard_ids = [selectedNgo._id.toString()];
+        report.assignedUsers=  [selectedNgo._id.toString()];
         await report.save();
         await selectedNgo.save();
 

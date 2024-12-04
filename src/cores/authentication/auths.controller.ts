@@ -13,6 +13,7 @@ import { LoginDto } from 'src/common/dtos/loginDto';
 import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
 import { AuthenticationService } from './authentication.service';
 import { LocalAuthGuard } from './strategy/local-auth-strategy';
+import { ReportsRepository } from '../reports/reports.repository';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -20,6 +21,7 @@ export class AuthsController {
   constructor(
     private readonly authService: AuthenticationService,
     private readonly jwtService: JwtService,
+    private readonly reportRepo: ReportsRepository,
   ) {}
 
   @Post('register')
@@ -118,6 +120,8 @@ export class AuthsController {
   })
   @UseGuards(LocalAuthGuard)
   async login(@Body() loginDto: LoginDto, @Request() req) {
+
+    const counter = await this.reportRepo.countUserAssignments(req.user.id)
     const payload = {
       id: req.user.id,
       username: req.user.username,
@@ -127,7 +131,7 @@ export class AuthsController {
       onBoard:req.user.onBoard,
       resolved:req.user.resolvedReportsCount,
       rejected:req.user.rejectedReportsCount,
-      pending:req.user.acceptReportsCount,
+      pending:counter,
       created_at: req.user.created_at,
       updated_at: req.user.updated_at,
     };

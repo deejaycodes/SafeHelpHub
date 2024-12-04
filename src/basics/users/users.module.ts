@@ -9,12 +9,15 @@ import { PassportModule } from '@nestjs/passport';
 import { UsersRepository } from './users.repository';
 import { AuthenticationService } from 'src/cores/authentication/authentication.service';
 import { EmailService } from '../email/email.service';
-import { IncidentType, IncidentTypeSchema } from '../incident/entities/incident.schema';
+import {  IncidentTypeSchema } from '../incident/entities/incident.schema';
+import { ReportSchema, Report } from 'src/cores/reports/schemas/reports.schemas';
+import { ReportsRepository } from 'src/cores/reports/reports.repository';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema },
        { name: 'IncidentType', schema: IncidentTypeSchema },
+       {name:Report.name, schema:ReportSchema}
     ]),
     PassportModule,
     UsersModule,
@@ -22,6 +25,7 @@ import { IncidentType, IncidentTypeSchema } from '../incident/entities/incident.
   controllers: [AuthsController],
   providers: [
     UsersRepository,
+    ReportsRepository,
     UsersService,
     LocalStrategy,
     AuthenticationService,

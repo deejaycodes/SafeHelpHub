@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Report, ReportDocument } from './schemas/reports.schemas';
 import { Model, Types } from 'mongoose';
@@ -32,19 +33,6 @@ export class ReportsService {
    
   ): Promise<Report> {
     try {
-      // Ensure userId is a valid ObjectId
-      // const userObjectId = userId ? new Types.ObjectId(userId) : null;
-  
-      // // Fetch user by ObjectId if userId is provided
-      // const user = userObjectId
-      //   ? await this.usersRepository.fetchSingleUserById(userObjectId)
-      //   : null;
-  
-      // if (userObjectId && !user) {
-      //   throw new BadRequestException('User not found');
-      // }
-  
-      //const userIdString = userObjectId ? userObjectId.toString() : null;
   
       const fileUrls: string[] = [];
       if (files && files.length > 0) {
@@ -105,7 +93,18 @@ export class ReportsService {
     if (!report) {
       throw new NotFoundException('Report not found');
     }
+    const user = await this.usersRepository.fetchSingleUserById(ngoId)
+    if(!user) {
+      throw new UnauthorizedException('You are not authorized')
+    }
 
+    if (updateData.status === ReportStatus.ACCEPTED && report.accepted_by?.includes(ngoId)) {
+      throw new ConflictException('You have already accepted this report');
+    }
+  
+    if (updateData.status === ReportStatus.REJECTED && report.rejected_by?.includes(ngoId)) {
+      throw new ConflictException('You have already rejected this report');
+    }
     if (
       updateData.status === ReportStatus.RESOLVED &&
       report.status !== ReportStatus.ACCEPTED
@@ -114,7 +113,16 @@ export class ReportsService {
         'Only reports with status "accepted" can be marked as resolved.',
       );
     } else if (updateData.status === ReportStatus.ACCEPTED) {
+
+      ngoId = ngoId.trim();
+    report.rejected_by = report.rejected_by.map(id => id.trim());
+
+    if (report.rejected_by.includes(ngoId)) {
+      console.log("Removing ngoId from rejected_by:", ngoId);
+      report.rejected_by = report.rejected_by.filter(id => id !== ngoId);
+    }
       report.status = ReportStatus.ACCEPTED;
+      report.ngo_dashboard_ids = [];
       await this.usersRepository.findUserByIdAndUpdate(ngoId as any, {
         $inc: { resolvedAcceptCount: 1 },
         $set: { isHandlingReport: true }
@@ -129,6 +137,9 @@ export class ReportsService {
         assignedAt: new Date(),
       });
     } else if (updateData.status === ReportStatus.RESOLVED) {
+
+     
+
       report.status = ReportStatus.RESOLVED;
 
       await this.usersRepository.findUserByIdAndUpdate(ngoId as any, {
@@ -143,12 +154,19 @@ export class ReportsService {
       });
 
     } else if (updateData.status === ReportStatus.REJECTED) {
+
+      ngoId = ngoId.trim();
+      report.accepted_by = report.accepted_by.map(id => id.trim());
+  
+      if (report.accepted_by.includes(ngoId)) {
+        report.accepted_by = report.accepted_by.filter(id => id !== ngoId);
+      }
       report.status = ReportStatus.REJECTED;
       await this.usersRepository.findUserByIdAndUpdate(ngoId as any, {
         $inc: { rejectedReportsCount: 1 },
         isHandlingReport: false,
       });
-
+      report.ngo_dashboard_ids = []
       report.rejected_by = report.rejected_by || [];
       report.rejected_by.push(ngoId);
 
@@ -171,11 +189,8 @@ export class ReportsService {
     return this.reportsRepository.save(report as ReportDocument);
   }
 
-  
-  
-
-  
   async findAll(){
     return this.reportsRepository.findAll()
   }
+
 }

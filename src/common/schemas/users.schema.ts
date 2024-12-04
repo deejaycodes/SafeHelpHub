@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayNotEmpty, IsArray, IsObject, IsString} from 'class-validator';
+import { IsArray, IsObject, IsString} from 'class-validator';
 import { NigerianStates } from '../enums/nigeria-states.enum';
 
 export type UserDocument = User & Document;
