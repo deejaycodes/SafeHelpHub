@@ -34,22 +34,23 @@ export class User {
     description: 'Primary location of the NGO',
     example: {
       address: '123 Charity Lane, Lagos, Nigeria',
-      city: 'Lagos',
+      city: 'Lagos', // This field is optional
       state: NigerianStates.LAGOS,
     },
   })
   @Prop({
     type: {
-      address: { type: String },
-      city: { type: String },
-      state: { type: String },
+      address: { type: String, required: true },
+      city: { type: String, required: false }, // Mark city as optional
+      state: { type: String, required: true },
     },
   })
   primary_location: {
     address: string;
-    city: string;
+    city?: string; 
     state: NigerianStates;
   };
+  
 
   @ApiProperty({
     description: 'References to the incident types for the report',

@@ -9,7 +9,7 @@ import { CreateUserDto } from '../../common/dtos/createUserDto';
 import * as bcrypt from 'bcryptjs';
 import { randomInt } from 'crypto';
 import { UserResponseDto } from '../../common/dtos/userResponseDto';
-import { Model, Types, isValidObjectId } from 'mongoose';
+import { Types} from 'mongoose';
 import { UsersRepository } from './users.repository';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { EmailService } from '../email/email.service';
