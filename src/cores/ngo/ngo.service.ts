@@ -18,7 +18,7 @@ export class NgoService {
   async registerNgo(createNgoDto: CreateNgoDto): Promise<RegisterResponseDto> {
     const email = createNgoDto.primary_contact.email;
     const verificationCode = randomInt(100000, 999999).toString();
-    const verificationCodeExpiresAt = new Date(Date.now() + 30 * 60 * 1000); // Set expiry to 30 minutes
+    const verificationCodeExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // Set expiry to 60 minutes
     
    const ngo =  await this.usersService.createNgo({
       ...createNgoDto,
@@ -46,4 +46,5 @@ export class NgoService {
       },
     };
   }
+
 }

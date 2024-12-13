@@ -18,3 +18,13 @@ export class VerifyAccountDto {
   @IsNotEmpty({ message: 'Verification code is required' })
   'verification-code': string;
 }
+
+export class ResendVerificationCodeDto{
+  @ApiProperty({
+    description: 'The email address of the user requesting a new verification code.',
+    example: 'user@example.com',
+  })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+}

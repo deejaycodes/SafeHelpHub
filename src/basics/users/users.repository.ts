@@ -11,6 +11,7 @@ import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { faker } from '@faker-js/faker';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { IncidentType, IncidentTypeDocument } from '../incident/entities/incident.schema';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class UsersRepository {
@@ -189,6 +190,14 @@ export class UsersRepository {
 
     await this.userModel.deleteOne({ _id: userId });
     return { message: `User with ID ${userId} deleted successfully` };
+  }
+
+  async findUserByEmail(email :string) {
+    const user = await this.userModel.findOne({ email })
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+    return user
   }
 
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, HttpStatus, Request, Get, Query,  HttpException,  Req, Put, UseGuards, Delete } from '@nestjs/common';
+import { Body, Controller, Post, HttpStatus, Request, Get, Query,  HttpException,  Req, Put, UseGuards, Delete, BadRequestException, NotFoundException, HttpCode } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NgoService } from './ngo.service';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
@@ -8,6 +8,7 @@ import { User } from 'src/common/schemas/users.schema';
 import { UpdateNgoDto } from 'src/common/dtos/updateNgoDto';
 import { JwtAuthGuard } from '../authentication/strategy/jwt-guard';
 import { AuthGuard } from '@nestjs/passport';
+import { ResendVerificationCodeDto } from 'src/common/dtos/verifyDto';
 
 
 @ApiTags('Ngo')
@@ -155,4 +156,62 @@ async updateNgo(
   async deleteUser(@Req() req): Promise<{ message: string }> {
     return this.usersService.removeUser(req.user.id);
   }
+
+
+  @Post('resend-code')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Resend the email verification code',
+    description: 'This endpoint resends a new verification code to the user’s email address.',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Verification code sent successfully.',
+    schema: {
+      example: {
+        message: 'Verification code sent successfully',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found.',
+    schema: {
+      example: {
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'user not found',
+        error: 'Not Found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid email or request payload.',
+    schema: {
+      example: {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'Invalid email address',
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiBody({
+    description: 'Payload containing the email address to resend the verification code.',
+    type: ResendVerificationCodeDto,
+  })
+  async resendValidationCode(
+    @Body() resendValidationCodeDto: ResendVerificationCodeDto,
+  ): Promise<{ message: string }> {
+    const { email } = resendValidationCodeDto;
+
+    try {
+      return await this.usersService.resendVerificationCode(email);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message);
+    }
+  }
+
 }

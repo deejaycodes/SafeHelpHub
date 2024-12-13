@@ -271,4 +271,18 @@ export class UsersService {
   async removeUser(id:string) {
     return await this.usersRepository.deleteUserById(id)
   }
+  
+  async resendVerificationCode(email:string){
+    const verificationCode = randomInt(100000, 999999).toString();
+    const user = await this.usersRepository.findUserByEmail(email)
+    user.verificationCode = verificationCode
+    user.save()
+    await this.emailService.sendVerificationEmail(email, verificationCode)
+
+    return {
+      message : "verification sent successfully"
+     }
+
+}
+
 }
