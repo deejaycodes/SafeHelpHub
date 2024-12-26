@@ -91,7 +91,7 @@ export class NgoController {
   }
 
 
-  @Put('onboard')
+@Put('onboard')
 @ApiOperation({
   summary: 'Update an NGO by user ID',
   description: 'Updates the details of an NGO based on the provided user ID and update data.',
@@ -133,6 +133,62 @@ export class NgoController {
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth('jwt')
 async updateNgo(
+  @Request() req: any,
+  @Body() updateNgoDto: UpdateNgoDto, 
+): Promise<any> {
+  try {
+    const userFromJwt = req.user 
+    return await this.usersService.updateNgo(userFromJwt.id, updateNgoDto);
+  } catch (error) {
+    throw new HttpException(
+      error.response || 'Failed to update NGO',
+      error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
+}
+
+@Put('update-ngo')
+@ApiOperation({
+  summary: 'Update an NGO by user ID',
+  description: 'Updates the details of an NGO based on the provided user ID and update data.',
+})
+
+@ApiBody({
+  description: 'The data to update the NGO',
+  type: UpdateNgoDto, 
+})
+@ApiResponse({
+  status: HttpStatus.OK,
+  description: 'NGO updated successfully.',
+  schema: {
+    example: {
+      message: 'NGO updated successfully.',
+    },
+  },
+})
+@ApiResponse({
+  status: HttpStatus.BAD_REQUEST,
+  description: 'Invalid input data.',
+  schema: {
+    example: {
+      statusCode: 400,
+      message: 'Bad Request',
+    },
+  },
+})
+@ApiResponse({
+  status: HttpStatus.INTERNAL_SERVER_ERROR,
+  description: 'Internal server error.',
+  schema: {
+    example: {
+      statusCode: 500,
+      message: 'Failed to update NGO',
+    },
+  },
+})
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('jwt')
+async updateNgoData(
   @Request() req: any,
   @Body() updateNgoDto: UpdateNgoDto, 
 ): Promise<any> {
