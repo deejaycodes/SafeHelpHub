@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
+  IsEmail,
   IsIn,
   IsMongoId,
   IsNotEmpty,
@@ -39,6 +40,40 @@ class PrimaryLocationDto {
   state: NigerianStates;
 }
 
+
+export class PrimaryContactDto {
+  @ApiProperty({
+    description: 'Full name of the primary contact person',
+    example: 'John Doe',
+  })
+  @IsString()
+  name: string;
+
+  @ApiProperty({
+    description: 'Email address of the primary contact person',
+    example: 'john.doe@ngoemail.com',
+  })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({
+    description: 'Phone number of the primary contact person',
+    example: '+2348000000000',
+  })
+ 
+  phone: string;
+}
+
+export class ContactInfoDto {
+  @ApiProperty({ description: 'Primary contact details' })
+  @ValidateNested()
+  @Type(() => PrimaryContactDto)
+  primary_contact: PrimaryContactDto;
+
+ 
+}
+
+
 export class UpdateNgoDto {
   @ApiPropertyOptional({
     description: 'Primary location of the NGO',
@@ -72,4 +107,23 @@ export class UpdateNgoDto {
   @IsBoolean()
   @IsOptional()
   onBoard?: boolean;
+}
+
+
+export class NgoDto {
+  ngo_name: string;
+  admin_name: string;
+  registration_number: string;
+  primary_location: {
+    address: string;
+    city?: string;
+    state: string;
+  };
+  contact_info: {
+    primary_contact: {
+      name: string;
+      email: string;
+      phone: string;
+    };
+  }
 }

@@ -5,7 +5,7 @@ import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
 import { UsersService } from 'src/basics/users/users.service';
 import { User } from 'src/common/schemas/users.schema';
-import { UpdateNgoDto } from 'src/common/dtos/updateNgoDto';
+import { NgoDto, UpdateNgoDto } from 'src/common/dtos/updateNgoDto';
 import { JwtAuthGuard } from '../authentication/strategy/jwt-guard';
 import { AuthGuard } from '@nestjs/passport';
 import { ResendVerificationCodeDto } from 'src/common/dtos/verifyDto';
@@ -155,7 +155,7 @@ async updateNgo(
 
 @ApiBody({
   description: 'The data to update the NGO',
-  type: UpdateNgoDto, 
+  type: NgoDto, 
 })
 @ApiResponse({
   status: HttpStatus.OK,
@@ -190,11 +190,11 @@ async updateNgo(
 @ApiBearerAuth('jwt')
 async updateNgoData(
   @Request() req: any,
-  @Body() updateNgoDto: UpdateNgoDto, 
+  @Body() updateNgoDto: any, 
 ): Promise<any> {
   try {
     const userFromJwt = req.user 
-    return await this.usersService.updateNgo(userFromJwt.id, updateNgoDto);
+    return await this.usersService.update(userFromJwt.id, updateNgoDto);
   } catch (error) {
     throw new HttpException(
       error.response || 'Failed to update NGO',

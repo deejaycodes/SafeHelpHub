@@ -9,7 +9,7 @@ import { CreateUserDto } from '../../common/dtos/createUserDto';
 import * as bcrypt from 'bcryptjs';
 import { randomInt } from 'crypto';
 import { UserResponseDto } from '../../common/dtos/userResponseDto';
-import { Types} from 'mongoose';
+import { Model, Types} from 'mongoose';
 import { UsersRepository } from './users.repository';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { EmailService } from '../email/email.service';
@@ -18,14 +18,16 @@ import { VerifyAccountDto } from 'src/common/dtos/verifyDto';
 import { SendForgotPasswordCodeDto } from 'src/common/dtos/sendForgotPasswordDto';
 import { ValidateResetCodeAndResetPasswordDto } from 'src/common/dtos/validateResetPasswordDto';
 import { uploadObject } from 'src/common/utils/upload';
-import { User } from 'src/common/schemas/users.schema';
+import { User, UserDocument } from 'src/common/schemas/users.schema';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
-import { UpdateNgoDto } from 'src/common/dtos/updateNgoDto';
+import { NgoDto, UpdateNgoDto } from 'src/common/dtos/updateNgoDto';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly emailService: EmailService,
     private readonly jwtService: JwtService,
   ) {}
@@ -267,6 +269,39 @@ export class UsersService {
       message: "updated successfully"
     };
   }
+
+  async update(
+    userId: string,
+    updateData: any,
+  ): Promise<any> {
+
+    const existingNgo = await this.userModel.findById(userId);
+    if (!existingNgo) {
+      throw new NotFoundException('NGO not found');
+    }
+  
+  
+    const newEmail = updateData.contact_info?.primary_contact?.email;
+    const oldEmail = existingNgo.contact_info?.primary_contact?.email;
+  
+    
+    if (newEmail !== oldEmail) {
+      updateData.email = newEmail;  
+    }
+    const updatedNgo = await this.userModel.findByIdAndUpdate(userId, {
+      $set: {
+        ngo_name: updateData.ngo_name,
+        admin_name: updateData.admin_name,
+        registration_number: updateData.registration_number,
+        primary_location: updateData.primary_location,
+        contact_info: updateData.contact_info, 
+        email: updateData.email,
+      }
+    }, { new: true });
+    
+    return updatedNgo;
+  }
+ 
  
   async removeUser(id:string) {
     return await this.usersRepository.deleteUserById(id)
