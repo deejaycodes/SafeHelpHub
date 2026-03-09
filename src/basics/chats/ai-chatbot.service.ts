@@ -14,7 +14,7 @@ export class AIChatbotService {
 
   async generateResponse(userMessage: string): Promise<string> {
     try {
-      const systemPrompt = `You are a compassionate support assistant for SafeHelpHub, a platform helping victims of domestic violence, FGM, and harassment. 
+      const systemPrompt = `You are a compassionate support assistant for SafeVoice, a platform helping victims of domestic violence, FGM, and harassment. 
       
 Your role:
 - Provide empathetic, supportive responses

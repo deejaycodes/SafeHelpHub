@@ -1,8 +1,8 @@
-# SafeHelpHub - AI-Powered Anonymous Reporting Platform
+# SafeVoice - AI-Powered Anonymous Reporting Platform
 
 ## Overview
 
-SafeHelpHub is a secure, anonymous platform for reporting sensitive incidents like FGM (Female Genital Mutilation) and domestic violence. The platform leverages **AI and machine learning** to provide intelligent incident classification, real-time support through an AI chatbot, and geolocation-based NGO matching.
+SafeVoice is a secure, anonymous platform for reporting sensitive incidents like FGM (Female Genital Mutilation) and domestic violence. The platform leverages **AI and machine learning** to provide intelligent incident classification, real-time support through an AI chatbot, and geolocation-based NGO matching.
 
 ## 🚀 Key Features
 
