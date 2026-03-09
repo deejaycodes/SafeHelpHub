@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { QuestionsService } from './questions.service';
 import { Question, QuestionSchema } from './shemas/questions.schema';
 import { QuestionsController } from './questions.controller';
+import { AIChatbotService } from './ai-chatbot.service';
 
 @Module({
   imports: [
@@ -11,7 +12,8 @@ import { QuestionsController } from './questions.controller';
       { name: Question.name, schema: QuestionSchema },
     ]),
   ],
-  providers: [QuestionsService],
+  providers: [QuestionsService, AIChatbotService],
   controllers: [QuestionsController],
+  exports: [AIChatbotService],
 })
 export class QuestionsModule {}

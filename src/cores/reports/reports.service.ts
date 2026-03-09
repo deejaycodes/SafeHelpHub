@@ -17,6 +17,7 @@ import { ReportStatus } from 'src/common/enums/report-status.enum';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { ReportAssignment } from './schemas/report_status.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import { AIChatbotService } from 'src/basics/chats/ai-chatbot.service';
 
 @Injectable()
 export class ReportsService {
@@ -24,16 +25,14 @@ export class ReportsService {
     private readonly reportsRepository: ReportsRepository,
     private readonly usersRepository: UsersRepository,
     @InjectModel('ReportAssignment') private reportAssignmentRepository: Model<ReportAssignment>,
+    private readonly aiChatbotService: AIChatbotService,
   ) {}
 
   async createIncidentWithFile(
     createIncidentDto: CreateIncidentDto,
-
     files?: any,
-   
   ): Promise<Report> {
     try {
-  
       const fileUrls: string[] = [];
       if (files && files.length > 0) {
         for (const file of files) {
@@ -62,11 +61,25 @@ export class ReportsService {
           }
         }
       }
+
+      // AI Analysis of the incident report
+      const aiAnalysis = await this.aiChatbotService.analyzeIncidentUrgency(
+        createIncidentDto.description || createIncidentDto.incident_type,
+      );
   
-      // Create a new incident, including all uploaded file URLs
+      // Create a new incident with AI analysis
       const newIncident = {
         ...createIncidentDto,
         files: fileUrls,
+        ai_analysis: {
+          urgency: aiAnalysis.urgency,
+          classification: aiAnalysis.classification,
+          extracted_entities: aiAnalysis.extractedEntities,
+          recommended_actions: aiAnalysis.recommendedActions,
+          analyzed_at: new Date(),
+        },
+        // Set initial status based on AI urgency
+        status: aiAnalysis.urgency === 'urgent' ? ReportStatus.PENDING : ReportStatus.PENDING,
       };
   
       return await this.reportsRepository.createIncident(newIncident);

@@ -6,11 +6,13 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, isValidObjectId } from 'mongoose';
 import { Question } from './shemas/questions.schema';
+import { AIChatbotService } from './ai-chatbot.service';
 
 @Injectable()
 export class QuestionsService {
   constructor(
     @InjectModel(Question.name) private questionModel: Model<Question>,
+    private readonly aiChatbotService: AIChatbotService,
   ) {}
 
   async getAllQuestions(): Promise<Question[]> {
@@ -32,5 +34,10 @@ export class QuestionsService {
       throw new NotFoundException(`Report ${questionId} not found`);
     }
     return question;
+  }
+
+  async askAIChatbot(userMessage: string): Promise<{ response: string }> {
+    const aiResponse = await this.aiChatbotService.generateResponse(userMessage);
+    return { response: aiResponse };
   }
 }

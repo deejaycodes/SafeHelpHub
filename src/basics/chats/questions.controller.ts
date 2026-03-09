@@ -1,8 +1,8 @@
-import { Controller, Get, Param, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { QuestionsService } from './questions.service';
 
-@ApiTags('Questions')
+@ApiTags('Questions & AI Chatbot')
 @Controller('questions')
 export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
@@ -12,30 +12,6 @@ export class QuestionsController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'All questions retrieved successfully.',
-    schema: {
-      example: [
-        {
-          id: '1',
-          question: 'What is the capital of France?',
-          answer: 'Paris',
-        },
-        {
-          id: '2',
-          question: 'What is the square root of 16?',
-          answer: '4',
-        },
-      ],
-    },
-  })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Internal server error',
-    schema: {
-      example: {
-        statusCode: 500,
-        message: 'Internal server error',
-      },
-    },
   })
   async getQuestions() {
     return this.questionsService.getAllQuestions();
@@ -47,25 +23,23 @@ export class QuestionsController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Question found and answer retrieved.',
-    schema: {
-      example: {
-        id: '1',
-        question: 'What is the capital of France?',
-        answer: 'Paris',
-      },
-    },
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Question not found.',
-    schema: {
-      example: {
-        statusCode: 404,
-        message: 'Question not found',
-      },
-    },
   })
   async getQuestion(@Param('id') id: string) {
     return this.questionsService.getAnswerForQuestion(id);
+  }
+
+  @Post('chatbot/ask')
+  @ApiOperation({ summary: 'Ask AI chatbot a question (OpenAI GPT-4)' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'AI-generated response',
+    schema: {
+      example: {
+        response: 'I understand you need help. Here are the steps you can take...',
+      },
+    },
+  })
+  async askAIChatbot(@Body('message') message: string) {
+    return this.questionsService.askAIChatbot(message);
   }
 }
