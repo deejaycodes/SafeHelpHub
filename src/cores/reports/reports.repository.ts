@@ -1,186 +1,90 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { CreateIncidentDto } from '../../common/dtos/reportsDto';
-import { Report, ReportDocument } from './schemas/reports.schemas';
-import { Model, Types, isValidObjectId } from 'mongoose';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Report } from 'src/common/entities/report.entity';
 import { ReportStatus } from 'src/common/enums/report-status.enum';
-import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
-import { IncidentType, IncidentTypeDocument } from 'src/basics/incident/entities/incident.schema';
 
 @Injectable()
 export class ReportsRepository {
   constructor(
-    @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
-    @InjectModel( IncidentType.name) private incidentModel: Model<IncidentTypeDocument>
+    @InjectRepository(Report) private reportRepository: Repository<Report>
   ) {}
 
-  async createIncident(createIncidentDto: CreateIncidentDto): Promise<Report> {
+  async createReport(reportData: Partial<Report>): Promise<Report> {
+    const report = this.reportRepository.create(reportData);
+    return await this.reportRepository.save(report);
+  }
 
-    const { incident_type } = createIncidentDto;
-    const existingIncidentType = await this.incidentModel.findById(incident_type);
-    if (!existingIncidentType) {
-      throw new NotFoundException(`IncidentType with ID ${incident_type} not found`);
+  async findReportById(reportId: string): Promise<Report> {
+    const report = await this.reportRepository.findOne({ where: { id: reportId } });
+    if (!report) {
+      throw new NotFoundException(`Report with ID ${reportId} not found`);
     }
-
-    const createdIncident = new this.reportModel(createIncidentDto);
-    return await createdIncident.save();
+    return report;
   }
 
-  async fetchSingleReportById(
-    reportId: Types.ObjectId | string,
-  ): Promise<Report | null> {
-    try {
-      if (!isValidObjectId(reportId)) {
-        throw new BadRequestException(
-          'Invalid ID format. Must be a 24-character hex string.',
-        );
-      }
-      const objectId =
-        typeof reportId === 'string' ? new Types.ObjectId(reportId) : reportId;
+  async findAllReports(): Promise<Report[]> {
+    return await this.reportRepository.find();
+  }
 
-      const report = await this.reportModel.findById(objectId).exec();
+  async findReportsByStatus(status: ReportStatus): Promise<Report[]> {
+    return await this.reportRepository.find({ where: { status } });
+  }
 
-      if (!report) {
-        throw new NotFoundException(`Report with ID ${objectId} not found`);
-      }
-      return report;
-    } catch (error) {
-      throw new NotFoundException(`Error fetching report: ${error.message}`);
+  async findReportsByLocation(location: string): Promise<Report[]> {
+    return await this.reportRepository.find({ where: { location } });
+  }
+
+  async updateReportStatus(reportId: string, status: ReportStatus): Promise<Report> {
+    const report = await this.findReportById(reportId);
+    report.status = status;
+    return await this.reportRepository.save(report);
+  }
+
+  async assignReportToNgo(reportId: string, ngoId: string): Promise<Report> {
+    const report = await this.findReportById(reportId);
+    if (!report.ngo_dashboard_ids) {
+      report.ngo_dashboard_ids = [];
     }
-  }
-
-  async updateReportFiles(
-    reportId: Types.ObjectId | string,
-    filePath: string,
-  ): Promise<Report> {
-    if (!isValidObjectId(reportId)) {
-      throw new BadRequestException(
-        'Invalid ID format. Must be a 24-character hex string.',
-      );
+    if (!report.ngo_dashboard_ids.includes(ngoId)) {
+      report.ngo_dashboard_ids.push(ngoId);
     }
-    const objectId =
-      typeof reportId === 'string' ? new Types.ObjectId(reportId) : reportId;
+    return await this.reportRepository.save(report);
+  }
 
-    const updatedReport = await this.reportModel
-      .findByIdAndUpdate(
-        objectId,
-        { $push: { files: { file_path: filePath, uploaded_at: new Date() } } },
-        { new: true },
-      )
-      .exec();
-
-    if (!updatedReport) {
-      throw new NotFoundException(`report ${reportId} not found`);
+  async addRejectionReason(reportId: string, reason: string, rejectedBy: string): Promise<Report> {
+    const report = await this.findReportById(reportId);
+    if (!report.rejection_reasons) {
+      report.rejection_reasons = [];
     }
-
-    return updatedReport;
-  }
-
-  async handleReport(
-    report: ReportDocument,
-    ngoId: any,
-    action: 'accept' | 'reject',
-  ): Promise<ReportDocument> {
-    if (report.status !== ReportStatus.SUBMITTED) {
-      throw new ConflictException(
-        'Report cannot be modified in its current state.',
-      );
+    report.rejection_reasons.push({
+      reason,
+      rejected_by: rejectedBy,
+      rejected_at: new Date(),
+    });
+    if (!report.rejected_by) {
+      report.rejected_by = [];
     }
-
-    if (action === 'accept') {
-      report.status = ReportStatus.ACCEPTED;
-
-      report.ngo_dashboard_ids = report.ngo_dashboard_ids.filter(
-        (id) => id !== ngoId,
-      );
-    } else if (action === 'reject') {
-      report.status = ReportStatus.REJECTED;
-    } else {
-      throw new BadRequestException('Invalid action specified.');
+    if (!report.rejected_by.includes(rejectedBy)) {
+      report.rejected_by.push(rejectedBy);
     }
-
-    return await report.save();
-  }
-  async save(report: ReportDocument): Promise<ReportDocument> {
-    return report.save();
+    return await this.reportRepository.save(report);
   }
 
-  async findAll(): Promise<ReportDocument[]> {
-    const reports = await this.reportModel.find().exec();
-    return reports || [];  
+  async markReportAsProcessing(reportId: string, isProcessing: boolean): Promise<Report> {
+    const report = await this.findReportById(reportId);
+    report.isProcessing = isProcessing;
+    return await this.reportRepository.save(report);
   }
 
-  async findReports(userId: string, query?: string) {
-    // Initialize filter with $or condition to check userId in accepted_by or rejected_by
-    const filter: any = {
-      $or: [
-        { accepted_by: { $in: [userId] } },
-        { rejected_by: { $in: [userId] } },
-        { ngo_dashboard_ids:  { $in: [userId] }}
-      ],
-    };
-    if (query) {
-      const isState = Object.values(NigerianStates).includes(query as NigerianStates);
-
-      if (isState) {
-        
-        filter['location'] = query;
-      } else {
-       
-        filter['incident_type'] = { $regex: new RegExp(query, 'i') }; 
-      }
-    }
-
-    // Return the filtered reports
-    return this.reportModel.find(filter)
-    .populate('incident_type', 'name') 
-    .exec();
+  async deleteReport(reportId: string): Promise<void> {
+    await this.reportRepository.delete(reportId);
   }
 
-  async countUserAssignments(userId: string): Promise<number> {
-    const reports = await this.reportModel.find().exec();
-    const filteredReports = reports.filter((report) =>
-      report.assignedUsers.includes(userId),
-    );
-  
-    return filteredReports.length;
+  async findReportsByNgo(ngoId: string): Promise<Report[]> {
+    return await this.reportRepository
+      .createQueryBuilder('report')
+      .where(':ngoId = ANY(report.ngo_dashboard_ids)', { ngoId })
+      .getMany();
   }
-  // private generateMockReports(): Report[] {
-  //   const mockReports: Report[] = [];
-    
-  //   const incidentTypes = ['harassment', 'child_abuse', 'sexual_assault', 'FGM', 'trafficking'];
-  //   const states = Object.values(NigerianStates); // Assuming NigerianStates is an enum
-  //   const statuses = [ReportStatus.SUBMITTED];
-    
-  //   for (let i = 0; i < 25; i++) {
-  //     mockReports.push({
-  //       incident_type: incidentTypes[i % incidentTypes.length],
-  //       description: `Sample description for incident number ${i + 1}. This is an example of the description.`,
-  //       location: states[i % states.length],
-  //       contact_info: `contact${i + 1}@example.com`,
-  //       files: [
-  //         { file_path: `uploads/sample_file_${i + 1}.pdf`, uploaded_at: new Date() },
-  //       ],
-  //       status: statuses[i % statuses.length],
-  //       created_at: new Date(),
-  //       updated_at: new Date(),
-  //       isProcessing:false,
-  //       user_id: null, // Set user_id to null
-  //       rejected_by: [],
-  //       rejection_reasons: [],
-  //     });
-  //   }
-
-  //   return mockReports;
-  // }
-
-  // async createMockReports(): Promise<Report[]> {
-  //   const reports = this.generateMockReports();
-  //   return this.reportModel.insertMany(reports);
-  // }
 }
