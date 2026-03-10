@@ -140,12 +140,13 @@ export class ReportsService {
 
       report.accepted_by =report.accepted_by || [];
       report.accepted_by.push(ngoId);
-      await this.reportAssignmentRepository.create({
-        ngoId: ngoId,
-        reportId: reportId,
-        status: ReportStatus.ACCEPTED,
-        assignedAt: new Date(),
-      });
+      // TODO: Migrate ReportAssignment to TypeORM
+      // await this.reportAssignmentRepository.create({
+      //   ngoId: ngoId,
+      //   reportId: reportId,
+      //   status: ReportStatus.ACCEPTED,
+      //   assignedAt: new Date(),
+      // });
     } else if (updateData.status === ReportStatus.RESOLVED) {
 
      
@@ -156,12 +157,13 @@ export class ReportsService {
       ngo.resolvedReportsCount = (ngo.resolvedReportsCount || 0) + 1;
       await this.usersRepository.findUserByIdAndUpdate(ngoId, ngo);
 
-      await this.reportAssignmentRepository.create({
-        ngoId: ngoId,
-        reportId: reportId,
-        status: ReportStatus.RESOLVED,
-        assignedAt: new Date(),
-      });
+      // TODO: Migrate ReportAssignment to TypeORM
+      // await this.reportAssignmentRepository.create({
+      //   ngoId: ngoId,
+      //   reportId: reportId,
+      //   status: ReportStatus.RESOLVED,
+      //   assignedAt: new Date(),
+      // });
 
     } else if (updateData.status === ReportStatus.REJECTED) {
 
@@ -188,12 +190,13 @@ export class ReportsService {
       });
     }
 
-    await this.reportAssignmentRepository.create({
-      ngoId: ngoId,
-      reportId: reportId,
-      status: ReportStatus.REJECTED,
-      assignedAt: new Date(),
-    });
+    // TODO: Migrate ReportAssignment to TypeORM
+    // await this.reportAssignmentRepository.create({
+    //   ngoId: ngoId,
+    //   reportId: reportId,
+    //   status: ReportStatus.REJECTED,
+    //   assignedAt: new Date(),
+    // });
     Object.assign(report, updateData);
 
     return this.reportsRepository.save(report as ReportDocument);
