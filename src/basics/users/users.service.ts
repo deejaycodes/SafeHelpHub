@@ -182,7 +182,7 @@ export class UsersService {
     if (uploadResponse?.$metadata?.httpStatusCode === 200) {
       const fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
   
-      const data = await this.usersRepository.updateUserProfilePicture(objectId, fileUrl);
+      const data = await this.usersRepository.updateUserProfilePicture(userId, fileUrl);
 
       return {
         message: 'profile picture uploaded succesful'
@@ -218,7 +218,8 @@ export class UsersService {
     if (uploadResponse?.$metadata?.httpStatusCode === 200) {
       const fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
   
-      const files = user.files || [];
+      const existingUser = await this.usersRepository.fetchSingleUserById(userId);
+      const files = existingUser.files || [];
       files.push({ file_path: fileUrl, uploaded_at: new Date() });
       return await this.usersRepository.updateUserFiles(userId, files);
     }
