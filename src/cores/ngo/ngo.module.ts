@@ -1,19 +1,17 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { NgoController } from './ngo.controller';
 import { NgoService } from './ngo.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from 'src/common/schemas/users.schema';
+import { User } from 'src/common/entities/user.entity';
+import { IncidentType } from 'src/common/entities/incident-type.entity';
 import { UsersRepository } from 'src/basics/users/users.repository';
 import { UsersService } from 'src/basics/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from 'src/basics/email/email.service';
-import { IncidentType, IncidentTypeSchema } from 'src/basics/incident/entities/incident.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema },
-      {name:IncidentType.name, schema:IncidentTypeSchema}
-    ]),
+    TypeOrmModule.forFeature([User, IncidentType]),
   ],
   controllers: [NgoController],
   providers: [
@@ -23,5 +21,6 @@ import { IncidentType, IncidentTypeSchema } from 'src/basics/incident/entities/i
     JwtService,
     EmailService,
   ],
+  exports: [NgoService],
 })
 export class NgoModule {}
