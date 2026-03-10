@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Multer } from 'multer';
 
 @Injectable()
 export class StorageService {
@@ -39,7 +40,7 @@ export class StorageService {
   }
 
   async uploadFile(
-    file: Express.Multer.File,
+    file: any,
     folder: string = 'uploads',
   ): Promise<string> {
     if (!this.supabase) {
