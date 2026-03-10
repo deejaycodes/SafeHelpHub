@@ -19,7 +19,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
-import { Report, ReportDocument } from './schemas/reports.schemas';
+import { Report } from 'src/common/entities/report.entity';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from 'src/cores/authentication/strategy/jwt-guard';
 import {  FilesInterceptor } from '@nestjs/platform-express';
@@ -37,7 +37,6 @@ import { User } from '@sentry/nestjs';
 import { UpdateReportDto } from 'src/common/dtos/updateUserReportDto';
 import { ReportsRepository } from './reports.repository';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
-import { ReportAssignment } from './schemas/report_status.schema';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('reports')

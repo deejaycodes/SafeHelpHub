@@ -7,16 +7,13 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Report, ReportDocument } from './schemas/reports.schemas';
-import { Model, Types } from 'mongoose';
+import { Report } from 'src/common/entities/report.entity';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { uploadObject } from 'src/common/utils/upload';
 import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
 import { ReportStatus } from 'src/common/enums/report-status.enum';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
-import { ReportAssignment } from './schemas/report_status.schema';
-import { InjectModel } from '@nestjs/mongoose';
 import { AIChatbotService } from 'src/basics/chats/ai-chatbot.service';
 
 @Injectable()

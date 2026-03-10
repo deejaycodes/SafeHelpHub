@@ -21,7 +21,7 @@ import { QuestionsModule } from 'src/basics/chats/questions.module';
   providers: [
     UsersRepository,
     ReportsRepository,
-    ReportAssignmentService,
+    // ReportAssignmentService, // TODO: Migrate to TypeORM
     ReportsService,
   ],
   controllers: [ReportsController],

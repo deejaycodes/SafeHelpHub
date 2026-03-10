@@ -72,7 +72,7 @@ import { StorageModule } from './basics/storage/storage.module';
   providers: [
     UsersRepository,
     AppService,
-    ReportAssignmentService,
+    // ReportAssignmentService, // TODO: Migrate to TypeORM
     AuthenticationService,
     UsersService,
     JwtService,
