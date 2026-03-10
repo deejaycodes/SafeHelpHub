@@ -1,31 +1,27 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthenticationService } from './authentication.service';
 import { UsersService } from 'src/basics/users/users.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from 'src/common/schemas/users.schema';
+import { User } from 'src/common/entities/user.entity';
+import { IncidentType } from 'src/common/entities/incident-type.entity';
+import { Report } from 'src/common/entities/report.entity';
 import { UsersRepository } from 'src/basics/users/users.repository';
 import { LocalStrategy } from './strategy/local-strategy';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from 'src/basics/email/email.service';
-import { IncidentType, IncidentTypeSchema } from 'src/basics/incident/entities/incident.schema';
-import { Report, ReportSchema } from '../reports/schemas/reports.schemas';
 
 @Module({
   imports: [
-    //EmailModule,
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema },
-      {name:IncidentType.name, schema:IncidentTypeSchema},
-      {name:Report.name, schema:ReportSchema}
-    ]),
+    TypeOrmModule.forFeature([User, IncidentType, Report]),
   ],
   providers: [
     AuthenticationService,
     UsersService,
     UsersRepository,
-    UsersService,
     LocalStrategy,
     JwtService,
     EmailService,
   ],
+  exports: [AuthenticationService],
 })
 export class AuthenticationModule {}
