@@ -21,7 +21,7 @@ export class ReportsService {
   constructor(
     private readonly reportsRepository: ReportsRepository,
     private readonly usersRepository: UsersRepository,
-    // @InjectModel('ReportAssignment') private reportAssignmentRepository: Model<ReportAssignment>, // TODO: Migrate
+    @InjectModel('ReportAssignment') private reportAssignmentRepository: Model<ReportAssignment>,
     private readonly aiChatbotService: AIChatbotService,
   ) {}
 
@@ -87,7 +87,7 @@ export class ReportsService {
     }
   }
   
-  async fetchReportStatus(reportId: string) {
+  async fetchReportStatus(reportId: Types.ObjectId | string) {
     const report = await this.reportsRepository.fetchSingleReportById(reportId);
 
     return report;
@@ -96,8 +96,8 @@ export class ReportsService {
   async updateReport(
     reportId: string,
     ngoId: any,
-    updateData: Partial<Report> & { rejection_reason?: string },
-  ): Promise<Report> {
+    updateData: Partial<ReportDocument> & { rejection_reason?: string },
+  ): Promise<ReportDocument> {
     const report = await this.reportsRepository.fetchSingleReportById(reportId);
 
     if (!report) {
@@ -140,7 +140,7 @@ export class ReportsService {
 
       report.accepted_by =report.accepted_by || [];
       report.accepted_by.push(ngoId);
-      // await this.reportAssignmentRepository.create({
+      await this.reportAssignmentRepository.create({
         ngoId: ngoId,
         reportId: reportId,
         status: ReportStatus.ACCEPTED,
@@ -156,7 +156,7 @@ export class ReportsService {
       ngo.resolvedReportsCount = (ngo.resolvedReportsCount || 0) + 1;
       await this.usersRepository.findUserByIdAndUpdate(ngoId, ngo);
 
-      // await this.reportAssignmentRepository.create({
+      await this.reportAssignmentRepository.create({
         ngoId: ngoId,
         reportId: reportId,
         status: ReportStatus.RESOLVED,
@@ -188,7 +188,7 @@ export class ReportsService {
       });
     }
 
-    // await this.reportAssignmentRepository.create({
+    await this.reportAssignmentRepository.create({
       ngoId: ngoId,
       reportId: reportId,
       status: ReportStatus.REJECTED,
@@ -196,7 +196,7 @@ export class ReportsService {
     });
     Object.assign(report, updateData);
 
-    return this.reportsRepository.save(report as Report);
+    return this.reportsRepository.save(report as ReportDocument);
   }
 
   async findAll(){

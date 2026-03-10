@@ -165,7 +165,7 @@ export class ReportsController {
     @Param('reportId') reportId: string,
     @Body() updateData: UpdateReportDto,
     @Req() req,
-  ): Promise<Report> {
+  ): Promise<ReportDocument> {
     const userFromJwt = req.user 
     return this.reportsService.updateReport(
       reportId,
@@ -181,7 +181,7 @@ export class ReportsController {
     description: 'Successfully retrieved all reports. Returns an empty array if no reports exist.',
   })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async findAll(): Promise<Report[]> {
+  async findAll(): Promise<ReportDocument[]> {
     const reports = await this.reportsService.findAll();
     return reports.length > 0 ? reports : [];
   }
