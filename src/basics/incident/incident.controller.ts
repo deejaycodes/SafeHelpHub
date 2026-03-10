@@ -2,7 +2,7 @@ import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CreateIncidentTypeDto } from './dto/create-incident.dto';
 import { IncidentTypeService } from './incident.service';
-import { IncidentType } from './entities/incident.schema';
+import { IncidentType } from 'src/common/entities/incident-type.entity';
 
 
 @ApiTags('Incident Types') 

@@ -1,37 +1,32 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateIncidentTypeDto } from './dto/create-incident.dto';
-//import { UpdateIncidentDto } from './dto/update-incident.dto';
-import { InjectModel} from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose'
-import { IncidentType, IncidentTypeDocument } from './entities/incident.schema';
+import { IncidentType } from 'src/common/entities/incident-type.entity';
 
 @Injectable()
 export class IncidentTypeService {
   constructor(
-    @InjectModel( IncidentType.name) private incidentModel: Model<IncidentTypeDocument>,
+    @InjectRepository(IncidentType)
+    private incidentRepository: Repository<IncidentType>,
   ) {}
-   async  create(createIncidentTypeDto: CreateIncidentTypeDto):Promise<IncidentType> {
-    const incidentType =  new this.incidentModel(createIncidentTypeDto)
-    return await incidentType.save()
+
+  async create(createIncidentTypeDto: CreateIncidentTypeDto): Promise<IncidentType> {
+    const incidentType = this.incidentRepository.create(createIncidentTypeDto);
+    return await this.incidentRepository.save(incidentType);
   }
 
-  findAll() {
-    return this.incidentModel.find();
+  async findAll(): Promise<IncidentType[]> {
+    return await this.incidentRepository.find();
   }
 
-  async findOne(incidentTypeId:  Types.ObjectId | string) :Promise<IncidentType | null>{
-
-    try{
-      const objectId =
-      typeof incidentTypeId === 'string' ? new Types.ObjectId(incidentTypeId) : incidentTypeId;
-      const incidentType = await this.incidentModel.findById(objectId).exec();
-      if (!incidentType) {
-        throw new NotFoundException(`Incident with ID ${objectId} not found`);
-      }
-      return incidentType
-    }catch (error) {
-      throw new NotFoundException(`Error fetching report: ${error.message}`);
+  async findOne(incidentTypeId: string): Promise<IncidentType | null> {
+    const incidentType = await this.incidentRepository.findOne({
+      where: { id: incidentTypeId },
+    });
+    if (!incidentType) {
+      throw new NotFoundException(`Incident with ID ${incidentTypeId} not found`);
     }
-    
+    return incidentType;
   }
 }
