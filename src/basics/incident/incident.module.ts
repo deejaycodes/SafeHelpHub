@@ -1,16 +1,15 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { IncidentTypeService } from './incident.service';
 import { IncidentTypeController } from './incident.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { IncidentType } from './entities/incident.schema';
+import { IncidentType } from 'src/common/entities/incident-type.entity';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: IncidentType.name, schema: IncidentTypeModule },
-    ])
+    TypeOrmModule.forFeature([IncidentType]),
   ],
   controllers: [IncidentTypeController],
   providers: [IncidentTypeService],
+  exports: [IncidentTypeService],
 })
 export class IncidentTypeModule {}
