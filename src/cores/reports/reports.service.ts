@@ -79,7 +79,7 @@ export class ReportsService {
           analyzed_at: new Date(),
         },
         // Set initial status based on AI urgency
-        status: aiAnalysis.urgency === 'urgent' ? ReportStatus.PENDING : ReportStatus.PENDING,
+        status: ReportStatus.SUBMITTED,
       };
   
       return await this.reportsRepository.createIncident(newIncident);

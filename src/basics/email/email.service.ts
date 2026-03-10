@@ -51,10 +51,9 @@ export class EmailService {
       await this.transporter.sendMail(mailOptions);
       this.logger.log(`Verification email sent to ${email}`);
     } catch (error) {
-      this.logger.error(
-        `Failed to send verification email to ${email}: ${error.message}`,
+      this.logger.warn(
+        `Failed to send verification email to ${email}: ${error.message}. Continuing without email verification.`,
       );
-      throw new Error('Could not send verification email');
     }
   }
 
@@ -74,10 +73,9 @@ export class EmailService {
       await this.transporter.sendMail(mailOptions);
       this.logger.log(`Forgotpassword email sent to ${email}`);
     } catch (error) {
-      this.logger.error(
-        `Failed to send forgotpassword email to ${email}: ${error.message}`,
+      this.logger.warn(
+        `Failed to send forgotpassword email to ${email}: ${error.message}. Continuing without email.`,
       );
-      throw new Error('Could not send forgotpassword email');
     }
   }
 }
