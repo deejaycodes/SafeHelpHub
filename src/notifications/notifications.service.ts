@@ -1,42 +1,44 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel} from '@nestjs/mongoose';
-import { Notification,NotificationDocument } from 'src/common/schemas/notification.schema';
-import { Model } from 'mongoose'
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Notification, NotificationStatus } from 'src/common/entities/notification.entity';
 
 @Injectable()
 export class NotificationsService {
+  constructor(
+    @InjectRepository(Notification)
+    private notificationRepository: Repository<Notification>,
+  ) {}
 
-    constructor(
-        @InjectModel(Notification.name) private notificationModel: Model<NotificationDocument>,
-      ) {}
+  async createNotification(ngoId: string, reportId: string, message: string): Promise<Notification> {
+    const notification = this.notificationRepository.create({
+      ngoId,
+      reportId,
+      message,
+      status: NotificationStatus.UNREAD,
+    });
+    return await this.notificationRepository.save(notification);
+  }
 
-      async getAllNotifications(ngoId: string): Promise<Notification[]> {
-        try {
-          const notifications = await this.notificationModel
-            .find({ ngoId })
-            .populate('reportId') 
-            .exec();
-    
-          return notifications;
-        } catch (error) {
-          throw new Error('Failed to fetch notifications: ' + error.message);
-        }
-      }
+  async getNotificationsByNgo(ngoId: string): Promise<Notification[]> {
+    return await this.notificationRepository.find({
+      where: { ngoId },
+      order: { createdAt: 'DESC' },
+    });
+  }
 
-      async getNotificationByNgoIdAndNotificationId(
-        ngoId: string,
-        notificationId: string,
-      ): Promise<Notification> {
-        const notification = await this.notificationModel
-          .findOne({ _id: notificationId, ngoId })
-          .exec();
-        if (!notification) {
-          throw new NotFoundException(
-            `No notification found for NGO ID: ${ngoId} and Notification ID: ${notificationId}`,
-          );
-        }
-        return notification;
-      }
-      
+  async markAsRead(notificationId: string): Promise<Notification> {
+    const notification = await this.notificationRepository.findOne({
+      where: { id: notificationId },
+    });
+    if (notification) {
+      notification.status = NotificationStatus.READ;
+      return await this.notificationRepository.save(notification);
+    }
+    return null;
+  }
+
+  async deleteNotification(notificationId: string): Promise<void> {
+    await this.notificationRepository.delete(notificationId);
+  }
 }
-
