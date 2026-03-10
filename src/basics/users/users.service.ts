@@ -9,7 +9,6 @@ import { CreateUserDto } from '../../common/dtos/createUserDto';
 import * as bcrypt from 'bcryptjs';
 import { randomInt } from 'crypto';
 import { UserResponseDto } from '../../common/dtos/userResponseDto';
-import { Model, Types} from 'mongoose';
 import { UsersRepository } from './users.repository';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { EmailService } from '../email/email.service';
@@ -18,16 +17,14 @@ import { VerifyAccountDto } from 'src/common/dtos/verifyDto';
 import { SendForgotPasswordCodeDto } from 'src/common/dtos/sendForgotPasswordDto';
 import { ValidateResetCodeAndResetPasswordDto } from 'src/common/dtos/validateResetPasswordDto';
 import { uploadObject } from 'src/common/utils/upload';
-import { User, UserDocument } from 'src/common/schemas/users.schema';
+import { User } from 'src/common/entities/user.entity';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { NgoDto, UpdateNgoDto } from 'src/common/dtos/updateNgoDto';
-import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly emailService: EmailService,
     private readonly jwtService: JwtService,
   ) {}
