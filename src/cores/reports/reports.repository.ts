@@ -32,7 +32,7 @@ export class ReportsRepository {
   }
 
   async findReportsByLocation(location: string): Promise<Report[]> {
-    return await this.reportRepository.find({ where: { location } });
+    return await this.reportRepository.find({ where: { location: location as any } });
   }
 
   async updateReportStatus(reportId: string, status: ReportStatus): Promise<Report> {
@@ -118,5 +118,12 @@ export class ReportsRepository {
     queryBuilder.andWhere(':userId = ANY(report.ngo_dashboard_ids)', { userId });
     
     return await queryBuilder.getMany();
+  }
+
+  async countUserAssignments(userId: string): Promise<number> {
+    return await this.reportRepository
+      .createQueryBuilder('report')
+      .where(':userId = ANY(report.ngo_dashboard_ids)', { userId })
+      .getCount();
   }
 }

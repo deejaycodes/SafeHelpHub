@@ -104,4 +104,27 @@ export class UsersRepository {
   async deleteUser(userId: string): Promise<void> {
     await this.userRepository.delete(userId);
   }
+
+  async deleteUserById(userId: string): Promise<void> {
+    await this.deleteUser(userId);
+  }
+
+  async findUserByEmail(email: string): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { email } });
+  }
+
+  async findNgoByLocationOrName(query: any): Promise<User[]> {
+    const queryBuilder = this.userRepository.createQueryBuilder('user');
+    queryBuilder.where('user.role = :role', { role: 'ngo' });
+    
+    if (query.location) {
+      queryBuilder.andWhere("user.primary_location->>'state' = :location", { location: query.location });
+    }
+    
+    if (query.name) {
+      queryBuilder.andWhere('user.ngo_name ILIKE :name', { name: `%${query.name}%` });
+    }
+    
+    return await queryBuilder.getMany();
+  }
 }

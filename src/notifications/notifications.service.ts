@@ -41,4 +41,14 @@ export class NotificationsService {
   async deleteNotification(notificationId: string): Promise<void> {
     await this.notificationRepository.delete(notificationId);
   }
+
+  async getAllNotifications(ngoId: string): Promise<Notification[]> {
+    return await this.getNotificationsByNgo(ngoId);
+  }
+
+  async getNotificationByNgoIdAndNotificationId(ngoId: string, notificationId: string): Promise<Notification> {
+    return await this.notificationRepository.findOne({
+      where: { id: notificationId, ngoId },
+    });
+  }
 }
