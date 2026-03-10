@@ -48,6 +48,10 @@ import { StorageModule } from './basics/storage/storage.module';
         entities: [User, Report, Notification, IncidentType],
         synchronize: true,
         ssl: { rejectUnauthorized: false },
+        extra: {
+          // Force IPv4 to avoid IPv6 connection issues on Render
+          family: 4,
+        },
       }),
       inject: [ConfigService],
     }),
