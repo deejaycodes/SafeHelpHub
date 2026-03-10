@@ -4,7 +4,7 @@ import { NgoService } from './ngo.service';
 import { CreateNgoDto } from 'src/common/dtos/createNgoDto';
 import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
 import { UsersService } from 'src/basics/users/users.service';
-import { User } from 'src/common/schemas/users.schema';
+import { User } from 'src/common/entities/user.entity';
 import { NgoDto, UpdateNgoDto } from 'src/common/dtos/updateNgoDto';
 import { JwtAuthGuard } from '../authentication/strategy/jwt-guard';
 import { AuthGuard } from '@nestjs/passport';
