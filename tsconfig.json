@@ -23,6 +23,8 @@
     "node_modules",
     "dist",
     "**/*.schema.ts",
-    "**/*.old.ts"
+    "**/*.old.ts",
+    "src/basics/chats/**",
+    "src/cores/reports/reports-assignment.ts"
   ]
 }

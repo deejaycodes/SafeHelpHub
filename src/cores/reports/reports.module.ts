@@ -8,9 +8,9 @@ import { Notification } from 'src/common/entities/notification.entity';
 import { IncidentType } from 'src/common/entities/incident-type.entity';
 import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
-import { ReportAssignmentService } from './reports-assignment';
+// import { ReportAssignmentService } from './reports-assignment'; // Removed - not migrated to TypeORM
 import { ScheduleModule } from '@nestjs/schedule';
-import { QuestionsModule } from 'src/basics/chats/questions.module';
+// import { QuestionsModule } from 'src/basics/chats/questions.module'; // Removed - not migrated to TypeORM
 
 @Module({
   imports: [

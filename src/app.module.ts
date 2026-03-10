@@ -26,8 +26,8 @@ import { EmailService } from './basics/email/email.service';
 import { NgoModule } from './cores/ngo/ngo.module';
 import { NgoService } from './cores/ngo/ngo.service';
 import { UsersController } from './basics/users/users.controller';
-import { QuestionsModule } from './basics/chats/questions.module';
-import { ReportAssignmentService } from './cores/reports/reports-assignment';
+// import { QuestionsModule } from './basics/chats/questions.module'; // Removed - not migrated to TypeORM
+// import { ReportAssignmentService } from './cores/reports/reports-assignment'; // Removed - not migrated to TypeORM
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationsService } from './notifications/notifications.service';
 import { NotificationController } from './notifications/notifications.controller';
@@ -60,7 +60,7 @@ import { StorageModule } from './basics/storage/storage.module';
     EmailModule,
     UsersModule,
     PassportModule,
-    QuestionsModule,
+    // QuestionsModule, // Removed - not migrated to TypeORM
     ReportsModule,
     NgoModule,
     AuthenticationModule,
