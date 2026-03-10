@@ -1,80 +1,69 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
-import * as dotenv from 'dotenv';
+import { Resend } from 'resend';
 import HTML_TEMPLATE from 'src/common/utils/template/mail-template';
 import FORGOT_PASSWORD_TEMPLATE from 'src/common/utils/template/forgotpassword-emailtemplate';
 
-dotenv.config();
-
 @Injectable()
 export class EmailService {
-  private transporter;
+  private resend: Resend;
   private readonly logger = new Logger(EmailService.name);
+  private readonly fromEmail: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.email',
-      service: 'gmail',
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    // Verify transporter connection
-    this.transporter.verify((error) => {
-      if (error) {
-        this.logger.error(`Email transporter error: ${error.message}`);
-      } else {
-        this.logger.log('Email transporter is ready to send messages');
-      }
-    });
+    const apiKey = this.configService.get<string>('RESEND_API_KEY');
+    this.fromEmail = this.configService.get<string>('EMAIL_FROM') || 'onboarding@resend.dev';
+    
+    if (!apiKey) {
+      this.logger.warn('RESEND_API_KEY not configured. Email functionality will be disabled.');
+    } else {
+      this.resend = new Resend(apiKey);
+      this.logger.log('Resend email service initialized');
+    }
   }
 
   async sendVerificationEmail(email: string, code: string): Promise<void> {
-    const verificationUrl = `${code}`;
-    const htmlMessage = HTML_TEMPLATE(verificationUrl);
-    const mailOptions = {
-      to: email,
-      from: this.configService.get<string>('EMAIL_USER'),
-      subject: 'Email Verification',
-      text:
-        'Please click the link below to verify your email address:\n' +
-        verificationUrl,
-      html: htmlMessage,
-    };
+    if (!this.resend) {
+      this.logger.warn('Resend not configured. Skipping verification email.');
+      return;
+    }
+
+    const htmlMessage = HTML_TEMPLATE(code);
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: email,
+        subject: 'Email Verification - SafeHelpHub',
+        html: htmlMessage,
+      });
       this.logger.log(`Verification email sent to ${email}`);
     } catch (error) {
       this.logger.warn(
-        `Failed to send verification email to ${email}: ${error.message}. Continuing without email verification.`,
+        `Failed to send verification email to ${email}: ${error.message}`,
       );
     }
   }
 
-  async sendForgotPasswordEmail(email: string, code) {
-    const verificationUrl = `${code}`;
-    const htmlMessage = FORGOT_PASSWORD_TEMPLATE(verificationUrl);
+  async sendForgotPasswordEmail(email: string, code: string): Promise<void> {
+    if (!this.resend) {
+      this.logger.warn('Resend not configured. Skipping password reset email.');
+      return;
+    }
 
-    const mailOptions = {
-      to: email,
-      from: this.configService.get<string>('EMAIL_USER'),
-      subject: 'Forgot Password',
-      text: `${code}. use the digit code provided to reset your password`,
-      html: htmlMessage,
-    };
+    const htmlMessage = FORGOT_PASSWORD_TEMPLATE(code);
 
     try {
-      await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Forgotpassword email sent to ${email}`);
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: email,
+        subject: 'Password Reset - SafeHelpHub',
+        html: htmlMessage,
+      });
+      this.logger.log(`Password reset email sent to ${email}`);
     } catch (error) {
       this.logger.warn(
-        `Failed to send forgotpassword email to ${email}: ${error.message}. Continuing without email.`,
+        `Failed to send password reset email to ${email}: ${error.message}`,
       );
     }
   }

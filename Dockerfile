@@ -1,15 +1,15 @@
-# Stage 1: Development
-FROM node:20 AS development
-WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm install --legacy-peer-deps
-COPY . .
-CMD ["npm", "run", "start:dev"]
+FROM node:18-alpine
 
-# Stage 2: Production
-FROM node:20 AS production
-WORKDIR /usr/src/app
+WORKDIR /app
+
 COPY package*.json ./
-RUN npm install --omit=dev
+
+RUN npm ci --only=production
+
 COPY . .
+
+RUN npm run build
+
+EXPOSE 3000
+
 CMD ["npm", "run", "start:prod"]
