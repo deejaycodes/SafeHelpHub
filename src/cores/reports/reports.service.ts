@@ -21,7 +21,7 @@ export class ReportsService {
   constructor(
     private readonly reportsRepository: ReportsRepository,
     private readonly usersRepository: UsersRepository,
-    @InjectModel('ReportAssignment') private reportAssignmentRepository: Model<ReportAssignment>,
+    // @InjectModel('ReportAssignment') private reportAssignmentRepository: Model<ReportAssignment>, // TODO: Migrate
     private readonly aiChatbotService: AIChatbotService,
   ) {}
 
@@ -30,7 +30,7 @@ export class ReportsService {
     files?: any,
   ): Promise<Report> {
     try {
-      const fileUrls: string[] = [];
+      const fileUrls: Array<{ file_path: string; uploaded_at: Date }> = [];
       if (files && files.length > 0) {
         for (const file of files) {
           const { originalname, buffer } = file;
@@ -46,7 +46,7 @@ export class ReportsService {
   
           if (uploadResponse?.$metadata?.httpStatusCode === 200) {
             const fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
-            fileUrls.push(fileUrl);
+            fileUrls.push({ file_path: fileUrl, uploaded_at: new Date() });
           } else {
             throw new HttpException(
               {
@@ -87,7 +87,7 @@ export class ReportsService {
     }
   }
   
-  async fetchReportStatus(reportId: Types.ObjectId | string) {
+  async fetchReportStatus(reportId: string) {
     const report = await this.reportsRepository.fetchSingleReportById(reportId);
 
     return report;
@@ -96,8 +96,8 @@ export class ReportsService {
   async updateReport(
     reportId: string,
     ngoId: any,
-    updateData: Partial<ReportDocument> & { rejection_reason?: string },
-  ): Promise<ReportDocument> {
+    updateData: Partial<Report> & { rejection_reason?: string },
+  ): Promise<Report> {
     const report = await this.reportsRepository.fetchSingleReportById(reportId);
 
     if (!report) {
@@ -199,7 +199,7 @@ export class ReportsService {
     // });
     Object.assign(report, updateData);
 
-    return this.reportsRepository.save(report as ReportDocument);
+    return this.reportsRepository.save(report);
   }
 
   async findAll(){
