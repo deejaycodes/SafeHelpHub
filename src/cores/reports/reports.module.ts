@@ -16,7 +16,7 @@ import { QuestionsModule } from 'src/basics/chats/questions.module';
   imports: [
     TypeOrmModule.forFeature([Report, Notification, User, IncidentType]),
     ScheduleModule.forRoot(),
-    QuestionsModule,
+    // QuestionsModule, // TODO: Migrate to TypeORM
   ],
   providers: [
     UsersRepository,

@@ -166,11 +166,9 @@ export class UsersService {
 
     return { message: 'Account verified successfully' };
   }
-  async uploadUserProfilePicture(userId: Types.ObjectId | any, file: any): Promise<any> {
+  async uploadUserProfilePicture(userId: string, file: any): Promise<any> {
     const { originalname, buffer } = file;
     const idFileType = originalname.slice(originalname.lastIndexOf('.'));
-    const objectId =
-      typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
 
     const documentPath = `file-identification/${userId}${idFileType}`;
   
@@ -202,11 +200,9 @@ export class UsersService {
   }
   
 
-  async uploadUserFile(userId: Types.ObjectId | any, file: any): Promise<User> {
+  async uploadUserFile(userId: string, file: any): Promise<User> {
     const { originalname, buffer } = file;
     const idFileType = originalname.slice(originalname.lastIndexOf('.'));
-    const objectId =
-      typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
   
     // Create the document path for the file
     const documentPath = `file-identification/${userId}${idFileType}`;
@@ -222,7 +218,9 @@ export class UsersService {
     if (uploadResponse?.$metadata?.httpStatusCode === 200) {
       const fileUrl = `${process.env.STORAGE_URL}/${documentPath}`;
   
-      return await this.usersRepository.updateUserFiles(objectId, fileUrl);
+      const files = user.files || [];
+      files.push({ file_path: fileUrl, uploaded_at: new Date() });
+      return await this.usersRepository.updateUserFiles(userId, files);
     }
   
     // Throw error if file upload failed
@@ -272,7 +270,7 @@ export class UsersService {
     updateData: any,
   ): Promise<any> {
 
-    const existingNgo = await this.userModel.findById(userId);
+    const existingNgo = await this.usersRepository.fetchSingleUserById(userId);
     if (!existingNgo) {
       throw new NotFoundException('NGO not found');
     }
@@ -285,16 +283,14 @@ export class UsersService {
     if (newEmail !== oldEmail) {
       updateData.email = newEmail;  
     }
-    const updatedNgo = await this.userModel.findByIdAndUpdate(userId, {
-      $set: {
-        ngo_name: updateData.ngo_name,
-        admin_name: updateData.admin_name,
-        registration_number: updateData.registration_number,
-        primary_location: updateData.primary_location,
-        contact_info: updateData.contact_info, 
-        email: updateData.email,
-      }
-    }, { new: true });
+    const updatedNgo = await this.usersRepository.findUserByIdAndUpdate(userId, {
+      ngo_name: updateData.ngo_name,
+      admin_name: updateData.admin_name,
+      registration_number: updateData.registration_number,
+      primary_location: updateData.primary_location,
+      contact_info: updateData.contact_info, 
+      email: updateData.email,
+    });
     
     return updatedNgo;
   }
@@ -308,7 +304,7 @@ export class UsersService {
     const verificationCode = randomInt(100000, 999999).toString();
     const user = await this.usersRepository.findUserByEmail(email)
     user.verificationCode = verificationCode
-    user.save()
+    await this.usersRepository.updateUser(email, { verificationCode })
     await this.emailService.sendVerificationEmail(email, verificationCode)
 
     return {
