@@ -87,4 +87,36 @@ export class ReportsRepository {
       .where(':ngoId = ANY(report.ngo_dashboard_ids)', { ngoId })
       .getMany();
   }
+
+  async createIncident(reportData: Partial<Report>): Promise<Report> {
+    return await this.createReport(reportData);
+  }
+
+  async fetchSingleReportById(reportId: string): Promise<Report> {
+    return await this.findReportById(reportId);
+  }
+
+  async save(report: Report): Promise<Report> {
+    return await this.reportRepository.save(report);
+  }
+
+  async findAll(): Promise<Report[]> {
+    return await this.findAllReports();
+  }
+
+  async findReports(userId: string, query: any): Promise<Report[]> {
+    const queryBuilder = this.reportRepository.createQueryBuilder('report');
+    
+    if (query.status) {
+      queryBuilder.andWhere('report.status = :status', { status: query.status });
+    }
+    
+    if (query.location) {
+      queryBuilder.andWhere('report.location = :location', { location: query.location });
+    }
+    
+    queryBuilder.andWhere(':userId = ANY(report.ngo_dashboard_ids)', { userId });
+    
+    return await queryBuilder.getMany();
+  }
 }

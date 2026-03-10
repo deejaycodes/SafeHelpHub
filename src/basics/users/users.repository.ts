@@ -95,6 +95,12 @@ export class UsersRepository {
     return await this.userRepository.save(user);
   }
 
+  async findUserByIdAndUpdate(userId: string, updateData: Partial<User>): Promise<User> {
+    const user = await this.fetchSingleUserById(userId);
+    Object.assign(user, updateData);
+    return await this.userRepository.save(user);
+  }
+
   async deleteUser(userId: string): Promise<void> {
     await this.userRepository.delete(userId);
   }
