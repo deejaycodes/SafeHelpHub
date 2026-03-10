@@ -210,7 +210,8 @@ async updateNgoData(
   @ApiResponse({ status: 404, description: 'NGO not found' })
   @Delete()
   async deleteUser(@Req() req): Promise<{ message: string }> {
-    return this.usersService.removeUser(req.user.id);
+    await this.usersService.removeUser(req.user.id);
+    return { message: 'NGO deleted successfully' };
   }
 
 

@@ -183,7 +183,7 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('file'))
   uploadVerifications(@Req() req, @UploadedFile() file: any) {
     const userFromJwt = req.user as User;
-    return this.usersService.uploadUserProfilePicture(userFromJwt.id, file);
+    return this.usersService.uploadUserProfilePicture(String(userFromJwt.id), file);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -227,7 +227,7 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('file'))
   uploadUserFile(@Req() req, @UploadedFile() file: any) {
     const userFromJwt = req.user as User;
-    return this.usersService.uploadUserFile(userFromJwt.id, file);
+    return this.usersService.uploadUserFile(String(userFromJwt.id), file);
   }
 
   // @Post('mock-ngos')
