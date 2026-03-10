@@ -136,10 +136,10 @@ export class ReportsService {
     }
       report.status = ReportStatus.ACCEPTED;
       report.ngo_dashboard_ids = [];
-      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, {
-        $inc: { resolvedAcceptCount: 1 },
-        $set: { isHandlingReport: true }
-      });
+      const ngo = await this.usersRepository.fetchSingleUserById(ngoId);
+      ngo.acceptReportsCount = (ngo.acceptReportsCount || 0) + 1;
+      ngo.isHandlingReport = true;
+      await this.usersRepository.findUserByIdAndUpdate(ngoId, ngo);
 
       report.accepted_by =report.accepted_by || [];
       report.accepted_by.push(ngoId);
@@ -155,9 +155,9 @@ export class ReportsService {
 
       report.status = ReportStatus.RESOLVED;
 
-      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, {
-        $inc: { resolvedReportsCount: 1 },
-      });
+      const ngo = await this.usersRepository.fetchSingleUserById(ngoId);
+      ngo.resolvedReportsCount = (ngo.resolvedReportsCount || 0) + 1;
+      await this.usersRepository.findUserByIdAndUpdate(ngoId, ngo);
 
       await this.reportAssignmentRepository.create({
         ngoId: ngoId,
@@ -175,10 +175,10 @@ export class ReportsService {
         report.accepted_by = report.accepted_by.filter(id => id !== ngoId);
       }
       report.status = ReportStatus.REJECTED;
-      await this.usersRepository.findUserByIdAndUpdate(ngoId as any, {
-        $inc: { rejectedReportsCount: 1 },
-        isHandlingReport: false,
-      });
+      const ngo = await this.usersRepository.fetchSingleUserById(ngoId);
+      ngo.rejectedReportsCount = (ngo.rejectedReportsCount || 0) + 1;
+      ngo.isHandlingReport = false;
+      await this.usersRepository.findUserByIdAndUpdate(ngoId, ngo);
       report.ngo_dashboard_ids = []
       report.rejected_by = report.rejected_by || [];
       report.rejected_by.push(ngoId);
