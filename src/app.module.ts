@@ -2,12 +2,15 @@ import { Module, ValidationPipe } from '@nestjs/common';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthsController } from './cores/authentication/auths.controller';
 import { UsersService } from './basics/users/users.service';
 import { UsersModule } from './basics/users/users.module';
-import { User, UserSchema } from './common/schemas/users.schema';
+import { User } from './common/entities/user.entity';
+import { Report } from './common/entities/report.entity';
+import { Notification } from './common/entities/notification.entity';
+import { IncidentType } from './common/entities/incident-type.entity';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './cores/authentication/strategy/local-strategy';
@@ -25,19 +28,30 @@ import { NgoService } from './cores/ngo/ngo.service';
 import { UsersController } from './basics/users/users.controller';
 import { QuestionsModule } from './basics/chats/questions.module';
 import { ReportAssignmentService } from './cores/reports/reports-assignment';
-import { ReportSchema, Report } from './cores/reports/schemas/reports.schemas';
 import { ScheduleModule } from '@nestjs/schedule';
-import { Notification, NotificationSchema } from './common/schemas/notification.schema';
 import { NotificationsService } from './notifications/notifications.service';
 import { NotificationController } from './notifications/notifications.controller';
 import { NotificationModule } from './notifications/notifications.module';
 import { IncidentTypeModule } from './basics/incident/incident.module';
-import { IncidentType, IncidentTypeSchema } from './basics/incident/entities/incident.schema';
 import { ReportsRepository } from './cores/reports/reports.repository';
+import { StorageModule } from './basics/storage/storage.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        url: configService.get('DATABASE_URL'),
+        entities: [User, Report, Notification, IncidentType],
+        synchronize: true,
+        ssl: { rejectUnauthorized: false },
+      }),
+      inject: [ConfigService],
+    }),
+    TypeOrmModule.forFeature([User, Report, Notification, IncidentType]),
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: jwtConstants.LOGIN_EXPIRY },
@@ -49,20 +63,10 @@ import { ReportsRepository } from './cores/reports/reports.repository';
     QuestionsModule,
     ReportsModule,
     NgoModule,
-    ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      { name: Report.name, schema: ReportSchema },
-      {name:Notification.name, schema:NotificationSchema},
-      { name: IncidentType.name, schema:IncidentTypeSchema}
-    ]),
-
-    MongooseModule.forRoot(process.env.MONGO_URI),
-    ReportsModule,
     AuthenticationModule,
-    EmailModule,
     NotificationModule,
     IncidentTypeModule,
+    StorageModule,
   ],
   controllers: [AppController, AuthsController, UsersController, NotificationController],
   providers: [
