@@ -118,6 +118,7 @@ export class UsersRepository {
     queryBuilder.where('user.role = :role', { role: 'ngo' });
     
     if (query?.state) {
+      queryBuilder.andWhere("user.primary_location IS NOT NULL");
       queryBuilder.andWhere("user.primary_location->>'state' = :location", { location: query.state });
     }
     
