@@ -75,8 +75,16 @@ export class Report {
       location?: string;
       incidentType?: string;
       timeframe?: string;
+      victimAge?: number;
+      perpetratorRelationship?: string;
     };
     recommended_actions: string[];
+    immediate_danger: boolean;
+    medical_attention_needed: boolean;
+    police_involvement_recommended: boolean;
+    recommended_ngo_types: string[];
+    psychological_state?: string;
+    action_plan?: string[];
     analyzed_at: Date;
   };
 

@@ -59,12 +59,12 @@ export class ReportsService {
         }
       }
 
-      // AI Analysis of the incident report
+      // AI Analysis of the incident report (Multi-agent system)
       const aiAnalysis = await this.aiAnalysisService.analyzeIncidentUrgency(
         createIncidentDto.description || createIncidentDto.incident_type,
       );
   
-      // Create a new incident with AI analysis
+      // Create a new incident with comprehensive AI analysis
       const newIncident = {
         ...createIncidentDto,
         files: fileUrls,
@@ -74,6 +74,12 @@ export class ReportsService {
           classification: aiAnalysis.classification,
           extracted_entities: aiAnalysis.extractedEntities,
           recommended_actions: aiAnalysis.recommendedActions,
+          immediate_danger: aiAnalysis.immediateDanger,
+          medical_attention_needed: aiAnalysis.medicalAttentionNeeded,
+          police_involvement_recommended: aiAnalysis.policeInvolvementRecommended,
+          recommended_ngo_types: aiAnalysis.recommendedNgoTypes,
+          psychological_state: aiAnalysis.psychologicalState,
+          action_plan: aiAnalysis.actionPlan,
           analyzed_at: new Date(),
         },
         // Set initial status based on AI urgency
