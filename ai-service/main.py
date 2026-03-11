@@ -6,14 +6,23 @@ import os
 from dotenv import load_dotenv
 import logging
 
-# Import AI engines
-from engines.openai_engine import OpenAIEngine
-from engines.local_ml_engine import LocalMLEngine
-from engines.hybrid_engine import HybridEngine
-
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Import AI engines
+from engines.openai_engine import OpenAIEngine
+
+try:
+    from engines.local_ml_engine import LocalMLEngine
+    from engines.hybrid_engine import HybridEngine
+    LOCAL_ML_AVAILABLE = True
+    logger.info("Local ML engine loaded successfully")
+except ImportError as e:
+    LOCAL_ML_AVAILABLE = False
+    LocalMLEngine = None
+    HybridEngine = None
+    logger.warning(f"Local ML not available: {e}. Only OpenAI engine will be used.")
 
 app = FastAPI(title="SafeHelpHub AI Service", version="1.0.0")
 
@@ -28,8 +37,8 @@ app.add_middleware(
 
 # Initialize engines
 openai_engine = OpenAIEngine(api_key=os.getenv("OPENAI_API_KEY"))
-local_engine = LocalMLEngine()
-hybrid_engine = HybridEngine(openai_engine, local_engine)
+local_engine = LocalMLEngine() if LOCAL_ML_AVAILABLE else None
+hybrid_engine = HybridEngine(openai_engine, local_engine) if LOCAL_ML_AVAILABLE else None
 
 
 class AnalysisRequest(BaseModel):
@@ -70,7 +79,8 @@ async def health():
     return {
         "status": "healthy",
         "openai_available": openai_engine.is_available(),
-        "local_model_loaded": local_engine.is_loaded()
+        "local_model_loaded": local_engine.is_loaded() if local_engine else False,
+        "local_ml_available": LOCAL_ML_AVAILABLE
     }
 
 
@@ -90,13 +100,23 @@ async def analyze_incident(request: AnalysisRequest):
                 include_action_plan=request.include_action_plan
             )
         elif request.engine == "local":
+            if not LOCAL_ML_AVAILABLE or not local_engine:
+                raise HTTPException(status_code=400, detail="Local ML engine not available. Install dependencies: pip install numpy scikit-learn")
             result = await local_engine.analyze(request.text)
         elif request.engine == "hybrid":
-            result = await hybrid_engine.analyze(
-                request.text,
-                include_psychological=request.include_psychological,
-                include_action_plan=request.include_action_plan
-            )
+            if not LOCAL_ML_AVAILABLE or not hybrid_engine:
+                logger.warning("Hybrid engine not available, falling back to OpenAI")
+                result = await openai_engine.analyze(
+                    request.text,
+                    include_psychological=request.include_psychological,
+                    include_action_plan=request.include_action_plan
+                )
+            else:
+                result = await hybrid_engine.analyze(
+                    request.text,
+                    include_psychological=request.include_psychological,
+                    include_action_plan=request.include_action_plan
+                )
         else:
             raise HTTPException(status_code=400, detail="Invalid engine. Use 'openai', 'local', or 'hybrid'")
         

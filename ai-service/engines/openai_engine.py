@@ -2,6 +2,7 @@ from typing import Dict, Any, List, Optional
 import openai
 from openai import OpenAI
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,7 @@ class OpenAIEngine:
         )
         
         function_call = completion.choices[0].message.tool_calls[0].function
-        data = eval(function_call.arguments)  # Parse JSON
+        data = json.loads(function_call.arguments)
         
         return {
             "urgency": data["urgency"],
@@ -140,5 +141,5 @@ class OpenAIEngine:
             response_format={"type": "json_object"}
         )
         
-        result = eval(completion.choices[0].message.content)
+        result = json.loads(completion.choices[0].message.content)
         return result.get("steps", result.get("actionPlan", []))
