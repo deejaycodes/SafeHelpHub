@@ -38,7 +38,7 @@
     "@sentry/nestjs": "^8.30.0",
     "@sentry/profiling-node": "^8.30.0",
     "@supabase/supabase-js": "^2.99.0",
-    "axios": "^1.7.7",
+    "axios": "^1.13.6",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "express": "^4.21.0",
