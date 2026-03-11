@@ -115,10 +115,11 @@ export class ReportsController {
     @UploadedFiles() files?: any,
   ): Promise<Report> {
     try {
-    
+      const userId = req.user?.id; // Optional - supports anonymous reports
       return await this.reportsService.createIncidentWithFile(
         createIncidentDto,
         files,
+        userId,
       );
     } catch (error) {
       throw new BadRequestException(error.message);

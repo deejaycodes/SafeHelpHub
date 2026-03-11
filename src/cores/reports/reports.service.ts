@@ -27,6 +27,7 @@ export class ReportsService {
   async createIncidentWithFile(
     createIncidentDto: CreateIncidentDto,
     files?: any,
+    userId?: string,
   ): Promise<Report> {
     try {
       const fileUrls: Array<{ file_path: string; uploaded_at: Date }> = [];
@@ -67,6 +68,7 @@ export class ReportsService {
       const newIncident = {
         ...createIncidentDto,
         files: fileUrls,
+        user_id: userId || 'anonymous', // Support anonymous reports
         // ai_analysis: {
         //   urgency: aiAnalysis.urgency,
         //   classification: aiAnalysis.classification,
