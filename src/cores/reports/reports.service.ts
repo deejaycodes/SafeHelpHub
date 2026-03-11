@@ -14,14 +14,14 @@ import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
 import { ReportStatus } from 'src/common/enums/report-status.enum';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
-// import { AIChatbotService } from 'src/basics/chats/ai-chatbot.service'; // Removed - not migrated to TypeORM
+import { AIAnalysisService } from 'src/basics/ai/ai-analysis.service';
 
 @Injectable()
 export class ReportsService {
   constructor(
     private readonly reportsRepository: ReportsRepository,
     private readonly usersRepository: UsersRepository,
-    // private readonly aiChatbotService: AIChatbotService, // Removed - not migrated to TypeORM
+    private readonly aiAnalysisService: AIAnalysisService,
   ) {}
 
   async createIncidentWithFile(
@@ -59,25 +59,25 @@ export class ReportsService {
         }
       }
 
-      // AI Analysis removed - chatbot service not migrated to TypeORM
-      // const aiAnalysis = await this.aiChatbotService.analyzeIncidentUrgency(
-      //   createIncidentDto.description || createIncidentDto.incident_type,
-      // );
+      // AI Analysis of the incident report
+      const aiAnalysis = await this.aiAnalysisService.analyzeIncidentUrgency(
+        createIncidentDto.description || createIncidentDto.incident_type,
+      );
   
-      // Create a new incident without AI analysis for now
+      // Create a new incident with AI analysis
       const newIncident = {
         ...createIncidentDto,
         files: fileUrls,
         user_id: userId || 'anonymous', // Support anonymous reports
-        // ai_analysis: {
-        //   urgency: aiAnalysis.urgency,
-        //   classification: aiAnalysis.classification,
-        //   extracted_entities: aiAnalysis.extractedEntities,
-        //   recommended_actions: aiAnalysis.recommendedActions,
-        //   analyzed_at: new Date(),
-        // },
+        ai_analysis: {
+          urgency: aiAnalysis.urgency,
+          classification: aiAnalysis.classification,
+          extracted_entities: aiAnalysis.extractedEntities,
+          recommended_actions: aiAnalysis.recommendedActions,
+          analyzed_at: new Date(),
+        },
         // Set initial status based on AI urgency
-        status: ReportStatus.SUBMITTED,
+        status: aiAnalysis.urgency === 'critical' ? ReportStatus.SUBMITTED : ReportStatus.SUBMITTED,
       };
   
       return await this.reportsRepository.createIncident(newIncident);

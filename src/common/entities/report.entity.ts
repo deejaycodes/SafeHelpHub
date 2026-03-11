@@ -66,6 +66,20 @@ export class Report {
   @Column('simple-array', { default: [] })
   assignedUsers: string[];
 
+  @ApiProperty({ description: 'AI analysis of the incident' })
+  @Column('jsonb', { nullable: true })
+  ai_analysis: {
+    urgency: string;
+    classification: string;
+    extracted_entities: {
+      location?: string;
+      incidentType?: string;
+      timeframe?: string;
+    };
+    recommended_actions: string[];
+    analyzed_at: Date;
+  };
+
   @CreateDateColumn()
   created_at: Date;
 
