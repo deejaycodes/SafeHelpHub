@@ -30,9 +30,58 @@ async function bootstrap() {
   );
 
   const options = new DocumentBuilder()
-    .setTitle('ANONYMOUS REPORTING AND SUPPORT PLATFORM API COLLECTIONS')
-    .setDescription('Anonymous Reporting and Support Platform Server')
-    .setVersion('1.0')
+    .setTitle('SafeHelpHub API')
+    .setDescription(`
+# SafeHelpHub - FGM Reporting & Support Platform API
+
+## Overview
+SafeHelpHub is a secure platform for reporting and managing Female Genital Mutilation (FGM) and violence cases in Nigeria. This API provides endpoints for:
+
+- **Anonymous Reporting**: Submit incidents without revealing identity
+- **NGO Management**: Connect victims with support organizations
+- **AI Analysis**: Automated incident assessment and urgency classification
+- **Case Tracking**: Monitor report status and resolution
+
+## Authentication
+Most endpoints require JWT authentication. Include the token in the Authorization header:
+\`\`\`
+Authorization: Bearer <your_jwt_token>
+\`\`\`
+
+## Base URL
+- **Production**: https://safehelpub-api.onrender.com
+- **Local**: http://localhost:3000
+
+## Key Features
+- 🔒 End-to-end encryption for sensitive data
+- 🤖 AI-powered incident analysis
+- 📧 Email notifications
+- 📊 Real-time reporting
+- 🏥 NGO matching based on incident type
+
+## Support
+For issues or questions, contact: support@safehelpub.com
+    `)
+    .setVersion('1.0.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .addTag('Authentication', 'User registration and login endpoints')
+    .addTag('Reports', 'Incident reporting and management')
+    .addTag('NGO', 'NGO registration and search')
+    .addTag('Users', 'User profile and account management')
+    .addTag('Incident Types', 'Manage incident categories')
+    .addTag('Notifications', 'Notification management for NGOs')
+    .addServer('https://safehelpub-api.onrender.com', 'Production Server')
+    .addServer('http://localhost:3000', 'Local Development')
     .build();
 
   const swaggerDocument = SwaggerModule.createDocument(app, options);
