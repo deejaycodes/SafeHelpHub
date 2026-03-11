@@ -68,9 +68,15 @@ export class NgoController {
   @Get('search')
   @ApiOperation({ summary: 'Find NGOs by state or name' })
   @ApiQuery({
-    name: 'query',
+    name: 'state',
     required: false,
-    description: 'Search term to find NGOs by state or name',
+    description: 'Filter NGOs by state',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    description: 'Search NGOs by name',
     type: String,
   })
   @ApiResponse({
@@ -86,7 +92,7 @@ export class NgoController {
     status: 500,
     description: 'Internal server error',
   })
-  async findNgoByLocationOrName(@Query('query') query?: string) {
+  async findNgoByLocationOrName(@Query() query: { state?: string; name?: string }) {
     return this.usersService.findNgoByLocationOrName(query);
   }
 

@@ -113,15 +113,15 @@ export class UsersRepository {
     return await this.userRepository.findOne({ where: { email } });
   }
 
-  async findNgoByLocationOrName(query: any): Promise<User[]> {
+  async findNgoByLocationOrName(query: { state?: string; name?: string }): Promise<User[]> {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
     queryBuilder.where('user.role = :role', { role: 'ngo' });
     
-    if (query.location) {
-      queryBuilder.andWhere("user.primary_location->>'state' = :location", { location: query.location });
+    if (query?.state) {
+      queryBuilder.andWhere("user.primary_location->>'state' = :location", { location: query.state });
     }
     
-    if (query.name) {
+    if (query?.name) {
       queryBuilder.andWhere('user.ngo_name ILIKE :name', { name: `%${query.name}%` });
     }
     

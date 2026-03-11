@@ -42,17 +42,23 @@ import { StorageModule } from './basics/storage/storage.module';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        url: configService.get('DATABASE_URL'),
-        entities: [User, Report, Notification, IncidentType],
-        synchronize: true,
-        ssl: { rejectUnauthorized: false },
-        extra: {
-          // Force IPv4 to avoid IPv6 connection issues on Render
-          family: 4,
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get('DATABASE_URL');
+        
+        return {
+          type: 'postgres',
+          url: databaseUrl,
+          entities: [User, Report, Notification, IncidentType],
+          synchronize: true,
+          ssl: { rejectUnauthorized: false },
+          // Add connection pooling and retry logic
+          extra: {
+            max: 10,
+            connectionTimeoutMillis: 30000,
+            idleTimeoutMillis: 30000,
+          },
+        };
+      },
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([User, Report, Notification, IncidentType]),

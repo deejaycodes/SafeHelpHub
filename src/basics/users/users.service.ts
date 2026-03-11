@@ -36,10 +36,13 @@ export class UsersService {
     const lowerCaseEmail = email.toLowerCase();
 
     //check if the user already exists
-    const existingUser = await this.usersRepository.findUserByCriteria({
-      $or: [{ username: lowerCaseUsername }, { email: lowerCaseEmail }],
+    const existingUserByEmail = await this.usersRepository.findUserByCriteria({
+      email: lowerCaseEmail,
     });
-    if (existingUser) {
+    const existingUserByUsername = await this.usersRepository.findUserByCriteria({
+      username: lowerCaseUsername,
+    });
+    if (existingUserByEmail || existingUserByUsername) {
       throw new BadRequestException('username or email already exist');
     }
 
@@ -238,7 +241,7 @@ export class UsersService {
     return this.usersRepository.findUserByIdAndUpdate(id, updateData);
   }
 
-  async findNgoByLocationOrName(query:string) {
+  async findNgoByLocationOrName(query: { state?: string; name?: string }) {
     return this.usersRepository.findNgoByLocationOrName(query);
   }
   
