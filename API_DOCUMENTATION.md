@@ -1,4 +1,4 @@
-# SafeHelpHub API Documentation
+# SafeVoice API Documentation
 
 ## Base URL
 - **Production**: `https://safehelpub-api.onrender.com`
@@ -543,7 +543,7 @@ RESOLVED - Case resolved
 
 ## Support
 
-- **Email**: support@safehelpub.com
+- **Email**: support@safevoice.org
 - **Emergency Hotline**: 199 (Nigeria)
 - **WARIF Helpline**: +234-809-210-0009
 
@@ -559,3 +559,4 @@ RESOLVED - Case resolved
 - Email notifications
 - File uploads
 - Report management
+- Rebranded to SafeVoice

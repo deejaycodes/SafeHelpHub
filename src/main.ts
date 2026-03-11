@@ -30,12 +30,12 @@ async function bootstrap() {
   );
 
   const options = new DocumentBuilder()
-    .setTitle('SafeHelpHub API')
+    .setTitle('SafeVoice API')
     .setDescription(`
-# SafeHelpHub - FGM Reporting & Support Platform API
+# SafeVoice - FGM Reporting & Support Platform API
 
 ## Overview
-SafeHelpHub is a secure platform for reporting and managing Female Genital Mutilation (FGM) and violence cases in Nigeria. This API provides endpoints for:
+SafeVoice is a secure platform for reporting and managing Female Genital Mutilation (FGM) and violence cases in Nigeria. This API provides endpoints for:
 
 - **Anonymous Reporting**: Submit incidents without revealing identity
 - **NGO Management**: Connect victims with support organizations
@@ -60,7 +60,7 @@ Authorization: Bearer <your_jwt_token>
 - 🏥 NGO matching based on incident type
 
 ## Support
-For issues or questions, contact: support@safehelpub.com
+For issues or questions, contact: support@safevoice.org
     `)
     .setVersion('1.0.0')
     .addBearerAuth(
