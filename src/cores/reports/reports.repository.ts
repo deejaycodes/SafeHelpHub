@@ -121,10 +121,15 @@ export class ReportsRepository {
   }
 
   async countUserAssignments(userId: string): Promise<number> {
-    return await this.reportRepository
-      .createQueryBuilder('report')
-      .where('report.ngo_dashboard_ids IS NOT NULL')
-      .andWhere(':userId = ANY(report.ngo_dashboard_ids)', { userId })
-      .getCount();
+    try {
+      const count = await this.reportRepository
+        .createQueryBuilder('report')
+        .where('report.ngo_dashboard_ids @> ARRAY[:userId]::uuid[]', { userId })
+        .getCount();
+      return count;
+    } catch (error) {
+      console.error('Error counting user assignments:', error);
+      return 0; // Return 0 if query fails
+    }
   }
 }
