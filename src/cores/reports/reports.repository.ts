@@ -82,21 +82,18 @@ export class ReportsRepository {
   }
 
   async findReportsByNgo(ngoId: string): Promise<Report[]> {
-    try {
-      // Simpler query without array operators
-      const reports = await this.reportRepository
-        .createQueryBuilder('report')
-        .where('report.ngo_dashboard_ids IS NOT NULL')
-        .getMany();
-      
-      // Filter in JavaScript
-      return reports.filter(r => 
-        r.ngo_dashboard_ids && r.ngo_dashboard_ids.includes(ngoId)
-      );
-    } catch (error) {
-      console.error('Error in findReportsByNgo:', error);
-      throw error;
-    }
+    const reports = await this.reportRepository
+      .createQueryBuilder('report')
+      .where('report.ngo_dashboard_ids IS NOT NULL')
+      .getMany();
+    
+    return reports.filter(r => {
+      if (!r.ngo_dashboard_ids) return false;
+      const ids = typeof r.ngo_dashboard_ids === 'string' 
+        ? JSON.parse(r.ngo_dashboard_ids) 
+        : r.ngo_dashboard_ids;
+      return Array.isArray(ids) && ids.includes(ngoId);
+    });
   }
 
   async createIncident(reportData: Partial<Report>): Promise<Report> {
@@ -118,29 +115,39 @@ export class ReportsRepository {
   async findReports(userId: string, query: any): Promise<Report[]> {
     const queryBuilder = this.reportRepository.createQueryBuilder('report');
     
-    if (query.status) {
+    if (query?.status) {
       queryBuilder.andWhere('report.status = :status', { status: query.status });
     }
     
-    if (query.location) {
+    if (query?.location) {
       queryBuilder.andWhere('report.location = :location', { location: query.location });
     }
     
-    queryBuilder.andWhere(':userId = ANY(report.ngo_dashboard_ids)', { userId });
+    queryBuilder.andWhere('report.ngo_dashboard_ids IS NOT NULL');
     
-    return await queryBuilder.getMany();
+    const reports = await queryBuilder.getMany();
+    
+    return reports.filter(r => {
+      if (!r.ngo_dashboard_ids) return false;
+      const ids = typeof r.ngo_dashboard_ids === 'string' 
+        ? JSON.parse(r.ngo_dashboard_ids) 
+        : r.ngo_dashboard_ids;
+      return Array.isArray(ids) && ids.includes(userId);
+    });
   }
 
   async countUserAssignments(userId: string): Promise<number> {
-    try {
-      const count = await this.reportRepository
-        .createQueryBuilder('report')
-        .where('report.ngo_dashboard_ids @> ARRAY[:userId]::uuid[]', { userId })
-        .getCount();
-      return count;
-    } catch (error) {
-      console.error('Error counting user assignments:', error);
-      return 0; // Return 0 if query fails
-    }
+    const reports = await this.reportRepository
+      .createQueryBuilder('report')
+      .where('report.ngo_dashboard_ids IS NOT NULL')
+      .getMany();
+    
+    return reports.filter(r => {
+      if (!r.ngo_dashboard_ids) return false;
+      const ids = typeof r.ngo_dashboard_ids === 'string' 
+        ? JSON.parse(r.ngo_dashboard_ids) 
+        : r.ngo_dashboard_ids;
+      return Array.isArray(ids) && ids.includes(userId);
+    }).length;
   }
 }
