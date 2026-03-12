@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import OpenAI from 'openai';
+import axios from 'axios';
 import { REPORT_EVENTS } from 'src/common/events/event-names';
 import { ReportSubmittedEvent, ReportAnalyzedEvent } from 'src/common/events/event-payloads';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -48,7 +49,42 @@ export class AIAnalysisService {
     }
   }
 
-  async analyzeIncidentUrgency(incidentText: string): Promise<IncidentAnalysis> {
+  async analyzeIncidentUrgency(incidentText: string, incidentType?: string): Promise<IncidentAnalysis> {
+    // Try Python AI service first
+    if (process.env.AI_SERVICE_URL) {
+      try {
+        this.logger.log('Calling Python AI service...');
+        const response = await axios.post(
+          `${process.env.AI_SERVICE_URL}/api/v1/analyze`,
+          {
+            description: incidentText,
+            incident_type: incidentType || 'GBV',
+            location: ''
+          },
+          { timeout: 10000 }
+        );
+
+        this.logger.log('✅ AI analysis from Python service');
+        
+        return {
+          urgency: response.data.urgency,
+          classification: response.data.classification,
+          extractedEntities: response.data.extracted_entities || {},
+          recommendedActions: response.data.recommended_actions || [],
+          immediateDanger: response.data.immediate_danger || false,
+          medicalAttentionNeeded: response.data.medical_attention_needed || false,
+          policeInvolvementRecommended: response.data.police_involvement_recommended || false,
+          recommendedNgoTypes: response.data.recommended_ngo_types || [],
+          psychologicalState: response.data.psychological_state,
+          actionPlan: response.data.action_plan || []
+        };
+      } catch (error) {
+        this.logger.error(`Python AI service error: ${error.message}`);
+        this.logger.warn('Falling back to OpenAI/simulation');
+      }
+    }
+
+    // Fallback to OpenAI
     if (!this.openai) return this.simulateAnalysis(incidentText);
 
     try {
