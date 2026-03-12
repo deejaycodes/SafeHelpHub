@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CaseNote } from 'src/common/entities/case-note.entity';
@@ -14,6 +14,15 @@ export class CaseNotesService {
   ) {}
 
   async create(data: Partial<CaseNote>): Promise<CaseNote> {
+    // Validate required fields
+    if (!data.content || data.content.trim() === '') {
+      throw new BadRequestException('Note content is required');
+    }
+
+    if (!data.reportId) {
+      throw new BadRequestException('Report ID is required');
+    }
+
     // Security: Verify NGO is assigned to this report
     const report = await this.reportsRepository.findOne({
       where: { id: data.reportId },
