@@ -475,12 +475,19 @@ Respond with JSON only:
       // Success - remove from retry queue if it was there
       this.retryService.removeFromRetryQueue(payload.reportId);
 
-      // Emit analyzed event with results
+      // Emit analyzed event with FULL results from Python AI
       this.eventEmitter.emit(REPORT_EVENTS.ANALYZED, {
         reportId: payload.reportId,
         urgency: aiAnalysis.urgency,
         classification: aiAnalysis.classification,
         immediateDanger: aiAnalysis.immediateDanger,
+        medicalAttentionNeeded: aiAnalysis.medicalAttentionNeeded,
+        policeInvolvementRecommended: aiAnalysis.policeInvolvementRecommended,
+        extractedEntities: aiAnalysis.extractedEntities,
+        recommendedActions: aiAnalysis.recommendedActions,
+        recommendedNgoTypes: aiAnalysis.recommendedNgoTypes,
+        psychologicalState: aiAnalysis.psychologicalState,
+        actionPlan: aiAnalysis.actionPlan,
       } as ReportAnalyzedEvent);
 
       this.logger.log(`Report ${payload.reportId} analyzed: ${aiAnalysis.urgency} urgency`);
