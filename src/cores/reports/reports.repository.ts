@@ -123,7 +123,8 @@ export class ReportsRepository {
   async countUserAssignments(userId: string): Promise<number> {
     return await this.reportRepository
       .createQueryBuilder('report')
-      .where(':userId = ANY(report.ngo_dashboard_ids)', { userId })
+      .where('report.ngo_dashboard_ids IS NOT NULL')
+      .andWhere(':userId = ANY(report.ngo_dashboard_ids)', { userId })
       .getCount();
   }
 }
