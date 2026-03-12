@@ -27,6 +27,8 @@ import { EmailService } from './basics/email/email.service';
 import { NgoModule } from './cores/ngo/ngo.module';
 import { NgoService } from './cores/ngo/ngo.service';
 import { UsersController } from './basics/users/users.controller';
+import { AuditLoggerService } from './common/services/audit-logger.service';
+import { RetryService } from './common/services/retry.service';
 // import { QuestionsModule } from './basics/chats/questions.module'; // Removed - not migrated to TypeORM
 // import { ReportAssignmentService } from './cores/reports/reports-assignment'; // Removed - not migrated to TypeORM
 import { ScheduleModule } from '@nestjs/schedule';
@@ -84,6 +86,8 @@ import { StorageModule } from './basics/storage/storage.module';
   providers: [
     UsersRepository,
     AppService,
+    AuditLoggerService,
+    RetryService,
     // ReportAssignmentService, // TODO: Migrate to TypeORM
     AuthenticationService,
     UsersService,

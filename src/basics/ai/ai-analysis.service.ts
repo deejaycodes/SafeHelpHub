@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import { REPORT_EVENTS } from 'src/common/events/event-names';
 import { ReportSubmittedEvent, ReportAnalyzedEvent } from 'src/common/events/event-payloads';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { RetryService } from 'src/common/services/retry.service';
 
 interface IncidentAnalysis {
   urgency: 'critical' | 'high' | 'medium' | 'low';
@@ -36,7 +37,10 @@ export class AIAnalysisService {
   private readonly logger = new Logger(AIAnalysisService.name);
   private openai: OpenAI | null = null;
 
-  constructor(private readonly eventEmitter: EventEmitter2) {
+  constructor(
+    private readonly eventEmitter: EventEmitter2,
+    private readonly retryService: RetryService,
+  ) {
     if (process.env.OPENAI_API_KEY) {
       this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     } else {
@@ -432,6 +436,9 @@ Respond with JSON only:
       // Analyze urgency (this happens in background, user already got response)
       const aiAnalysis = await this.analyzeIncidentUrgency(payload.description);
 
+      // Success - remove from retry queue if it was there
+      this.retryService.removeFromRetryQueue(payload.reportId);
+
       // Emit analyzed event with results
       this.eventEmitter.emit(REPORT_EVENTS.ANALYZED, {
         reportId: payload.reportId,
@@ -454,7 +461,9 @@ Respond with JSON only:
       }
     } catch (error) {
       this.logger.error(`Failed to analyze report ${payload.reportId}: ${error.message}`);
-      // Don't throw - we don't want to crash the event loop
+      
+      // Add to retry queue
+      this.retryService.addToRetryQueue(payload.reportId, REPORT_EVENTS.SUBMITTED, payload);
     }
   }
 }
