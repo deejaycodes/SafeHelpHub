@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Notification, NotificationStatus } from 'src/common/entities/notification.entity';
-import { REPORT_EVENTS } from 'src/common/events/event-names';
+import { REPORT_EVENTS, NOTIFICATION_EVENTS } from 'src/common/events/event-names';
 import { ReportUrgentEvent } from 'src/common/events/event-payloads';
 
 @Injectable()
@@ -65,17 +65,35 @@ export class NotificationsService {
     this.logger.warn(`🚨 URGENT REPORT: ${payload.reportId} - ${payload.classification} (${payload.urgency})`);
 
     try {
-      // TODO: Get NGOs in the report's location
-      // For now, create a notification for all NGOs (you can filter by location later)
       const message = `🚨 URGENT: ${payload.classification} report in ${payload.location || 'Unknown location'}. Urgency: ${payload.urgency.toUpperCase()}`;
-
-      // TODO: Query NGOs from database and send to relevant ones
-      // For now, just log (you can add SMS/Email integration later)
       this.logger.log(`Notification ready: ${message}`);
       
       // TODO: Integrate with SMS/Email service
       // await this.sendSMS(ngoPhoneNumber, message);
       // await this.sendEmail(ngoEmail, message);
+
+    } catch (error) {
+      this.logger.error(`Failed to send urgent notification for report ${payload.reportId}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Event Listener: Notify NGO when report assigned to their dashboard
+   */
+  @OnEvent(NOTIFICATION_EVENTS.NGO_ALERT)
+  async handleNgoAlert(payload: any) {
+    this.logger.log(`📬 NGO Alert: Report ${payload.reportId} assigned to NGO ${payload.ngoId}`);
+
+    try {
+      const message = `New ${payload.urgency} urgency report assigned: ${payload.classification}`;
+      
+      // Create in-app notification
+      await this.createNotification(payload.ngoId, payload.reportId, message);
+      
+      this.logger.log(`Notification created for NGO ${payload.ngoId}`);
+      
+      // TODO: Send push notification / email
+      // await this.sendPushNotification(payload.ngoId, message);
 
     } catch (error) {
       this.logger.error(`Failed to send urgent notification for report ${payload.reportId}: ${error.message}`);
