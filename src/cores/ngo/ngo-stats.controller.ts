@@ -14,9 +14,12 @@ export class NgoStatsController {
   @Get()
   @ApiOperation({ summary: 'Get NGO statistics' })
   async getStats(@Req() req) {
-    const ngoId = req.user.id;
+    try {
+      const ngoId = req.user.id;
+      console.log('Getting stats for NGO:', ngoId);
 
-    const allReports = await this.reportsRepository.findReportsByNgo(ngoId);
+      const allReports = await this.reportsRepository.findReportsByNgo(ngoId);
+      console.log('Found reports:', allReports.length);
     
     const stats = {
       totalCases: allReports.length,
@@ -29,7 +32,12 @@ export class NgoStatsController {
       thisWeek: this.countThisWeek(allReports),
     };
 
-    return stats;
+      console.log('Stats calculated successfully');
+      return stats;
+    } catch (error) {
+      console.error('Error in getStats:', error);
+      throw error;
+    }
   }
 
   private groupByType(reports: any[]) {
