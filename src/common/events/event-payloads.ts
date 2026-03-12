@@ -11,6 +11,13 @@ export interface ReportAnalyzedEvent {
   urgency: 'critical' | 'high' | 'medium' | 'low';
   classification: string;
   immediateDanger: boolean;
+  medicalAttentionNeeded?: boolean;
+  policeInvolvementRecommended?: boolean;
+  extractedEntities?: any;
+  recommendedActions?: string[];
+  recommendedNgoTypes?: string[];
+  psychologicalState?: string;
+  actionPlan?: string[];
 }
 
 export interface ReportUrgentEvent {

@@ -254,12 +254,18 @@ export class ReportsService {
         return;
       }
 
-      // Update report with AI analysis (merge with existing structure)
+      // Update report with FULL AI analysis from Python service
       report.ai_analysis = {
-        ...report.ai_analysis,
         urgency: payload.urgency,
         classification: payload.classification,
         immediate_danger: payload.immediateDanger,
+        medical_attention_needed: payload.medicalAttentionNeeded,
+        police_involvement_recommended: payload.policeInvolvementRecommended,
+        extracted_entities: payload.extractedEntities,
+        recommended_actions: payload.recommendedActions,
+        recommended_ngo_types: payload.recommendedNgoTypes,
+        psychological_state: payload.psychologicalState,
+        action_plan: payload.actionPlan,
         analyzed_at: new Date(),
       };
 
@@ -269,7 +275,7 @@ export class ReportsService {
       }
 
       await this.reportsRepository.save(report);
-      this.logger.log(`Report ${payload.reportId} updated successfully`);
+      this.logger.log(`Report ${payload.reportId} updated with full AI analysis`);
     } catch (error) {
       this.logger.error(`Failed to update report ${payload.reportId}: ${error.message}`);
     }
