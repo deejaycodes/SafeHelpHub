@@ -82,10 +82,21 @@ export class ReportsRepository {
   }
 
   async findReportsByNgo(ngoId: string): Promise<Report[]> {
-    return await this.reportRepository
-      .createQueryBuilder('report')
-      .where(':ngoId = ANY(report.ngo_dashboard_ids)', { ngoId })
-      .getMany();
+    try {
+      // Simpler query without array operators
+      const reports = await this.reportRepository
+        .createQueryBuilder('report')
+        .where('report.ngo_dashboard_ids IS NOT NULL')
+        .getMany();
+      
+      // Filter in JavaScript
+      return reports.filter(r => 
+        r.ngo_dashboard_ids && r.ngo_dashboard_ids.includes(ngoId)
+      );
+    } catch (error) {
+      console.error('Error in findReportsByNgo:', error);
+      throw error;
+    }
   }
 
   async createIncident(reportData: Partial<Report>): Promise<Report> {
