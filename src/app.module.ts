@@ -30,6 +30,10 @@ import { UsersController } from './basics/users/users.controller';
 import { AuditLoggerService } from './common/services/audit-logger.service';
 import { RetryService } from './common/services/retry.service';
 import { AssignmentModule } from './cores/assignment/assignment.module';
+import { CaseNotesModule } from './cores/case-notes/case-notes.module';
+import { FollowUpsModule } from './cores/followups/followups.module';
+import { CaseNote } from './common/entities/case-note.entity';
+import { FollowUp } from './common/entities/followup.entity';
 // import { QuestionsModule } from './basics/chats/questions.module'; // Removed - not migrated to TypeORM
 // import { ReportAssignmentService } from './cores/reports/reports-assignment'; // Removed - not migrated to TypeORM
 import { ScheduleModule } from '@nestjs/schedule';
@@ -53,7 +57,7 @@ import { StorageModule } from './basics/storage/storage.module';
         return {
           type: 'postgres',
           url: databaseUrl,
-          entities: [User, Report, Notification, IncidentType],
+          entities: [User, Report, Notification, IncidentType, CaseNote, FollowUp],
           synchronize: true,
           ssl: { rejectUnauthorized: false },
           // Add connection pooling and retry logic
@@ -80,6 +84,8 @@ import { StorageModule } from './basics/storage/storage.module';
     NgoModule,
     AuthenticationModule,
     AssignmentModule,
+    CaseNotesModule,
+    FollowUpsModule,
     NotificationModule,
     IncidentTypeModule,
     StorageModule,
