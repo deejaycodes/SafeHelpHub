@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import OpenAI from 'openai';
+import { REPORT_EVENTS } from 'src/common/events/event-names';
+import { ReportSubmittedEvent, ReportAnalyzedEvent } from 'src/common/events/event-payloads';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 interface IncidentAnalysis {
   urgency: 'critical' | 'high' | 'medium' | 'low';
@@ -32,7 +36,7 @@ export class AIAnalysisService {
   private readonly logger = new Logger(AIAnalysisService.name);
   private openai: OpenAI | null = null;
 
-  constructor() {
+  constructor(private readonly eventEmitter: EventEmitter2) {
     if (process.env.OPENAI_API_KEY) {
       this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     } else {
@@ -415,5 +419,42 @@ Respond with JSON only:
       psychologicalState: 'Unable to assess - AI service unavailable',
       actionPlan: recommendedActions,
     };
+  }
+
+  /**
+   * Event Listener: Process report analysis asynchronously
+   */
+  @OnEvent(REPORT_EVENTS.SUBMITTED)
+  async handleReportSubmitted(payload: ReportSubmittedEvent) {
+    this.logger.log(`Processing report ${payload.reportId} asynchronously`);
+
+    try {
+      // Analyze urgency (this happens in background, user already got response)
+      const aiAnalysis = await this.analyzeIncidentUrgency(payload.description);
+
+      // Emit analyzed event with results
+      this.eventEmitter.emit(REPORT_EVENTS.ANALYZED, {
+        reportId: payload.reportId,
+        urgency: aiAnalysis.urgency,
+        classification: aiAnalysis.classification,
+        immediateDanger: aiAnalysis.immediateDanger,
+      } as ReportAnalyzedEvent);
+
+      this.logger.log(`Report ${payload.reportId} analyzed: ${aiAnalysis.urgency} urgency`);
+
+      // If critical/high urgency, emit urgent event
+      if (aiAnalysis.urgency === 'critical' || aiAnalysis.urgency === 'high') {
+        this.eventEmitter.emit(REPORT_EVENTS.URGENT, {
+          reportId: payload.reportId,
+          urgency: aiAnalysis.urgency,
+          classification: aiAnalysis.classification,
+          location: payload.location,
+        });
+        this.logger.warn(`URGENT REPORT: ${payload.reportId} - ${aiAnalysis.classification}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to analyze report ${payload.reportId}: ${error.message}`);
+      // Don't throw - we don't want to crash the event loop
+    }
   }
 }

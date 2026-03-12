@@ -6,8 +6,9 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Report } from 'src/common/entities/report.entity';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { uploadObject } from 'src/common/utils/upload';
@@ -17,10 +18,12 @@ import { ReportStatus } from 'src/common/enums/report-status.enum';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { AIAnalysisService } from 'src/basics/ai/ai-analysis.service';
 import { REPORT_EVENTS } from 'src/common/events/event-names';
-import { ReportSubmittedEvent } from 'src/common/events/event-payloads';
+import { ReportSubmittedEvent, ReportAnalyzedEvent } from 'src/common/events/event-payloads';
 
 @Injectable()
 export class ReportsService {
+  private readonly logger = new Logger(ReportsService.name);
+
   constructor(
     private readonly reportsRepository: ReportsRepository,
     private readonly usersRepository: UsersRepository,
@@ -234,6 +237,42 @@ export class ReportsService {
 
   async findAll(){
     return this.reportsRepository.findAll()
+  }
+
+  /**
+   * Event Listener: Update report after AI analysis completes
+   */
+  @OnEvent(REPORT_EVENTS.ANALYZED)
+  async handleReportAnalyzed(payload: ReportAnalyzedEvent) {
+    this.logger.log(`Updating report ${payload.reportId} with AI analysis results`);
+
+    try {
+      const report = await this.reportsRepository.fetchSingleReportById(payload.reportId);
+      
+      if (!report) {
+        this.logger.error(`Report ${payload.reportId} not found`);
+        return;
+      }
+
+      // Update report with AI analysis (merge with existing structure)
+      report.ai_analysis = {
+        ...report.ai_analysis,
+        urgency: payload.urgency,
+        classification: payload.classification,
+        immediate_danger: payload.immediateDanger,
+        analyzed_at: new Date(),
+      };
+
+      // Update status based on urgency
+      if (payload.urgency === 'critical') {
+        report.status = ReportStatus.SUBMITTED; // High priority for NGO
+      }
+
+      await this.reportsRepository.save(report);
+      this.logger.log(`Report ${payload.reportId} updated successfully`);
+    } catch (error) {
+      this.logger.error(`Failed to update report ${payload.reportId}: ${error.message}`);
+    }
   }
 
 }
