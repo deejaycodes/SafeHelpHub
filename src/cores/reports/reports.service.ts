@@ -7,6 +7,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Report } from 'src/common/entities/report.entity';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { uploadObject } from 'src/common/utils/upload';
@@ -15,6 +16,8 @@ import { ReportsRepository } from './reports.repository';
 import { ReportStatus } from 'src/common/enums/report-status.enum';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { AIAnalysisService } from 'src/basics/ai/ai-analysis.service';
+import { REPORT_EVENTS } from 'src/common/events/event-names';
+import { ReportSubmittedEvent } from 'src/common/events/event-payloads';
 
 @Injectable()
 export class ReportsService {
@@ -22,6 +25,7 @@ export class ReportsService {
     private readonly reportsRepository: ReportsRepository,
     private readonly usersRepository: UsersRepository,
     private readonly aiAnalysisService: AIAnalysisService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async createIncidentWithFile(
@@ -77,16 +81,11 @@ export class ReportsService {
         });
       }
 
-      // Step 2: AI Analysis of the incident report (only for valid reports)
-      const aiAnalysis = await this.aiAnalysisService.analyzeIncidentUrgency(
-        createIncidentDto.description || createIncidentDto.incident_type,
-      );
-  
-      // Create a new incident with comprehensive AI analysis
+      // Step 2: Create report with PENDING_ANALYSIS status (instant response to user)
       const newIncident = {
         ...createIncidentDto,
         files: fileUrls,
-        user_id: userId || 'anonymous', // Support anonymous reports
+        user_id: userId || 'anonymous',
         validation: {
           is_valid: validation.isValid,
           status: validation.status,
@@ -94,28 +93,23 @@ export class ReportsService {
           confidence: validation.confidence,
           validated_at: new Date(),
         },
-        ai_analysis: {
-          urgency: aiAnalysis.urgency,
-          classification: aiAnalysis.classification,
-          extracted_entities: aiAnalysis.extractedEntities,
-          recommended_actions: aiAnalysis.recommendedActions,
-          immediate_danger: aiAnalysis.immediateDanger,
-          medical_attention_needed: aiAnalysis.medicalAttentionNeeded,
-          police_involvement_recommended: aiAnalysis.policeInvolvementRecommended,
-          recommended_ngo_types: aiAnalysis.recommendedNgoTypes,
-          psychological_state: aiAnalysis.psychologicalState,
-          action_plan: aiAnalysis.actionPlan,
-          analyzed_at: new Date(),
-        },
-        // Set initial status based on validation and AI urgency
         status: validation.status === 'UNCLEAR' 
           ? ReportStatus.PENDING_REVIEW 
-          : aiAnalysis.urgency === 'critical' 
-            ? ReportStatus.SUBMITTED 
-            : ReportStatus.SUBMITTED,
+          : ReportStatus.SUBMITTED,
       };
-  
-      return await this.reportsRepository.createIncident(newIncident);
+
+      const createdReport = await this.reportsRepository.createIncident(newIncident);
+
+      // Step 3: Emit event for async AI analysis (don't block user)
+      this.eventEmitter.emit(REPORT_EVENTS.SUBMITTED, {
+        reportId: createdReport.id,
+        description: createIncidentDto.description,
+        incidentType: createIncidentDto.incident_type,
+        location: createIncidentDto.location,
+      } as ReportSubmittedEvent);
+
+      // Return immediately to user (they don't wait for AI analysis)
+      return createdReport;
     } catch (error) {
       throw new BadRequestException(
         `Error creating incident: ${error.message}`,

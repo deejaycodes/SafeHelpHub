@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AuthsController } from './cores/authentication/auths.controller';
 import { UsersService } from './basics/users/users.service';
 import { UsersModule } from './basics/users/users.module';
@@ -38,6 +39,7 @@ import { StorageModule } from './basics/storage/storage.module';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
