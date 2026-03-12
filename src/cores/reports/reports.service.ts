@@ -59,7 +59,25 @@ export class ReportsService {
         }
       }
 
-      // AI Analysis of the incident report (Multi-agent system)
+      // Step 1: Validate report (spam detection)
+      const validation = await this.aiAnalysisService.validateReport(
+        createIncidentDto.description || createIncidentDto.incident_type,
+        createIncidentDto.incident_type,
+      );
+
+      // If spam, reject immediately
+      if (!validation.isValid) {
+        throw new BadRequestException({
+          success: false,
+          message: 'Report could not be submitted. Please provide a detailed description of the incident.',
+          validation: {
+            status: validation.status,
+            reason: validation.reason,
+          },
+        });
+      }
+
+      // Step 2: AI Analysis of the incident report (only for valid reports)
       const aiAnalysis = await this.aiAnalysisService.analyzeIncidentUrgency(
         createIncidentDto.description || createIncidentDto.incident_type,
       );
@@ -69,6 +87,13 @@ export class ReportsService {
         ...createIncidentDto,
         files: fileUrls,
         user_id: userId || 'anonymous', // Support anonymous reports
+        validation: {
+          is_valid: validation.isValid,
+          status: validation.status,
+          reason: validation.reason,
+          confidence: validation.confidence,
+          validated_at: new Date(),
+        },
         ai_analysis: {
           urgency: aiAnalysis.urgency,
           classification: aiAnalysis.classification,
@@ -82,8 +107,12 @@ export class ReportsService {
           action_plan: aiAnalysis.actionPlan,
           analyzed_at: new Date(),
         },
-        // Set initial status based on AI urgency
-        status: aiAnalysis.urgency === 'critical' ? ReportStatus.SUBMITTED : ReportStatus.SUBMITTED,
+        // Set initial status based on validation and AI urgency
+        status: validation.status === 'UNCLEAR' 
+          ? ReportStatus.PENDING_REVIEW 
+          : aiAnalysis.urgency === 'critical' 
+            ? ReportStatus.SUBMITTED 
+            : ReportStatus.SUBMITTED,
       };
   
       return await this.reportsRepository.createIncident(newIncident);

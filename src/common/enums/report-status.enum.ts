@@ -4,4 +4,6 @@ export enum ReportStatus {
   SUBMITTED = 'submitted',
   RESOLVED = 'resolved',
   REJECTED = 'rejected',
+  PENDING_REVIEW = 'pending review',
+  SPAM = 'spam',
 }

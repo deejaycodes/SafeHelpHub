@@ -20,6 +20,13 @@ interface IncidentAnalysis {
   actionPlan?: string[];
 }
 
+interface ValidationResult {
+  isValid: boolean;
+  status: 'VALID' | 'SPAM' | 'UNCLEAR';
+  reason: string;
+  confidence: number;
+}
+
 @Injectable()
 export class AIAnalysisService {
   private readonly logger = new Logger(AIAnalysisService.name);
@@ -53,6 +60,131 @@ export class AIAnalysisService {
       this.logger.error(`Incident analysis error: ${error.message}`);
       return this.simulateAnalysis(incidentText);
     }
+  }
+
+  /**
+   * Validate if report is legitimate or spam
+   */
+  async validateReport(description: string, incidentType: string): Promise<ValidationResult> {
+    if (!this.openai) {
+      // Fallback to rule-based validation
+      return this.ruleBasedValidation(description);
+    }
+
+    try {
+      const prompt = `You are a content validator for a GBV/FGM reporting platform in Nigeria.
+
+Analyze this report and classify it as:
+- VALID: Real incident report (FGM, child abuse, sexual assault, child labour, domestic violence)
+- SPAM: Gibberish, profanity only, trolling, test messages, irrelevant content
+- UNCLEAR: Too vague but might be genuine (needs human review)
+
+Incident Type: ${incidentType}
+Report: "${description}"
+
+Consider:
+- Language barriers (broken English is OK)
+- Emotional language (fear, anger is valid)
+- Short but urgent messages ("help me" is valid if context exists)
+- Cultural context (Nigerian English)
+
+Respond with JSON only:
+{
+  "status": "VALID" | "SPAM" | "UNCLEAR",
+  "reason": "brief explanation",
+  "confidence": 0-100
+}`;
+
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+        response_format: { type: 'json_object' },
+      });
+
+      const result = JSON.parse(response.choices[0].message.content);
+      
+      return {
+        isValid: result.status === 'VALID',
+        status: result.status,
+        reason: result.reason,
+        confidence: result.confidence,
+      };
+    } catch (error) {
+      this.logger.error(`Validation error: ${error.message}`);
+      // On error, assume valid (don't block legitimate reports)
+      return {
+        isValid: true,
+        status: 'VALID',
+        reason: 'validation_error',
+        confidence: 50,
+      };
+    }
+  }
+
+  /**
+   * Rule-based validation fallback
+   */
+  private ruleBasedValidation(description: string): ValidationResult {
+    const text = description.toLowerCase().trim();
+    const wordCount = description.trim().split(/\s+/).length;
+
+    // Check for obvious spam
+    const spamPhrases = ['test', 'hello world', 'asdf', 'qwerty'];
+    if (spamPhrases.some(phrase => text === phrase)) {
+      return {
+        isValid: false,
+        status: 'SPAM',
+        reason: 'Test phrase detected',
+        confidence: 95,
+      };
+    }
+
+    // Check for gibberish
+    if (/(.)\1{5,}/.test(description)) {
+      return {
+        isValid: false,
+        status: 'SPAM',
+        reason: 'Gibberish detected',
+        confidence: 90,
+      };
+    }
+
+    // Too short but might be valid
+    if (wordCount < 5) {
+      return {
+        isValid: true,
+        status: 'UNCLEAR',
+        reason: 'Very short report, needs review',
+        confidence: 60,
+      };
+    }
+
+    // Check for incident-related keywords
+    const validKeywords = [
+      'fgm', 'cut', 'mutilation', 'abuse', 'violence', 'rape', 'assault',
+      'beat', 'hit', 'hurt', 'child', 'labour', 'work', 'forced', 'danger',
+      'help', 'scared', 'afraid', 'threat', 'harass'
+    ];
+
+    const hasValidKeyword = validKeywords.some(keyword => text.includes(keyword));
+
+    if (hasValidKeyword) {
+      return {
+        isValid: true,
+        status: 'VALID',
+        reason: 'Contains incident-related keywords',
+        confidence: 85,
+      };
+    }
+
+    // Unclear - needs human review
+    return {
+      isValid: true,
+      status: 'UNCLEAR',
+      reason: 'No clear indicators, needs review',
+      confidence: 50,
+    };
   }
 
   // Agent 1: Extract structured data using function calling
