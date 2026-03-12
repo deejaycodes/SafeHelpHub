@@ -17,6 +17,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
   Query,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { Report } from 'src/common/entities/report.entity';
@@ -142,7 +143,17 @@ export class ReportsController {
       },
     },
   })
-  reportStatus(@Param('reportId') reportId: string) {
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid UUID format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Validation failed (uuid is expected)',
+      },
+    },
+  })
+  reportStatus(@Param('reportId', ParseUUIDPipe) reportId: string) {
     return this.reportsService.fetchReportStatus(reportId);
   }
 
@@ -152,6 +163,7 @@ export class ReportsController {
   @ApiOperation({ summary: 'Update a report' })
   @ApiParam({ name: 'reportId', description: 'ID of the report to update' })
   @ApiResponse({ status: 200, description: 'The updated report' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Report not found' })
   @ApiResponse({
     status: 403,
@@ -163,7 +175,7 @@ export class ReportsController {
       'Conflict: This report has been rejected and cannot be updated.',
   })
   async updateReport(
-    @Param('reportId') reportId: string,
+    @Param('reportId', ParseUUIDPipe) reportId: string,
     @Body() updateData: UpdateReportDto,
     @Req() req,
   ): Promise<Report> {
