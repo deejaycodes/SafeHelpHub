@@ -1,14 +1,17 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 import { NotificationsService } from './notifications.service';
 
 
 @ApiTags('Notifications')
 @Controller('notifications')
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('jwt')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationsService) {}
 
-  @ApiOperation({ summary: 'Get all notifications for an NGO' })
+  @ApiOperation({ summary: 'Get all notifications for authenticated NGO' })
   @ApiResponse({
     status: 200,
     description: 'All notifications fetched successfully',
@@ -26,21 +29,15 @@ export class NotificationController {
       ],
     },
   })
-  @ApiResponse({ status: 404, description: 'NGO not found.' })
-  @Get(':ngoId')
-  async getNotifications(@Param('ngoId') ngoId: string) {
-    return await this.notificationService.getAllNotifications(ngoId);
+  @Get()
+  async getNotifications(@Req() req) {
+    // Security: Use authenticated user ID from JWT, not from URL params
+    return await this.notificationService.getAllNotifications(req.user.id);
   }
 
-  @Get(':ngoId/:notificationId')
+  @Get(':notificationId')
   @ApiOperation({
-    summary: 'Get a single notification by NGO ID and Notification ID',
-  })
-  @ApiParam({
-    name: 'ngoId',
-    type: String,
-    description: 'The ID of the NGO',
-    example: '60f6b3eaf6477d49f87e9c7f',
+    summary: 'Get a single notification by ID for authenticated NGO',
   })
   @ApiParam({
     name: 'notificationId',
@@ -50,18 +47,19 @@ export class NotificationController {
   })
   @ApiResponse({
     status: 200,
-    description: 'The notification for the provided NGO ID and Notification ID',
+    description: 'The notification for the authenticated NGO',
   })
   @ApiResponse({
     status: 404,
-    description: 'No notification found for the provided IDs',
+    description: 'No notification found or unauthorized',
   })
-  async getNotificationByNgoIdAndNotificationId(
-    @Param('ngoId') ngoId: string,
+  async getNotificationById(
     @Param('notificationId') notificationId: string,
+    @Req() req,
   ) {
+    // Security: Use authenticated user ID from JWT
     return this.notificationService.getNotificationByNgoIdAndNotificationId(
-      ngoId,
+      req.user.id,
       notificationId,
     );
   }
