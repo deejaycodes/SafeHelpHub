@@ -43,7 +43,8 @@ export class FollowUpsController {
   async completeFollowUp(
     @Param('id') id: string,
     @Body() completeDto: { outcome: string },
+    @Req() req,
   ) {
-    return this.followUpsService.complete(id, completeDto.outcome);
+    return this.followUpsService.complete(id, completeDto.outcome, req.user.id);
   }
 }
