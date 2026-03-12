@@ -4,6 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FollowUpsService } from './followups.service';
 
 @ApiTags('Follow-Ups')
+@Controller('followups')
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth('jwt')
 export class FollowUpsController {
