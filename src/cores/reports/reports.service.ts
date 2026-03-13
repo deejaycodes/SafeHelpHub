@@ -192,7 +192,7 @@ export class ReportsService {
         throw new BadRequestException('Cannot undo an undo');
       }
       const previousStatus = report.status;
-      report.status = lastEntry.from;
+      report.status = lastEntry.from as ReportStatus;
       report.status_history.push({
         from: previousStatus,
         to: lastEntry.from,
