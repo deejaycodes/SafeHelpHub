@@ -20,7 +20,7 @@ export class CaseNotesController {
     return this.caseNotesService.create({
       reportId,
       ngoId: req.user.id,
-      staffMember: req.user.ngo_name || req.user.email,
+      staffMember: req.user.admin_name || req.user.ngo_name || req.user.email || 'Unknown',
       content: noteDto.content,
       type: noteDto.type,
     });
