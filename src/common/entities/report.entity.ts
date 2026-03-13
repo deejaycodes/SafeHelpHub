@@ -88,6 +88,16 @@ export class Report {
     analyzed_at: Date;
   };
 
+  @Column('jsonb', { default: [] })
+  status_history: Array<{
+    from: string;
+    to: string;
+    event: string;
+    reason: string | null;
+    by: string;
+    at: Date;
+  }>;
+
   @CreateDateColumn()
   created_at: Date;
 

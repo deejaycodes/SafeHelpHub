@@ -23,9 +23,18 @@ export class NgoStatsController {
     
     const stats = {
       totalCases: allReports.length,
-      activeCases: allReports.filter(r => r.status === ReportStatus.ACCEPTED).length,
+      activeCases: allReports.filter(r => ['under_review', 'active', 'on_hold'].includes(r.status)).length,
       resolvedCases: allReports.filter(r => r.status === ReportStatus.RESOLVED).length,
       pendingCases: allReports.filter(r => r.status === ReportStatus.SUBMITTED).length,
+      byStatus: {
+        submitted: allReports.filter(r => r.status === ReportStatus.SUBMITTED).length,
+        under_review: allReports.filter(r => r.status === ReportStatus.UNDER_REVIEW).length,
+        active: allReports.filter(r => r.status === ReportStatus.ACTIVE).length,
+        on_hold: allReports.filter(r => r.status === ReportStatus.ON_HOLD).length,
+        resolved: allReports.filter(r => r.status === ReportStatus.RESOLVED).length,
+        referred: allReports.filter(r => r.status === ReportStatus.REFERRED).length,
+        closed: allReports.filter(r => r.status === ReportStatus.CLOSED).length,
+      },
       byType: this.groupByType(allReports),
       byUrgency: this.groupByUrgency(allReports),
       thisMonth: this.countThisMonth(allReports),

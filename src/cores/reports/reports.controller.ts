@@ -35,7 +35,7 @@ import {
 } from '@nestjs/swagger';
 import * as _ from 'lodash';
 import { User } from '@sentry/nestjs';
-import { UpdateReportDto } from 'src/common/dtos/updateUserReportDto';
+import { UpdateReportDto, TransitionReportDto } from 'src/common/dtos/updateUserReportDto';
 import { ReportsRepository } from './reports.repository';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { AuthGuard } from '@nestjs/passport';
@@ -183,8 +183,23 @@ export class ReportsController {
     return this.reportsService.updateReport(
       reportId,
       userFromJwt.id,
-      updateData,
+      updateData as any,
     );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
+  @Post(':reportId/transition')
+  @ApiOperation({ summary: 'Transition report through workflow (state machine)' })
+  @ApiParam({ name: 'reportId', description: 'Report ID' })
+  @ApiResponse({ status: 200, description: 'Report transitioned successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid transition' })
+  async transitionReport(
+    @Param('reportId', ParseUUIDPipe) reportId: string,
+    @Body() dto: TransitionReportDto,
+    @Req() req,
+  ): Promise<Report> {
+    return this.reportsService.transitionReport(reportId, req.user.id, dto.event, dto.reason);
   }
 
   @Get()

@@ -5,6 +5,7 @@ import {
   UseGuards,
   Request,
   HttpStatus,
+  Headers,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtService } from '@nestjs/jwt';
@@ -13,6 +14,8 @@ import { LoginDto } from 'src/common/dtos/loginDto';
 import { RegisterResponseDto } from 'src/common/dtos/registerResponseDto';
 import { AuthenticationService } from './authentication.service';
 import { LocalAuthGuard } from './strategy/local-auth-strategy';
+import { JwtAuthGuard } from './strategy/jwt-guard';
+import { TokenBlacklistService } from './token-blacklist.service';
 import { ReportsRepository } from '../reports/reports.repository';
 
 @ApiTags('Authentication')
@@ -22,6 +25,7 @@ export class AuthsController {
     private readonly authService: AuthenticationService,
     private readonly jwtService: JwtService,
     private readonly reportRepo: ReportsRepository,
+    private readonly tokenBlacklist: TokenBlacklistService,
   ) {}
 
   @Post('register')
@@ -145,5 +149,18 @@ export class AuthsController {
         secret: process.env.JWT_KEY,
       }),
     };
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Logout endpoint' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Logged out successfully' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Not authenticated' })
+  async logout(@Headers('authorization') auth: string) {
+    const token = auth?.replace('Bearer ', '');
+    if (token) {
+      this.tokenBlacklist.add(token);
+    }
+    return { message: 'Logged out successfully' };
   }
 }  

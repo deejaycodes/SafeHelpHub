@@ -1,20 +1,24 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEnum } from 'class-validator';
-import { ReportStatus } from '../enums/report-status.enum';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional } from 'class-validator';
+
+export class TransitionReportDto {
+  @ApiProperty({ description: 'Workflow event: REVIEW, ACCEPT, PUT_ON_HOLD, RESUME, RESOLVE, REFER, CLOSE, REOPEN', example: 'ACCEPT' })
+  @IsString()
+  event: string;
+
+  @ApiPropertyOptional({ description: 'Reason (required for PUT_ON_HOLD, REFER, CLOSE)', example: 'Not our specialization' })
+  @IsOptional()
+  @IsString()
+  reason?: string;
+}
 
 export class UpdateReportDto {
-  @ApiPropertyOptional({
-    description: 'Status of the report (e.g., REJECTED, ACCEPTED, RESOLVED)',
-    enum: ReportStatus,
-  })
+  @ApiPropertyOptional({ description: 'Status of the report' })
   @IsOptional()
-  @IsEnum(ReportStatus)
-  status?: ReportStatus;
+  @IsString()
+  status?: string;
 
-  @ApiPropertyOptional({
-    description: 'Reason for rejection if the report is being rejected',
-    example: 'Incomplete information provided',
-  })
+  @ApiPropertyOptional({ description: 'Reason for rejection/referral' })
   @IsOptional()
   @IsString()
   rejection_reason?: string;

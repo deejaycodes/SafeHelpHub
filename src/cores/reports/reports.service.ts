@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -14,7 +13,7 @@ import { CreateIncidentDto } from '../../common/dtos/reportsDto';
 import { uploadObject } from 'src/common/utils/upload';
 import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
-import { ReportStatus } from 'src/common/enums/report-status.enum';
+import { ReportStatus, isValidTransition, getValidTransitions, getNextStatus, EVENTS_REQUIRING_REASON } from 'src/common/enums/report-status.enum';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { AIAnalysisService } from 'src/basics/ai/ai-analysis.service';
 import { REPORT_EVENTS } from 'src/common/events/event-names';
@@ -99,6 +98,14 @@ export class ReportsService {
         status: validation.status === 'UNCLEAR' 
           ? ReportStatus.PENDING_REVIEW 
           : ReportStatus.SUBMITTED,
+        status_history: [{
+          from: null,
+          to: validation.status === 'UNCLEAR' ? ReportStatus.PENDING_REVIEW : ReportStatus.SUBMITTED,
+          event: 'CREATE',
+          reason: null,
+          by: 'system',
+          at: new Date(),
+        }],
       };
 
       const createdReport = await this.reportsRepository.createIncident(newIncident);
@@ -129,114 +136,94 @@ export class ReportsService {
   async updateReport(
     reportId: string,
     ngoId: any,
-    updateData: Partial<Report> & { rejection_reason?: string },
+    updateData: Partial<Report> & { rejection_reason?: string; status?: string },
   ): Promise<Report> {
-    const report = await this.reportsRepository.fetchSingleReportById(reportId);
+    // Legacy compatibility: map old status values to workflow events
+    const statusToEvent: Record<string, string> = {
+      accepted: 'ACCEPT',
+      rejected: 'REFER',
+      resolved: 'RESOLVE',
+      in_progress: 'ACCEPT',
+    };
 
-    if (!report) {
-      throw new NotFoundException('Report not found');
-    }
-    const user = await this.usersRepository.fetchSingleUserById(ngoId)
-    if(!user) {
-      throw new UnauthorizedException('You are not authorized')
-    }
-
-    if (updateData.status === ReportStatus.ACCEPTED && report.accepted_by?.includes(ngoId)) {
-      throw new ConflictException('You have already accepted this report');
-    }
-  
-    if (updateData.status === ReportStatus.REJECTED && report.rejected_by?.includes(ngoId)) {
-      throw new ConflictException('You have already rejected this report');
-    }
-    if (
-      updateData.status === ReportStatus.RESOLVED &&
-      report.status !== ReportStatus.ACCEPTED
-    ) {
-      throw new ConflictException(
-        'Only reports with status "accepted" can be marked as resolved.',
-      );
-    } else if (updateData.status === ReportStatus.ACCEPTED) {
-
-      ngoId = ngoId.trim();
-    report.rejected_by = report.rejected_by.map(id => id.trim());
-
-    if (report.rejected_by.includes(ngoId)) {
-      console.log("Removing ngoId from rejected_by:", ngoId);
-      report.rejected_by = report.rejected_by.filter(id => id !== ngoId);
-    }
-      report.status = ReportStatus.ACCEPTED;
-      report.ngo_dashboard_ids = [];
-      const ngo = await this.usersRepository.fetchSingleUserById(ngoId);
-      ngo.acceptReportsCount = (ngo.acceptReportsCount || 0) + 1;
-      ngo.isHandlingReport = true;
-      await this.usersRepository.findUserByIdAndUpdate(ngoId, ngo);
-
-      report.accepted_by =report.accepted_by || [];
-      report.accepted_by.push(ngoId);
-      // TODO: Migrate ReportAssignment to TypeORM
-      // await this.reportAssignmentRepository.create({
-      //   ngoId: ngoId,
-      //   reportId: reportId,
-      //   status: ReportStatus.ACCEPTED,
-      //   assignedAt: new Date(),
-      // });
-    } else if (updateData.status === ReportStatus.RESOLVED) {
-
-     
-
-      report.status = ReportStatus.RESOLVED;
-
-      const ngo = await this.usersRepository.fetchSingleUserById(ngoId);
-      ngo.resolvedReportsCount = (ngo.resolvedReportsCount || 0) + 1;
-      await this.usersRepository.findUserByIdAndUpdate(ngoId, ngo);
-
-      // TODO: Migrate ReportAssignment to TypeORM
-      // await this.reportAssignmentRepository.create({
-      //   ngoId: ngoId,
-      //   reportId: reportId,
-      //   status: ReportStatus.RESOLVED,
-      //   assignedAt: new Date(),
-      // });
-
-    } else if (updateData.status === ReportStatus.REJECTED) {
-
-      ngoId = ngoId.trim();
-      report.accepted_by = report.accepted_by.map(id => id.trim());
-  
-      if (report.accepted_by.includes(ngoId)) {
-        report.accepted_by = report.accepted_by.filter(id => id !== ngoId);
+    if (updateData.status) {
+      const event = statusToEvent[updateData.status] || updateData.status;
+      // If the report is in 'submitted' state and event is ACCEPT, auto-transition through REVIEW first
+      const report = await this.reportsRepository.fetchSingleReportById(reportId);
+      if (report && report.status === ReportStatus.SUBMITTED && event === 'ACCEPT') {
+        await this.transitionReport(reportId, ngoId, 'REVIEW');
       }
-      report.status = ReportStatus.REJECTED;
-      const ngo = await this.usersRepository.fetchSingleUserById(ngoId);
-      ngo.rejectedReportsCount = (ngo.rejectedReportsCount || 0) + 1;
-      ngo.isHandlingReport = false;
-      await this.usersRepository.findUserByIdAndUpdate(ngoId, ngo);
-      report.ngo_dashboard_ids = []
-      report.rejected_by = report.rejected_by || [];
-      report.rejected_by.push(ngoId);
-
-      report.rejection_reasons = report.rejection_reasons || [];
-      report.rejection_reasons.push({
-        reason: updateData.rejection_reason || 'No reason provided',
-        rejected_by: ngoId,
-        rejected_at: new Date(),
-      });
+      return this.transitionReport(reportId, ngoId, event, updateData.rejection_reason);
     }
 
-    // TODO: Migrate ReportAssignment to TypeORM
-    // await this.reportAssignmentRepository.create({
-    //   ngoId: ngoId,
-    //   reportId: reportId,
-    //   status: ReportStatus.REJECTED,
-    //   assignedAt: new Date(),
-    // });
+    // If no status change, just save other fields
+    const report = await this.reportsRepository.fetchSingleReportById(reportId);
+    if (!report) throw new NotFoundException('Report not found');
     Object.assign(report, updateData);
-
     return this.reportsRepository.save(report);
   }
 
   async findAll(){
     return this.reportsRepository.findAll()
+  }
+
+  /**
+   * Transition a report through the workflow state machine
+   */
+  async transitionReport(
+    reportId: string,
+    ngoId: string,
+    event: string,
+    reason?: string,
+  ): Promise<Report> {
+    const report = await this.reportsRepository.fetchSingleReportById(reportId);
+    if (!report) throw new NotFoundException('Report not found');
+
+    const user = await this.usersRepository.fetchSingleUserById(ngoId);
+    if (!user) throw new UnauthorizedException('Not authorized');
+
+    if (!isValidTransition(report.status, event)) {
+      const valid = getValidTransitions(report.status);
+      throw new BadRequestException(
+        `Cannot perform "${event}" on a report with status "${report.status}". Valid actions: ${valid.join(', ') || 'none'}`,
+      );
+    }
+
+    if (EVENTS_REQUIRING_REASON.includes(event) && !reason) {
+      throw new BadRequestException(`A reason is required for "${event}"`);
+    }
+
+    const nextStatus = getNextStatus(report.status, event);
+    const previousStatus = report.status;
+    report.status = nextStatus;
+
+    // Track status history
+    if (!report.status_history) report.status_history = [];
+    report.status_history.push({
+      from: previousStatus,
+      to: nextStatus,
+      event,
+      reason: reason || null,
+      by: ngoId,
+      at: new Date(),
+    });
+
+    // Handle side effects per event
+    if (event === 'ACCEPT') {
+      report.accepted_by = report.accepted_by || [];
+      if (!report.accepted_by.includes(ngoId)) report.accepted_by.push(ngoId);
+      user.acceptReportsCount = (user.acceptReportsCount || 0) + 1;
+      user.isHandlingReport = true;
+      await this.usersRepository.findUserByIdAndUpdate(ngoId, user);
+    } else if (event === 'RESOLVE') {
+      user.resolvedReportsCount = (user.resolvedReportsCount || 0) + 1;
+      await this.usersRepository.findUserByIdAndUpdate(ngoId, user);
+    } else if (event === 'REFER') {
+      report.rejection_reasons = report.rejection_reasons || [];
+      report.rejection_reasons.push({ reason: reason || 'Referred', rejected_by: ngoId, rejected_at: new Date() });
+    }
+
+    return this.reportsRepository.save(report);
   }
 
   /**
