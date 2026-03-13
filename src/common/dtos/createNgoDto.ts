@@ -44,6 +44,11 @@ export class CreateNgoDto {
   @IsNotEmpty({ message: 'NGO name is required' })
   ngo_name: string;
 
+  @ApiPropertyOptional({ description: 'Name of the NGO admin', example: 'Amina Okafor' })
+  @IsOptional()
+  @IsString()
+  admin_name?: string;
+
   @ApiProperty({
     description: 'Primary contact details for the NGO',
   })
