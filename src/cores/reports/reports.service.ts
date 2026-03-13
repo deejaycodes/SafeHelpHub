@@ -198,7 +198,7 @@ export class ReportsService {
         to: lastEntry.from,
         event: 'UNDO',
         reason: reason || `Rolled back from ${previousStatus}`,
-        by: ngoId,
+        by: user.admin_name || ngoId,
         at: new Date(),
       });
       return this.reportsRepository.save(report);
@@ -226,7 +226,7 @@ export class ReportsService {
       to: nextStatus,
       event,
       reason: reason || null,
-      by: ngoId,
+      by: user.admin_name || ngoId,
       at: new Date(),
     });
 
