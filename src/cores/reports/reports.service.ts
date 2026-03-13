@@ -182,6 +182,28 @@ export class ReportsService {
     const user = await this.usersRepository.fetchSingleUserById(ngoId);
     if (!user) throw new UnauthorizedException('Not authorized');
 
+    // Handle UNDO — roll back to previous status
+    if (event === 'UNDO') {
+      if (!report.status_history || report.status_history.length === 0) {
+        throw new BadRequestException('Nothing to undo');
+      }
+      const lastEntry = report.status_history[report.status_history.length - 1];
+      if (lastEntry.event === 'UNDO') {
+        throw new BadRequestException('Cannot undo an undo');
+      }
+      const previousStatus = report.status;
+      report.status = lastEntry.from;
+      report.status_history.push({
+        from: previousStatus,
+        to: lastEntry.from,
+        event: 'UNDO',
+        reason: reason || `Rolled back from ${previousStatus}`,
+        by: ngoId,
+        at: new Date(),
+      });
+      return this.reportsRepository.save(report);
+    }
+
     if (!isValidTransition(report.status, event)) {
       const valid = getValidTransitions(report.status);
       throw new BadRequestException(
