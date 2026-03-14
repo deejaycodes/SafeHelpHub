@@ -218,6 +218,38 @@ export class ReportsController {
 
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('jwt')
+  @Post(':reportId/assign')
+  @ApiOperation({ summary: 'Assign a case worker to a report' })
+  async assignCase(
+    @Param('reportId', ParseUUIDPipe) reportId: string,
+    @Body() body: { assigneeName: string },
+    @Req() req,
+  ) {
+    const report = await this.reportRepo.fetchSingleReportById(reportId);
+    if (!report) throw new NotFoundException('Report not found');
+    if (!report.assignedUsers) report.assignedUsers = [];
+    const name = body.assigneeName?.trim();
+    if (!name) throw new BadRequestException('Assignee name is required');
+    if (!report.assignedUsers.includes(name)) report.assignedUsers.push(name);
+    return this.reportRepo.save(report);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
+  @Post(':reportId/unassign')
+  @ApiOperation({ summary: 'Remove a case worker from a report' })
+  async unassignCase(
+    @Param('reportId', ParseUUIDPipe) reportId: string,
+    @Body() body: { assigneeName: string },
+  ) {
+    const report = await this.reportRepo.fetchSingleReportById(reportId);
+    if (!report) throw new NotFoundException('Report not found');
+    report.assignedUsers = (report.assignedUsers || []).filter(u => u !== body.assigneeName);
+    return this.reportRepo.save(report);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
   @Post(':reportId/ai-chat')
   @ApiOperation({ summary: 'Ask AI about a specific case' })
   async aiChat(
