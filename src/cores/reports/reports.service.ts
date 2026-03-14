@@ -5,7 +5,6 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  Logger,
 } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Report } from 'src/common/entities/report.entity';
@@ -18,17 +17,17 @@ import { AIAnalysisService } from 'src/basics/ai/ai-analysis.service';
 import { REPORT_EVENTS } from 'src/common/events/event-names';
 import { EventsGateway } from 'src/common/gateways/events.gateway';
 import { ReportSubmittedEvent, ReportAnalyzedEvent } from 'src/common/events/event-payloads';
+import { ReportsInstrumentation } from 'src/common/instrumentation';
 
 @Injectable()
 export class ReportsService {
-  private readonly logger = new Logger(ReportsService.name);
-
   constructor(
     private readonly reportsRepository: ReportsRepository,
     private readonly usersRepository: UsersRepository,
     private readonly aiAnalysisService: AIAnalysisService,
     private readonly eventEmitter: EventEmitter2,
     private readonly eventsGateway: EventsGateway,
+    private readonly instrumentation: ReportsInstrumentation,
   ) {}
 
   async createIncidentWithFile(
@@ -268,13 +267,13 @@ export class ReportsService {
    */
   @OnEvent(REPORT_EVENTS.ANALYZED)
   async handleReportAnalyzed(payload: ReportAnalyzedEvent) {
-    this.logger.log(`Updating report ${payload.reportId} with AI analysis results`);
+    this.instrumentation.reportAnalysisStarted(payload.reportId);
 
     try {
       const report = await this.reportsRepository.fetchSingleReportById(payload.reportId);
       
       if (!report) {
-        this.logger.error(`Report ${payload.reportId} not found`);
+        this.instrumentation.reportNotFound(payload.reportId);
         return;
       }
 
@@ -299,9 +298,9 @@ export class ReportsService {
       }
 
       await this.reportsRepository.save(report);
-      this.logger.log(`Report ${payload.reportId} updated with full AI analysis`);
+      this.instrumentation.reportAnalysisCompleted(payload.reportId, payload.urgency, payload.classification, payload.immediateDanger);
     } catch (error) {
-      this.logger.error(`Failed to update report ${payload.reportId}: ${error.message}`);
+      this.instrumentation.reportAnalysisFailed(payload.reportId, error);
     }
   }
 

@@ -40,6 +40,7 @@ import { FollowUp } from './common/entities/followup.entity';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 import { TrackingModule } from './cores/tracking/tracking.module';
+import { InstrumentationModule } from './common/instrumentation/instrumentation.module';
 import { NotificationsService } from './notifications/notifications.service';
 import { NotificationController } from './notifications/notifications.controller';
 import { NotificationModule } from './notifications/notifications.module';
@@ -107,6 +108,7 @@ import { StorageModule } from './basics/storage/storage.module';
     CaseNotesModule,
     FollowUpsModule,
     TrackingModule,
+    InstrumentationModule,
     NotificationModule,
     IncidentTypeModule,
     StorageModule,

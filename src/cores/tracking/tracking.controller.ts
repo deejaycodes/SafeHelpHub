@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Report } from 'src/common/entities/report.entity';
 import { CaseNote } from 'src/common/entities/case-note.entity';
+import { TrackingInstrumentation } from 'src/common/instrumentation';
 
 @ApiTags('Public Tracking')
 @Controller('track')
@@ -11,6 +12,7 @@ export class TrackingController {
   constructor(
     @InjectRepository(Report) private reportsRepo: Repository<Report>,
     @InjectRepository(CaseNote) private notesRepo: Repository<CaseNote>,
+    private readonly instrumentation: TrackingInstrumentation,
   ) {}
 
   @Get(':reportId')
@@ -20,7 +22,12 @@ export class TrackingController {
     if (!uuidRegex.test(reportId)) throw new NotFoundException('Report not found. Check your tracking ID.');
 
     const report = await this.reportsRepo.findOne({ where: { id: reportId } });
-    if (!report) throw new NotFoundException('Report not found. Check your tracking ID.');
+    if (!report) {
+      this.instrumentation.reportLookupNotFound(reportId);
+      throw new NotFoundException('Report not found. Check your tracking ID.');
+    }
+
+    this.instrumentation.reportLookedUp(reportId);
 
     const messages = await this.notesRepo.find({
       where: [
@@ -64,6 +71,8 @@ export class TrackingController {
       content: body.content.trim(),
       type: 'reporter_message',
     });
-    return this.notesRepo.save(note);
+    const saved = await this.notesRepo.save(note);
+    this.instrumentation.reporterMessageSent(reportId);
+    return saved;
   }
 }
