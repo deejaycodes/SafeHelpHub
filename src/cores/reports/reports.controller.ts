@@ -205,15 +205,12 @@ export class ReportsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Retrieve all reports' })
-  @ApiResponse({
-    status: 200,
-    description: 'Successfully retrieved all reports. Returns an empty array if no reports exist.',
-  })
-  @ApiResponse({ status: 500, description: 'Internal server error' })
-  async findAll(): Promise<Report[]> {
-    const reports = await this.reportsService.findAll();
-    return reports.length > 0 ? reports : [];
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Retrieve reports assigned to the authenticated NGO' })
+  @ApiResponse({ status: 200, description: 'Reports for this NGO' })
+  async findAll(@Req() req): Promise<Report[]> {
+    return this.reportsService.findByNgo(req.user.id);
   }
 
   @UseGuards(AuthGuard('jwt'))

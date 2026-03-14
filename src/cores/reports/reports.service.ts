@@ -167,6 +167,10 @@ export class ReportsService {
     return this.reportsRepository.findAll()
   }
 
+  async findByNgo(ngoId: string) {
+    return this.reportsRepository.findReportsByNgo(ngoId);
+  }
+
   /**
    * Transition a report through the workflow state machine
    */
@@ -234,6 +238,8 @@ export class ReportsService {
     if (event === 'ACCEPT') {
       report.accepted_by = report.accepted_by || [];
       if (!report.accepted_by.includes(ngoId)) report.accepted_by.push(ngoId);
+      // Lock to this NGO only — remove other NGOs from dashboard
+      report.ngo_dashboard_ids = [ngoId];
       user.acceptReportsCount = (user.acceptReportsCount || 0) + 1;
       user.isHandlingReport = true;
       await this.usersRepository.findUserByIdAndUpdate(ngoId, user);
