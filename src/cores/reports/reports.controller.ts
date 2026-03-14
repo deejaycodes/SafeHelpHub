@@ -37,6 +37,7 @@ import * as _ from 'lodash';
 import { User } from '@sentry/nestjs';
 import { UpdateReportDto, TransitionReportDto } from 'src/common/dtos/updateUserReportDto';
 import { ReportsRepository } from './reports.repository';
+import { AIAnalysisService } from 'src/basics/ai/ai-analysis.service';
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -44,7 +45,8 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService,
-    private reportRepo:ReportsRepository
+    private reportRepo:ReportsRepository,
+    private readonly aiService: AIAnalysisService,
   ) {}
 
   @UseGuards(AuthGuard('jwt'))
@@ -214,5 +216,22 @@ export class ReportsController {
     return reports.length > 0 ? reports : [];
   }
 
-  
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
+  @Post(':reportId/ai-chat')
+  @ApiOperation({ summary: 'Ask AI about a specific case' })
+  async aiChat(
+    @Param('reportId', ParseUUIDPipe) reportId: string,
+    @Body() body: { question: string },
+  ) {
+    if (!body.question?.trim()) throw new BadRequestException('Question is required');
+    const report = await this.reportRepo.fetchSingleReportById(reportId);
+    if (!report) throw new NotFoundException('Report not found');
+    const answer = await this.aiService.askAboutCase(body.question, {
+      description: report.description,
+      incident_type: report.incident_type,
+      ai_analysis: report.ai_analysis,
+    });
+    return { answer };
+  }
 }

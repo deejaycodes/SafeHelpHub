@@ -509,4 +509,30 @@ Respond with JSON only:
       this.retryService.addToRetryQueue(payload.reportId, REPORT_EVENTS.SUBMITTED, payload);
     }
   }
+
+  async askAboutCase(question: string, context: { description: string; incident_type: string; ai_analysis?: any }): Promise<string> {
+    if (!this.openai) {
+      return 'AI is not configured. Please set OPENAI_API_KEY.';
+    }
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an AI assistant helping NGO case workers manage incident reports. Be concise, practical, and trauma-informed. The case worker is asking about a ${context.incident_type} case.${
+              context.ai_analysis ? ` AI assessment: urgency=${context.ai_analysis.urgency}, classification=${context.ai_analysis.classification}, immediate_danger=${context.ai_analysis.immediate_danger}.` : ''
+            } Case description: ${context.description.slice(0, 500)}`,
+          },
+          { role: 'user', content: question },
+        ],
+        max_tokens: 300,
+        temperature: 0.3,
+      });
+      return completion.choices[0]?.message?.content || 'No response generated.';
+    } catch (error) {
+      this.logger.error(`AI chat error: ${error.message}`);
+      return 'Unable to generate a response right now. Please try again.';
+    }
+  }
 }
