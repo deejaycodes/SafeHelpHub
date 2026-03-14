@@ -1,12 +1,28 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { ReportStatus } from 'src/common/enums/report-status.enum';
 import { encrypt, decrypt } from 'src/common/utils/encryption';
+import { randomInt } from 'crypto';
 
 @Entity('reports')
 export class Report {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @ApiProperty({ description: 'Short tracking code for the reporter' })
+  @Column({ unique: true, nullable: true })
+  tracking_code: string;
+
+  @BeforeInsert()
+  generateTrackingCode() {
+    if (!this.tracking_code) {
+      // 8-char uppercase alphanumeric: e.g. SV-A3K9M2
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I to avoid confusion
+      let code = '';
+      for (let i = 0; i < 6; i++) code += chars[randomInt(chars.length)];
+      this.tracking_code = `SV-${code}`;
+    }
+  }
 
   @ApiProperty({ description: 'Incident type ID', type: String })
   @Column()

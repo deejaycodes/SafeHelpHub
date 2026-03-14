@@ -21,9 +21,13 @@ export class TrackingController {
   @ApiOperation({ summary: 'Get report status and messages by tracking ID (no auth)' })
   async getStatus(@Param('reportId') reportId: string) {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(reportId)) throw new NotFoundException('Report not found. Check your tracking ID.');
+    const isUuid = uuidRegex.test(reportId);
+    const isTrackingCode = /^SV-[A-Z0-9]{6}$/i.test(reportId);
+    if (!isUuid && !isTrackingCode) throw new NotFoundException('Report not found. Check your tracking ID.');
 
-    const report = await this.reportsRepo.findOne({ where: { id: reportId } });
+    const report = await this.reportsRepo.findOne({
+      where: isUuid ? { id: reportId } : { tracking_code: reportId.toUpperCase() },
+    });
     if (!report) {
       this.instrumentation.reportLookupNotFound(reportId);
       throw new NotFoundException('Report not found. Check your tracking ID.');
@@ -64,7 +68,10 @@ export class TrackingController {
     if (!body.content?.trim()) throw new BadRequestException('Message cannot be empty');
     if (body.content.length > 2000) throw new BadRequestException('Message too long (max 2000 characters)');
 
-    const report = await this.reportsRepo.findOne({ where: { id: reportId } });
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reportId);
+    const report = await this.reportsRepo.findOne({
+      where: isUuid ? { id: reportId } : { tracking_code: reportId.toUpperCase() },
+    });
     if (!report) throw new NotFoundException('Report not found');
 
     const note = this.notesRepo.create({
