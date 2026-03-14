@@ -74,9 +74,13 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   resetCodeExpiresAt: Date;
 
-  @ApiProperty({ description: 'Role of the user', enum: ['user', 'ngo', 'admin'] })
-  @Column({ type: 'enum', enum: ['user', 'ngo', 'admin'], default: 'user' })
+  @ApiProperty({ description: 'Role of the user', enum: ['user', 'ngo', 'admin', 'staff'] })
+  @Column({ type: 'enum', enum: ['user', 'ngo', 'admin', 'staff'], default: 'user' })
   role: string;
+
+  @ApiProperty({ description: 'Parent NGO ID (for staff members)' })
+  @Column({ nullable: true })
+  ngoId: string;
 
   @ApiProperty({ description: 'Email verification status' })
   @Column({ default: false })

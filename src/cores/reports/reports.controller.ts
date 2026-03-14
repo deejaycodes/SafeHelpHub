@@ -62,7 +62,7 @@ export class ReportsController {
     @Req() req,
     @Query('query') query?: string,
   ) {
-    const userId = req.user.id;
+    const userId = req.user.role === 'staff' ? req.user.ngoId : req.user.id;
     return this.reportRepo.findReports(userId, query);
   }
   @Post()
@@ -206,7 +206,7 @@ export class ReportsController {
     @Body() dto: TransitionReportDto,
     @Req() req,
   ): Promise<Report> {
-    return this.reportsService.transitionReport(reportId, req.user.id, dto.event, dto.reason);
+    return this.reportsService.transitionReport(reportId, req.user.role === 'staff' ? req.user.ngoId : req.user.id, dto.event, dto.reason);
   }
 
   @Get()
@@ -215,7 +215,8 @@ export class ReportsController {
   @ApiOperation({ summary: 'Retrieve reports assigned to the authenticated NGO' })
   @ApiResponse({ status: 200, description: 'Reports for this NGO' })
   async findAll(@Req() req): Promise<Report[]> {
-    return this.reportsService.findByNgo(req.user.id);
+    const ngoId = req.user.role === 'staff' ? req.user.ngoId : req.user.id;
+    return this.reportsService.findByNgo(ngoId);
   }
 
   @UseGuards(AuthGuard('jwt'))

@@ -68,6 +68,27 @@ export class EmailService {
     }
   }
 
+  async sendStaffInviteEmail(email: string, name: string, ngoName: string, tempPassword: string): Promise<void> {
+    if (!this.resend) return;
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: email,
+        subject: `You've been invited to ${ngoName} on SafeHelpHub`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+            <h2 style="color: #1a1a1a;">Welcome to ${ngoName}</h2>
+            <p>Hi ${name}, you've been added as a team member on SafeHelpHub.</p>
+            <p><strong>Email:</strong> ${email}<br/><strong>Temporary password:</strong> ${tempPassword}</p>
+            <p>Please log in and change your password immediately.</p>
+          </div>
+        `,
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to send staff invite: ${error.message}`);
+    }
+  }
+
   async sendReporterNotification(email: string, reportId: string): Promise<void> {
     if (!this.resend) return;
     try {

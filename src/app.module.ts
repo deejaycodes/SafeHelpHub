@@ -41,6 +41,7 @@ import { FollowUp } from './common/entities/followup.entity';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 import { TrackingModule } from './cores/tracking/tracking.module';
+import { TeamModule } from './cores/team/team.module';
 import { InstrumentationModule } from './common/instrumentation/instrumentation.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { NotificationsService } from './notifications/notifications.service';
@@ -110,6 +111,7 @@ import { StorageModule } from './basics/storage/storage.module';
     CaseNotesModule,
     FollowUpsModule,
     TrackingModule,
+    TeamModule,
     InstrumentationModule,
     ThrottlerModule.forRoot([
       { name: 'short', ttl: 1000, limit: 3 },   // 3 req/sec
