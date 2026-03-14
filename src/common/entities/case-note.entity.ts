@@ -22,7 +22,7 @@ export class CaseNote {
   @Column('text')
   content: string;
 
-  @Column({ type: 'enum', enum: ['internal', 'victim_update'], default: 'internal' })
+  @Column({ type: 'enum', enum: ['internal', 'victim_update', 'reporter_message', 'caseworker_reply'], default: 'internal' })
   type: string;
 
   @CreateDateColumn()

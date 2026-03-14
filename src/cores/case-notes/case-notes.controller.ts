@@ -14,7 +14,7 @@ export class CaseNotesController {
   @ApiOperation({ summary: 'Add a case note' })
   async addNote(
     @Param('reportId') reportId: string,
-    @Body() noteDto: { content: string; type: 'internal' | 'victim_update' },
+    @Body() noteDto: { content: string; type: 'internal' | 'victim_update' | 'caseworker_reply' },
     @Req() req,
   ) {
     return this.caseNotesService.create({

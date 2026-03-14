@@ -38,6 +38,7 @@ import { FollowUp } from './common/entities/followup.entity';
 // import { QuestionsModule } from './basics/chats/questions.module'; // Removed - not migrated to TypeORM
 // import { ReportAssignmentService } from './cores/reports/reports-assignment'; // Removed - not migrated to TypeORM
 import { ScheduleModule } from '@nestjs/schedule';
+import { TrackingModule } from './cores/tracking/tracking.module';
 import { NotificationsService } from './notifications/notifications.service';
 import { NotificationController } from './notifications/notifications.controller';
 import { NotificationModule } from './notifications/notifications.module';
@@ -87,6 +88,7 @@ import { StorageModule } from './basics/storage/storage.module';
     AssignmentModule,
     CaseNotesModule,
     FollowUpsModule,
+    TrackingModule,
     NotificationModule,
     IncidentTypeModule,
     StorageModule,
