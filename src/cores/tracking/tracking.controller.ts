@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Report } from 'src/common/entities/report.entity';
 import { CaseNote } from 'src/common/entities/case-note.entity';
 import { TrackingInstrumentation } from 'src/common/instrumentation';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Public Tracking')
 @Controller('track')
@@ -16,6 +17,7 @@ export class TrackingController {
   ) {}
 
   @Get(':reportId')
+  @Throttle({ medium: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Get report status and messages by tracking ID (no auth)' })
   async getStatus(@Param('reportId') reportId: string) {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -53,6 +55,7 @@ export class TrackingController {
   }
 
   @Post(':reportId/messages')
+  @Throttle({ medium: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Send a message on a report (no auth, anonymous)' })
   async sendMessage(
     @Param('reportId') reportId: string,

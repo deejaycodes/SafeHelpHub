@@ -39,6 +39,7 @@ import { UpdateReportDto, TransitionReportDto } from 'src/common/dtos/updateUser
 import { ReportsRepository } from './reports.repository';
 import { AIAnalysisService } from 'src/basics/ai/ai-analysis.service';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('reports')
 @Controller('reports')
@@ -65,6 +66,7 @@ export class ReportsController {
     return this.reportRepo.findReports(userId, query);
   }
   @Post()
+  @Throttle({ medium: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Submit a report' })
   @ApiBody({
     description: 'Incident report data with optional files',

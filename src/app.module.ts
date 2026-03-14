@@ -19,7 +19,7 @@ import { LocalStrategy } from './cores/authentication/strategy/local-strategy';
 import { JwtStrategy } from './cores/authentication/strategy/jwtStrategy';
 import { ReportsModule } from './cores/reports/reports.module';
 import { UsersRepository } from './basics/users/users.repository';
-import { APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { AuthenticationService } from './cores/authentication/authentication.service';
 import { AuthenticationModule } from './cores/authentication/authentication.module';
 import { jwtConstants } from './cores/authentication/strategy/constants';
@@ -41,6 +41,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 import { TrackingModule } from './cores/tracking/tracking.module';
 import { InstrumentationModule } from './common/instrumentation/instrumentation.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { NotificationsService } from './notifications/notifications.service';
 import { NotificationController } from './notifications/notifications.controller';
 import { NotificationModule } from './notifications/notifications.module';
@@ -109,6 +110,10 @@ import { StorageModule } from './basics/storage/storage.module';
     FollowUpsModule,
     TrackingModule,
     InstrumentationModule,
+    ThrottlerModule.forRoot([
+      { name: 'short', ttl: 1000, limit: 3 },   // 3 req/sec
+      { name: 'medium', ttl: 60000, limit: 30 }, // 30 req/min
+    ]),
     NotificationModule,
     IncidentTypeModule,
     StorageModule,
@@ -136,6 +141,10 @@ import { StorageModule } from './basics/storage/storage.module';
     {
       provide: APP_FILTER,
       useClass: SentryGlobalFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
     AuthenticationService,
     NotificationsService,

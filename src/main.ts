@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
+import helmet from 'helmet';
 
 async function bootstrap() {
   Sentry.init({
@@ -16,6 +17,8 @@ async function bootstrap() {
 
   const { Logger: PinoLogger } = await import('nestjs-pino');
   app.useLogger(app.get(PinoLogger));
+
+  app.use(helmet());
 
   app.enableCors({
     origin: true,

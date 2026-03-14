@@ -17,6 +17,7 @@ import { LocalAuthGuard } from './strategy/local-auth-strategy';
 import { JwtAuthGuard } from './strategy/jwt-guard';
 import { TokenBlacklistService } from './token-blacklist.service';
 import { ReportsRepository } from '../reports/reports.repository';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -72,6 +73,7 @@ export class AuthsController {
   }
 
   @Post('login')
+  @Throttle({ short: { ttl: 1000, limit: 1 }, medium: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Login endpoint' })
   @ApiBody({
     type: LoginDto,
