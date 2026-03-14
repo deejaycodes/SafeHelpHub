@@ -37,14 +37,15 @@ export class TrackingController {
 
     const messages = await this.notesRepo.find({
       where: [
-        { reportId, type: 'reporter_message' },
-        { reportId, type: 'caseworker_reply' },
+        { reportId: report.id, type: 'reporter_message' },
+        { reportId: report.id, type: 'caseworker_reply' },
       ],
       order: { createdAt: 'ASC' },
     });
 
     return {
       id: report.id,
+      tracking_code: report.tracking_code,
       status: report.status,
       incident_type: report.incident_type,
       created_at: report.created_at,
@@ -75,14 +76,14 @@ export class TrackingController {
     if (!report) throw new NotFoundException('Report not found');
 
     const note = this.notesRepo.create({
-      reportId,
+      reportId: report.id,
       ngoId: 'anonymous',
       staffMember: 'Reporter',
       content: body.content.trim(),
       type: 'reporter_message',
     });
     const saved = await this.notesRepo.save(note);
-    this.instrumentation.reporterMessageSent(reportId);
+    this.instrumentation.reporterMessageSent(report.id);
     return saved;
   }
 }
