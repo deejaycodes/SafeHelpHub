@@ -50,6 +50,7 @@ import { NotificationModule } from './notifications/notifications.module';
 import { IncidentTypeModule } from './basics/incident/incident.module';
 import { ReportsRepository } from './cores/reports/reports.repository';
 import { StorageModule } from './basics/storage/storage.module';
+import { ResourcesModule } from './cores/resources/resources.module';
 
 @Module({
   imports: [
@@ -120,6 +121,7 @@ import { StorageModule } from './basics/storage/storage.module';
     NotificationModule,
     IncidentTypeModule,
     StorageModule,
+    ResourcesModule,
   ],
   controllers: [AppController, AuthsController, UsersController, NotificationController],
   providers: [
