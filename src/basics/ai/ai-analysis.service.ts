@@ -529,7 +529,7 @@ Respond with JSON only:
 
   async askAboutCase(question: string, context: { description: string; incident_type: string; ai_analysis?: any }): Promise<string> {
     if (!this.openai) {
-      return 'AI is not configured. Please set OPENAI_API_KEY.';
+      return this.templateResponse(question);
     }
     try {
       const completion = await this.openai.chat.completions.create({
@@ -537,7 +537,7 @@ Respond with JSON only:
         messages: [
           {
             role: 'system',
-            content: `You are an AI assistant helping NGO case workers manage incident reports. Be concise, practical, and trauma-informed. The case worker is asking about a ${context.incident_type} case.${
+            content: `You are an AI assistant helping NGO case workers manage incident reports in Nigeria. Be concise, practical, and trauma-informed. The case worker is asking about a ${context.incident_type} case.${
               context.ai_analysis ? ` AI assessment: urgency=${context.ai_analysis.urgency}, classification=${context.ai_analysis.classification}, immediate_danger=${context.ai_analysis.immediate_danger}.` : ''
             } Case description: ${context.description.slice(0, 500)}`,
           },
@@ -546,10 +546,27 @@ Respond with JSON only:
         max_tokens: 300,
         temperature: 0.3,
       });
-      return completion.choices[0]?.message?.content || 'No response generated.';
+      return completion.choices[0]?.message?.content || this.templateResponse(question);
     } catch (error) {
       this.logger.error(`AI chat error: ${error.message}`);
-      return 'Unable to generate a response right now. Please try again.';
+      return this.templateResponse(question);
     }
+  }
+
+  private templateResponse(question: string): string {
+    const q = question.toLowerCase();
+    const templates: Record<string, string> = {
+      'safety': '1. Identify safe places (friend, shelter, police station)\n2. Pack emergency bag (ID, money, phone charger)\n3. Memorize emergency numbers (112, 199)\n4. Plan escape route\n5. Tell a trusted person\n6. Keep documents accessible',
+      'legal': '1. File police report\n2. Request free medical examination\n3. Contact Legal Aid Council or FIDA\n4. Apply for protection order\n5. VAPP Act 2015 covers DV, FGM, sexual assault\n6. NAPTIP handles trafficking cases',
+      'fgm': '1. Assess if planned or completed\n2. If planned — urgent, contact NAPTIP\n3. If completed — medical referral\n4. Psychological support\n5. Community sensitization\n6. VAPP Act: up to 4 years for perpetrators',
+      'child': '1. Assess immediate safety\n2. Contact NAPTIP or child protection\n3. Medical exam if abuse suspected\n4. Temporary safe placement\n5. Child Rights Act protects under-18s\n6. Document everything',
+      'refer': 'Dear [Organization],\nWe are referring a case of [type] reported in [location].\nThe survivor requires [services].\nUrgency: [level].\nPlease contact us for details.',
+    };
+    if (q.includes('safe') || q.includes('protect') || q.includes('escape') || q.includes('plan')) return templates['safety'];
+    if (q.includes('law') || q.includes('legal') || q.includes('police') || q.includes('court')) return templates['legal'];
+    if (q.includes('fgm') || q.includes('mutilation') || q.includes('cutting')) return templates['fgm'];
+    if (q.includes('child') || q.includes('minor') || q.includes('girl') || q.includes('boy')) return templates['child'];
+    if (q.includes('refer') || q.includes('letter') || q.includes('transfer')) return templates['refer'];
+    return '1. Review case details and AI analysis\n2. Verify report through field workers\n3. Assess urgency and assign team member\n4. Contact reporter if they left info\n5. Coordinate services (medical, legal, shelter)\n6. Document all actions in case notes';
   }
 }

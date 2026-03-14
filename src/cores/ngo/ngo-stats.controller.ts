@@ -15,11 +15,9 @@ export class NgoStatsController {
   @ApiOperation({ summary: 'Get NGO statistics' })
   async getStats(@Req() req) {
     try {
-      const ngoId = req.user.id;
-      console.log('Getting stats for NGO:', ngoId);
+      const ngoId = req.user.role === 'staff' ? req.user.ngoId : req.user.id;
 
       const allReports = await this.reportsRepository.findReportsByNgo(ngoId);
-      console.log('Found reports:', allReports.length);
     
     const stats = {
       totalCases: allReports.length,
@@ -39,9 +37,9 @@ export class NgoStatsController {
       byUrgency: this.groupByUrgency(allReports),
       thisMonth: this.countThisMonth(allReports),
       thisWeek: this.countThisWeek(allReports),
+      avgResponseHours: this.avgResponseTime(allReports),
     };
 
-      console.log('Stats calculated successfully');
       return stats;
     } catch (error) {
       console.error('Error in getStats:', error);
@@ -77,5 +75,16 @@ export class NgoStatsController {
     const now = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     return reports.filter(r => new Date(r.created_at) >= weekAgo).length;
+  }
+
+  private avgResponseTime(reports: any[]): number {
+    const responded = reports.filter(r => r.status_history?.length > 1);
+    if (responded.length === 0) return 0;
+    const total = responded.reduce((sum, r) => {
+      const created = new Date(r.status_history[0]?.at || r.created_at).getTime();
+      const firstAction = new Date(r.status_history[1]?.at || r.updated_at).getTime();
+      return sum + (firstAction - created);
+    }, 0);
+    return Math.round(total / responded.length / (1000 * 60 * 60)); // hours
   }
 }
