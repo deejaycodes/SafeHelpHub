@@ -12,7 +12,10 @@ async function bootstrap() {
     tracesSampleRate: 1.0,
     profilesSampleRate: 1.0,
   });
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+
+  const { Logger: PinoLogger } = await import('nestjs-pino');
+  app.useLogger(app.get(PinoLogger));
 
   app.enableCors({
     origin: true,

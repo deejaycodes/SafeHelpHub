@@ -38,6 +38,7 @@ import { FollowUp } from './common/entities/followup.entity';
 // import { QuestionsModule } from './basics/chats/questions.module'; // Removed - not migrated to TypeORM
 // import { ReportAssignmentService } from './cores/reports/reports-assignment'; // Removed - not migrated to TypeORM
 import { ScheduleModule } from '@nestjs/schedule';
+import { LoggerModule } from 'nestjs-pino';
 import { TrackingModule } from './cores/tracking/tracking.module';
 import { NotificationsService } from './notifications/notifications.service';
 import { NotificationController } from './notifications/notifications.controller';
@@ -51,6 +52,23 @@ import { StorageModule } from './basics/storage/storage.module';
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        pinoHttp: {
+          level: config.get('LOG_LEVEL', 'info'),
+          transport: config.get('NODE_ENV') !== 'production' ? { target: 'pino-pretty', options: { colorize: true, singleLine: true } } : undefined,
+          serializers: {
+            req: (req) => ({ method: req.method, url: req.url, query: req.query, params: req.params }),
+            res: (res) => ({ statusCode: res.statusCode }),
+          },
+          customProps: () => ({ service: 'safehelpub-api' }),
+          redact: ['req.headers.authorization', 'req.headers.cookie'],
+          autoLogging: { ignore: (req) => ['/health', '/'].includes(req.url) },
+        },
+      }),
+      inject: [ConfigService],
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {

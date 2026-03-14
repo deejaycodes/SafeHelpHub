@@ -1,34 +1,35 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 import { REPORT_EVENTS } from '../events/event-names';
 import { ReportSubmittedEvent, ReportAnalyzedEvent, ReportUrgentEvent } from '../events/event-payloads';
 
 @Injectable()
 export class AuditLoggerService {
-  private readonly logger = new Logger('AUDIT');
+  constructor(@InjectPinoLogger(AuditLoggerService.name) private readonly logger: PinoLogger) {}
 
   @OnEvent(REPORT_EVENTS.SUBMITTED)
   logReportSubmitted(payload: ReportSubmittedEvent) {
-    this.logger.log(`[SUBMITTED] Report ${payload.reportId} | Type: ${payload.incidentType} | Location: ${payload.location}`);
+    this.logger.info({ event: 'report.submitted', reportId: payload.reportId, incidentType: payload.incidentType, location: payload.location }, 'Report submitted');
   }
 
   @OnEvent(REPORT_EVENTS.ANALYZED)
   logReportAnalyzed(payload: ReportAnalyzedEvent) {
-    this.logger.log(`[ANALYZED] Report ${payload.reportId} | Urgency: ${payload.urgency} | Classification: ${payload.classification} | Danger: ${payload.immediateDanger}`);
+    this.logger.info({ event: 'report.analyzed', reportId: payload.reportId, urgency: payload.urgency, classification: payload.classification, immediateDanger: payload.immediateDanger }, 'Report analyzed');
   }
 
   @OnEvent(REPORT_EVENTS.URGENT)
   logUrgentReport(payload: ReportUrgentEvent) {
-    this.logger.warn(`[URGENT] Report ${payload.reportId} | Urgency: ${payload.urgency} | Classification: ${payload.classification} | Location: ${payload.location}`);
+    this.logger.warn({ event: 'report.urgent', reportId: payload.reportId, urgency: payload.urgency, classification: payload.classification, location: payload.location }, 'Urgent report detected');
   }
 
   @OnEvent(REPORT_EVENTS.ACCEPTED)
   logReportAccepted(payload: { reportId: string; ngoId: string }) {
-    this.logger.log(`[ACCEPTED] Report ${payload.reportId} | NGO: ${payload.ngoId}`);
+    this.logger.info({ event: 'report.accepted', reportId: payload.reportId, ngoId: payload.ngoId }, 'Report accepted by NGO');
   }
 
   @OnEvent(REPORT_EVENTS.RESOLVED)
   logReportResolved(payload: { reportId: string; ngoId: string }) {
-    this.logger.log(`[RESOLVED] Report ${payload.reportId} | NGO: ${payload.ngoId}`);
+    this.logger.info({ event: 'report.resolved', reportId: payload.reportId, ngoId: payload.ngoId }, 'Report resolved');
   }
 }
