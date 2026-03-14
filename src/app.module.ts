@@ -30,6 +30,7 @@ import { NgoService } from './cores/ngo/ngo.service';
 import { UsersController } from './basics/users/users.controller';
 import { AuditLoggerService } from './common/services/audit-logger.service';
 import { RetryService } from './common/services/retry.service';
+import { StaleCaseService } from './common/services/stale-case.service';
 import { AssignmentModule } from './cores/assignment/assignment.module';
 import { CaseNotesModule } from './cores/case-notes/case-notes.module';
 import { FollowUpsModule } from './cores/followups/followups.module';
@@ -124,6 +125,7 @@ import { StorageModule } from './basics/storage/storage.module';
     AppService,
     AuditLoggerService,
     RetryService,
+    StaleCaseService,
     EventsGateway,
     // ReportAssignmentService, // TODO: Migrate to TypeORM
     AuthenticationService,
