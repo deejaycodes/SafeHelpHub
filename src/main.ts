@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import helmet from 'helmet';
+import { SanitizePipe } from './common/pipes/sanitize.pipe';
 
 async function bootstrap() {
   Sentry.init({
@@ -27,6 +28,7 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(
+    new SanitizePipe(),
     new ValidationPipe({
       errorHttpStatusCode: 400,
       whitelist: true,

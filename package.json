@@ -58,6 +58,7 @@
     "resend": "^6.9.3",
     "rimraf": "^6.0.1",
     "rxjs": "^7.8.1",
+    "sanitize-html": "^2.17.1",
     "socket.io": "^4.7.5",
     "typeorm": "^0.3.28"
   },
@@ -68,6 +69,7 @@
     "@types/jest": "^29.5.2",
     "@types/multer": "^1.4.13",
     "@types/node": "^20.3.1",
+    "@types/sanitize-html": "^2.16.1",
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
