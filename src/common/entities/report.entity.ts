@@ -20,6 +20,10 @@ export class Report {
   @Column('text')
   location: string;
 
+  @ApiProperty({ description: 'Address or landmark near the incident' })
+  @Column({ type: 'text', nullable: true })
+  address: string;
+
   @ApiProperty({ description: 'Encrypted contact info of the reporter' })
   @Column({ nullable: true, transformer: {
     to: (value: string) => value ? encrypt(value) : null,

@@ -52,6 +52,14 @@ export class CreateIncidentDto {
   @IsNotEmpty({ message: 'Location is required' })
   location: string;
 
+  @ApiPropertyOptional({
+    description: 'Address or landmark near the incident (e.g. "behind Shoprite on Adeniyi Jones")',
+    example: 'The yellow house opposite the primary school',
+  })
+  @IsString()
+  @IsOptional()
+  address?: string;
+
 
   @ApiPropertyOptional({
     description: 'Contact information of the reporter (optional)',

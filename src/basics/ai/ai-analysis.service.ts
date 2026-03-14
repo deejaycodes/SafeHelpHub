@@ -174,8 +174,8 @@ Respond with JSON only:
     const wordCount = description.trim().split(/\s+/).length;
 
     // Check for obvious spam
-    const spamPhrases = ['test', 'hello world', 'asdf', 'qwerty'];
-    if (spamPhrases.some(phrase => text === phrase)) {
+    const spamPhrases = ['test', 'hello world', 'asdf', 'qwerty', 'lorem ipsum', 'foo bar', 'abc', 'testing'];
+    if (spamPhrases.some(phrase => text === phrase || text.startsWith(phrase + ' '))) {
       return {
         isValid: false,
         status: 'SPAM',
@@ -184,8 +184,8 @@ Respond with JSON only:
       };
     }
 
-    // Check for gibberish
-    if (/(.)\1{5,}/.test(description)) {
+    // Check for gibberish or repetitive text
+    if (/(.)\1{5,}/.test(description) || /(\b\w+\b)(\s+\1){3,}/.test(text)) {
       return {
         isValid: false,
         status: 'SPAM',
@@ -194,8 +194,8 @@ Respond with JSON only:
       };
     }
 
-    // Too short but might be valid
-    if (wordCount < 5) {
+    // Too short
+    if (wordCount < 8) {
       return {
         isValid: true,
         status: 'UNCLEAR',

@@ -116,6 +116,7 @@ export class ReportsService {
         description: createIncidentDto.description,
         incidentType: createIncidentDto.incident_type,
         location: createIncidentDto.location,
+        address: createIncidentDto.address || null,
       } as ReportSubmittedEvent);
 
       // Return immediately to user (they don't wait for AI analysis)

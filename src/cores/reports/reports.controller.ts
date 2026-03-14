@@ -77,6 +77,11 @@ export class ReportsController {
           description: 'Location where the incident occurred (state or state, LGA)',
           example: 'Lagos, Ikeja',
         },
+        address: {
+          type: 'string',
+          description: 'Address or landmark near the incident',
+          example: 'The yellow house opposite the primary school',
+        },
         files: {
           type: 'array',
           items: {
