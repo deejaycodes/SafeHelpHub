@@ -222,12 +222,29 @@ Respond with JSON only:
       };
     }
 
-    // Unclear - needs human review
+    // Check for obviously irrelevant content
+    const casualKeywords = [
+      'pizza', 'ice cream', 'favorite color', 'weather', 'football', 'movie',
+      'music', 'birthday', 'holiday', 'vacation', 'recipe', 'game', 'joke',
+      'funny', 'lol', 'haha', 'love you', 'good morning', 'good night',
+    ];
+    const hasCasualKeyword = casualKeywords.some(keyword => text.includes(keyword));
+
+    if (hasCasualKeyword && !hasValidKeyword) {
+      return {
+        isValid: false,
+        status: 'SPAM',
+        reason: 'Irrelevant content — not an incident report',
+        confidence: 85,
+      };
+    }
+
+    // No incident keywords at all — reject
     return {
-      isValid: true,
-      status: 'UNCLEAR',
-      reason: 'No clear indicators, needs review',
-      confidence: 50,
+      isValid: false,
+      status: 'SPAM',
+      reason: 'No incident-related content detected',
+      confidence: 70,
     };
   }
 
