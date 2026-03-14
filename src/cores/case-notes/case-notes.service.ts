@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CaseNote } from 'src/common/entities/case-note.entity';
 import { Report } from 'src/common/entities/report.entity';
+import { EmailService } from 'src/basics/email/email.service';
 
 @Injectable()
 export class CaseNotesService {
@@ -11,6 +12,7 @@ export class CaseNotesService {
     private caseNotesRepository: Repository<CaseNote>,
     @InjectRepository(Report)
     private reportsRepository: Repository<Report>,
+    private readonly emailService: EmailService,
   ) {}
 
   async create(data: Partial<CaseNote>): Promise<CaseNote> {
@@ -41,7 +43,17 @@ export class CaseNotesService {
     }
 
     const note = this.caseNotesRepository.create(data);
-    return await this.caseNotesRepository.save(note);
+    const saved = await this.caseNotesRepository.save(note);
+
+    // Notify reporter via email if caseworker replied and reporter left contact info
+    if (data.type === 'caseworker_reply' && report.contact_info) {
+      const email = report.contact_info;
+      if (email.includes('@')) {
+        this.emailService.sendReporterNotification(email, report.id).catch(() => {});
+      }
+    }
+
+    return saved;
   }
 
   async findByReport(reportId: string): Promise<CaseNote[]> {

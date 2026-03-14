@@ -67,4 +67,26 @@ export class EmailService {
       );
     }
   }
+
+  async sendReporterNotification(email: string, reportId: string): Promise<void> {
+    if (!this.resend) return;
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: email,
+        subject: 'Update on your report - SafeHelpHub',
+        html: `
+          <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+            <h2 style="color: #1a1a1a;">You have a new message</h2>
+            <p style="color: #555;">A case worker has responded to your report. Open the app and use your tracking ID to view the message.</p>
+            <p style="color: #999; font-size: 13px;">For your safety, no case details are included in this email.</p>
+            <p style="color: #999; font-size: 12px;">If you did not submit a report, please ignore this email.</p>
+          </div>
+        `,
+      });
+      this.logger.log(`Reporter notification sent to ${email}`);
+    } catch (error) {
+      this.logger.warn(`Failed to send reporter notification: ${error.message}`);
+    }
+  }
 }
