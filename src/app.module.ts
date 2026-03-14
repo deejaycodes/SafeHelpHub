@@ -1,4 +1,5 @@
 import { Module, ValidationPipe } from '@nestjs/common';
+import { EventsGateway } from './common/gateways/events.gateway';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -96,6 +97,7 @@ import { StorageModule } from './basics/storage/storage.module';
     AppService,
     AuditLoggerService,
     RetryService,
+    EventsGateway,
     // ReportAssignmentService, // TODO: Migrate to TypeORM
     AuthenticationService,
     UsersService,

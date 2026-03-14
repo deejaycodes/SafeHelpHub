@@ -10,6 +10,7 @@ import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AIAnalysisModule } from 'src/basics/ai/ai-analysis.module';
+import { EventsGateway } from 'src/common/gateways/events.gateway';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AIAnalysisModule } from 'src/basics/ai/ai-analysis.module';
     UsersRepository,
     ReportsRepository,
     ReportsService,
+    EventsGateway,
   ],
   controllers: [ReportsController],
   exports: [ReportsRepository, ReportsService],

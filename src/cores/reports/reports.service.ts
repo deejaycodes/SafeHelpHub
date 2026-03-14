@@ -17,6 +17,7 @@ import { ReportStatus, isValidTransition, getValidTransitions, getNextStatus, EV
 import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { AIAnalysisService } from 'src/basics/ai/ai-analysis.service';
 import { REPORT_EVENTS } from 'src/common/events/event-names';
+import { EventsGateway } from 'src/common/gateways/events.gateway';
 import { ReportSubmittedEvent, ReportAnalyzedEvent } from 'src/common/events/event-payloads';
 
 @Injectable()
@@ -28,6 +29,7 @@ export class ReportsService {
     private readonly usersRepository: UsersRepository,
     private readonly aiAnalysisService: AIAnalysisService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly eventsGateway: EventsGateway,
   ) {}
 
   async createIncidentWithFile(
@@ -239,7 +241,12 @@ export class ReportsService {
       report.accepted_by = report.accepted_by || [];
       if (!report.accepted_by.includes(ngoId)) report.accepted_by.push(ngoId);
       // Lock to this NGO only — remove other NGOs from dashboard
+      const removedNgoIds = (report.ngo_dashboard_ids || []).filter(id => id !== ngoId);
       report.ngo_dashboard_ids = [ngoId];
+      // Notify removed NGOs in real-time
+      if (removedNgoIds.length > 0) {
+        this.eventsGateway.notifyNgos(removedNgoIds, 'cases:refresh');
+      }
       user.acceptReportsCount = (user.acceptReportsCount || 0) + 1;
       user.isHandlingReport = true;
       await this.usersRepository.findUserByIdAndUpdate(ngoId, user);
@@ -251,7 +258,10 @@ export class ReportsService {
       report.rejection_reasons.push({ reason: reason || 'Referred', rejected_by: ngoId, rejected_at: new Date() });
     }
 
-    return this.reportsRepository.save(report);
+    const saved = await this.reportsRepository.save(report);
+    // Notify all NGOs on this report's dashboard
+    this.eventsGateway.notifyNgos(saved.ngo_dashboard_ids || [], 'cases:refresh');
+    return saved;
   }
 
   /**
