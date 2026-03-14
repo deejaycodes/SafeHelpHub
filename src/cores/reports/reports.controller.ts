@@ -38,7 +38,6 @@ import { User } from '@sentry/nestjs';
 import { UpdateReportDto, TransitionReportDto } from 'src/common/dtos/updateUserReportDto';
 import { ReportsRepository } from './reports.repository';
 import { AIAnalysisService } from 'src/basics/ai/ai-analysis.service';
-import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('reports')
@@ -75,9 +74,8 @@ export class ReportsController {
 
         location: {
           type: 'string',
-          enum: Object.values(NigerianStates),
-          description: 'Location where the incident occurred',
-          example: 'Lagos',
+          description: 'Location where the incident occurred (state or state, LGA)',
+          example: 'Lagos, Ikeja',
         },
         files: {
           type: 'array',

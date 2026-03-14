@@ -14,7 +14,6 @@ import { uploadObject } from 'src/common/utils/upload';
 import { UsersRepository } from 'src/basics/users/users.repository';
 import { ReportsRepository } from './reports.repository';
 import { ReportStatus, isValidTransition, getValidTransitions, getNextStatus, EVENTS_REQUIRING_REASON } from 'src/common/enums/report-status.enum';
-import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { AIAnalysisService } from 'src/basics/ai/ai-analysis.service';
 import { REPORT_EVENTS } from 'src/common/events/event-names';
 import { EventsGateway } from 'src/common/gateways/events.gateway';

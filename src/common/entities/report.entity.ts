@@ -1,7 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { ReportStatus } from 'src/common/enums/report-status.enum';
-import { NigerianStates } from 'src/common/enums/nigeria-states.enum';
 import { encrypt, decrypt } from 'src/common/utils/encryption';
 
 @Entity('reports')
@@ -17,9 +16,9 @@ export class Report {
   @Column('text')
   description: string;
 
-  @ApiProperty({ description: 'Location where the incident occurred', enum: NigerianStates })
-  @Column({ type: 'enum', enum: NigerianStates })
-  location: NigerianStates;
+  @ApiProperty({ description: 'Location where the incident occurred' })
+  @Column('text')
+  location: string;
 
   @ApiProperty({ description: 'Encrypted contact info of the reporter' })
   @Column({ nullable: true, transformer: {
