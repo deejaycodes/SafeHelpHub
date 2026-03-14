@@ -47,6 +47,10 @@ export class NotificationsService {
     await this.notificationRepository.delete(notificationId);
   }
 
+  async markAllAsRead(ngoId: string): Promise<void> {
+    await this.notificationRepository.update({ ngoId, status: NotificationStatus.UNREAD }, { status: NotificationStatus.READ });
+  }
+
   async getAllNotifications(ngoId: string): Promise<Notification[]> {
     return await this.getNotificationsByNgo(ngoId);
   }

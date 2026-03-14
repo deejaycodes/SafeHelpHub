@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { NotificationsService } from './notifications.service';
@@ -57,10 +57,21 @@ export class NotificationController {
     @Param('notificationId') notificationId: string,
     @Req() req,
   ) {
-    // Security: Use authenticated user ID from JWT
     return this.notificationService.getNotificationByNgoIdAndNotificationId(
       req.user.id,
       notificationId,
     );
+  }
+
+  @Patch(':notificationId/read')
+  @ApiOperation({ summary: 'Mark a notification as read' })
+  async markAsRead(@Param('notificationId') notificationId: string) {
+    return this.notificationService.markAsRead(notificationId);
+  }
+
+  @Patch('read-all')
+  @ApiOperation({ summary: 'Mark all notifications as read' })
+  async markAllAsRead(@Req() req) {
+    return this.notificationService.markAllAsRead(req.user.id);
   }
 }
