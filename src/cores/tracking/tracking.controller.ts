@@ -16,6 +16,9 @@ export class TrackingController {
   @Get(':reportId')
   @ApiOperation({ summary: 'Get report status and messages by tracking ID (no auth)' })
   async getStatus(@Param('reportId') reportId: string) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(reportId)) throw new NotFoundException('Report not found. Check your tracking ID.');
+
     const report = await this.reportsRepo.findOne({ where: { id: reportId } });
     if (!report) throw new NotFoundException('Report not found. Check your tracking ID.');
 
