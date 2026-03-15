@@ -96,9 +96,12 @@ import { ResourcesModule } from './cores/resources/resources.module';
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([User, Report, Notification, IncidentType]),
-    JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: jwtConstants.LOGIN_EXPIRY },
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get('JWT_KEY') || 'sporty_secretKey_for_sure',
+        signOptions: { expiresIn: jwtConstants.LOGIN_EXPIRY },
+      }),
     }),
     SentryModule.forRoot(),
     EmailModule,
