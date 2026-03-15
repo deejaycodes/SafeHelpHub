@@ -147,9 +147,7 @@ export class AuthsController {
   
     return {
       ...payload,
-      token: this.jwtService.sign(payload, {
-        secret: process.env.JWT_KEY,
-      }),
+      token: this.jwtService.sign(payload),
     };
   }
 
