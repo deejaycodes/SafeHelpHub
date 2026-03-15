@@ -147,7 +147,7 @@ export class AuthsController {
   
     return {
       ...payload,
-      token: this.jwtService.sign(payload),
+      token: this.jwtService.sign(payload, { secret: process.env.JWT_KEY || 'sporty_secretKey_for_sure' }),
     };
   }
 
