@@ -93,14 +93,30 @@ export class AssignmentService {
     // Base score for all NGOs
     score += 10;
 
-    // Location match (40 points)
-    if (ngo.location === report.location) {
-      score += 40;
+    // Location match (40 points) — compare address text
+    const ngoAddr = (ngo.primary_location?.address || ngo.primary_location?.state || '').toLowerCase();
+    const reportLoc = (report.location || '').toLowerCase();
+    if (ngoAddr && reportLoc) {
+      // Exact state/city match
+      if (ngoAddr.includes(reportLoc) || reportLoc.includes(ngoAddr)) {
+        score += 40;
+      } else {
+        // Partial match — check if any word overlaps (e.g. "Lagos" in both)
+        const ngoWords = ngoAddr.split(/[\s,]+/).filter((w: string) => w.length > 3);
+        const reportWords = reportLoc.split(/[\s,]+/).filter((w: string) => w.length > 3);
+        if (ngoWords.some((w: string) => reportWords.includes(w))) {
+          score += 25;
+        }
+      }
     }
 
-    // Specialization match (30 points)
-    if (ngo.specializations?.includes(report.incident_type)) {
-      score += 30;
+    // Specialization match (30 points) — use incident_types_supported
+    if (ngo.incident_types_supported?.length) {
+      const reportType = (report.incident_type || '').toLowerCase();
+      const match = ngo.incident_types_supported.some(
+        (s: string) => s.toLowerCase() === reportType || reportType.includes(s.toLowerCase())
+      );
+      if (match) score += 30;
     }
 
     // Low workload bonus (20 points)

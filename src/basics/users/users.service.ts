@@ -89,6 +89,7 @@ export class UsersService {
           ...createNgoDto.primary_contact,
         },
       },
+      primary_location: createNgoDto.address ? { address: createNgoDto.address } : undefined,
       email,
     };
 

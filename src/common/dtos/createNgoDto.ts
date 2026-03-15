@@ -6,6 +6,7 @@ import {
   IsIn,
   IsOptional,
   IsDateString,
+  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -76,6 +77,18 @@ export class CreateNgoDto {
     message: 'Role must be ngo',
   })
   role: string;
+
+  @ApiPropertyOptional({ description: 'Incident types the NGO handles', example: ['Domestic Violence', 'Child Abuse'] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  incident_types_supported?: string[];
+
+  @ApiPropertyOptional({ description: 'Office address of the NGO', example: '12 Marina Road, Lagos' })
+  @IsOptional()
+  @IsString()
+  address?: string;
+
   @IsOptional()
   @IsString()
   verificationCode?: string;
